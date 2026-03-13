@@ -3,7 +3,7 @@ import logoUrl from '@styles/img/logo.svg';
 
 const TopBarContainer = styled(AppBar)(({ theme }) => ({
     height: 70,
-    backgroundColor: theme.palette.primary.main,
+    backgroundColor: theme.palette.background.paper,
     boxShadow: 'none',
     left: 70,
     width: 'calc(100% - 70px)',
@@ -11,7 +11,7 @@ const TopBarContainer = styled(AppBar)(({ theme }) => ({
 
 const LogoText = styled(Typography)(({ theme }) => ({
     fontSize: 20,
-    color: theme.palette.primary.contrastText,
+    color: theme.palette.text.primary,
     fontWeight: 500
 }));
 

@@ -25,7 +25,7 @@ const UserName = styled(Typography)(({ theme }) => ({
 
 const UserEmail = styled(Typography)(({ theme }) => ({
     fontSize: 14,
-    color: theme.palette.text.secondary,
+    color: theme.palette.text.primary,
     transition: theme.transitions.create('color', {
         duration: theme.transitions.duration.standard,
     }),

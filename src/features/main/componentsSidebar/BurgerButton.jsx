@@ -4,7 +4,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 const StyledBurgerButton = styled(IconButton)(({ theme }) => ({
     width: 48,
     height: 48,
-    color: theme.palette.common.white,
+    color: theme.palette.text.primory,
     outline: 'none',
     '&:hover': {
         backgroundColor: 'rgba(255, 255, 255, 0.1)',

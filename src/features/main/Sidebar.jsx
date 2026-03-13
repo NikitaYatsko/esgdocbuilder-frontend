@@ -1,19 +1,19 @@
-import { Box, styled, Drawer, Divider } from "@mui/material";
+import { Box, styled, Drawer, Divider, useTheme } from "@mui/material";
 import { useState } from "react";
 import { useAuth } from "@features/auth/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { useThemeContext } from "@contexts/ThemeContext";
 
-import { BurgerButton } from './BurgerButton';
-import { UserInfo } from './UserInfo';
-import { MenuButton } from './MenuButton';
-import { ThemeToggle } from './ThemeToggle';
+import { BurgerButton } from './componentsSidebar/BurgerButton';
+import { UserInfo } from './componentsSidebar/UserInfo';
+import { MenuButton } from './componentsSidebar/MenuButton';
+import { ThemeToggle } from './componentsSidebar/ThemeToggle';
 import { 
     ProfileIcon, 
     ProductIcon, 
     InvoiceIcon, 
     BankIcon 
-} from '@features/icon/Icon';
+} from '@styles/icon/Icon';
 
 const SidebarContainer = styled(Box)(({ theme }) => ({
     width: 70,
@@ -53,6 +53,7 @@ export const Sidebar = ({ onMenuClick }) => {
     const { user } = useAuth();
     const navigate = useNavigate();
     const { mode, togle } = useThemeContext();
+    const theme = useTheme();
 
     const handleBurgerClick = () => {
         setIsMenuOpen(!isMenuOpen);
@@ -66,7 +67,7 @@ export const Sidebar = ({ onMenuClick }) => {
     };
 
     const handleProfileClick = () => {
-        console.log('Переход на профиль');
+        navigate('/profile');
         handleCloseMenu(); 
     };
 
@@ -91,7 +92,7 @@ export const Sidebar = ({ onMenuClick }) => {
 
     return (
         <>
-            <SidebarContainer>
+            <SidebarContainer sx={{ backgroundColor: theme.palette.background.paper}}>
                 <BurgerButton onClick={handleBurgerClick} />
             </SidebarContainer>
 

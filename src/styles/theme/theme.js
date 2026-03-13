@@ -3,7 +3,7 @@ import { createTheme } from '@mui/material/styles'
 const lightPalette = {        // Светлая тема для сайта
     primary: { main: '#0D47A1'},
     secondary: { main: '#1976D2' },
-    background: { default: '#F5F5F5', paper: '#FFFFFF' },
+    background: { default: '#8BA3CB', paper: '#FFFFFF' },
     text: { primary: '#212121', white: '#FFFFFF' },
     divider: '#BDBDBD',
     error: { main: '#D32F2F' },
@@ -15,7 +15,7 @@ const darkPalette = {   // Темная тема для сайта
     primary: { main: '#90CAF9'},
     secondary: { main: '#64B5F6' },
     background: { default: '#121212', paper: '#1E1E1E' },
-    text: { primary: '#FFFFFF', white: '#000000'  },
+    text: { primary: '#FFFFFF', white: '#ffffff'  },
     divider: '#424242',
     error: { main: '#EF5350' },
     warning: { main: '#FFA726' },

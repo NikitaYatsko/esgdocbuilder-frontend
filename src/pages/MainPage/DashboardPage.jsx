@@ -1,9 +1,9 @@
 import { Button, Typography, Container, Box, CircularProgress, AppBar, Toolbar, IconButton, useTheme } from "@mui/material";
 import { useAuth } from "@features/auth/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
-import { Sidebar } from "../features/main/Sidebar";
-import { TopBar } from "../features/main/TopBar"
-import { WelcomeContent } from "../features/main/WelcomeContent";
+import { Sidebar } from "../../features/main/Sidebar";
+import { TopBar } from "../../features/main/TopBar"
+import { WelcomeContent } from "../../features/main/WelcomeContent";
 
 export const DashboardPage = () => {
     const { logout, user, loading } = useAuth();
