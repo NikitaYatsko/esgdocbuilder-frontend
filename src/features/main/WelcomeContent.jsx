@@ -9,13 +9,13 @@ const ContentWrapper = styled(Box)({
     justifyContent: 'center',
 });
 
-const WelcomeText = styled(Typography)({
+const WelcomeText = styled(Typography)(({ theme }) => ({
     fontSize: 48,
     fontWeight: 500,
     marginBottom: 32,
-    color: '#212121',
+    color: theme.palette.text.primary,
     textAlign: 'center',
-});
+}));
 
 const LogoutButton = styled(Button)({
     width: 242,
@@ -23,6 +23,18 @@ const LogoutButton = styled(Button)({
     fontSize: '1rem',
     display: 'block',
     margin: '0 auto',
+    '&:focus': {
+        outline: 'none',
+    },
+    '&:focus-visible': {
+        outline: 'none',
+    },
+    '&.Mui-focusVisible': {
+        outline: 'none',
+    },
+    '&:focus:not(:focus-visible)': {
+        outline: 'none',
+    },
 });
 
 export const WelcomeContent = ({ user, onLogout }) => {

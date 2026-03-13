@@ -1,4 +1,4 @@
-import { Paper, TextField, Button, InputAdornment, Alert, CircularProgress, Typography, Box, IconButton } from '@mui/material';
+import { Paper, TextField, Button, InputAdornment, Alert, CircularProgress, Typography, Box, IconButton, useTheme } from '@mui/material';
 import { useState } from 'react';
 import { useLoginForm } from '../hooks/useLoginForm';
 import logoUrl from '@styles/img/logo.svg'
@@ -7,6 +7,7 @@ import { Visibility, VisibilityOff, PersonOutline, LockOutline } from '@mui/icon
 const LoginForm = () => {
     const { state, handleChange, handleSubmit } = useLoginForm();
     const [showPassword, setShowPassword] = useState(false);
+    const theme = useTheme();
 
     return (
         <Paper
@@ -14,9 +15,9 @@ const LoginForm = () => {
             sx={{
                 width: 450,
                 height: 550,
-                bgcolor: '#FDFCFC',
+                bgcolor: theme.palette.background.paper,
                 borderRadius: '50px',
-                border: '1px solid #F0F0F0',
+                border: '1px solid ${theme.palette.divider}',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
@@ -27,7 +28,12 @@ const LoginForm = () => {
                 component="img"
                 src={logoUrl}
                 alt="Logo"
-                sx={{ width: 150, height: 120, mb: 2 }}
+                sx={{
+                    width: 150,
+                    height: 120,
+                    mb: 2,
+                    filter: theme.palette.mode === 'dark' ? 'brightness(0.8) invert(0.2)' : 'none'
+                }}
             />
 
             <Typography
@@ -37,7 +43,7 @@ const LoginForm = () => {
                     fontFamily: 'Open Sans, sans-serif',
                     fontWeight: 500,
                     mb: 4,
-                    color: 'text.primary'
+                    color: theme.palette.text.primary,
                 }}
             >
                 Добро пожаловать!
@@ -76,12 +82,12 @@ const LoginForm = () => {
                     '& .MuiInputBase-root': {
                         height: '45px',
                         borderRadius: '8px',
-                        bgcolor: '#FFFFFF',
+                        bgcolor: theme.palette.background.paper,
                     },
                     '& input:-webkit-autofill': {
-                        WebkitBoxShadow: '0 0 0 100px #FFFFFF inset',
-                        WebkitTextFillColor: '#212121',
-                        caretColor: '#212121',
+                        WebkitBoxShadow: '0 0 0 100px  inset',
+                        WebkitTextFillColor: theme.palette.text.primary,
+                        caretColor: theme.palette.text.primary,
                         borderRadius: '8px',
                     },
                 }}
@@ -121,7 +127,13 @@ const LoginForm = () => {
                     '& .MuiInputBase-root': {
                         height: '45px',
                         borderRadius: '8px',
-                        bgcolor: '#FFFFFF',
+                        bgcolor: theme.palette.background.paper,
+                    },
+                    '& input:-webkit-autofill': {
+                        WebkitBoxShadow: '0 0 0 100px  inset',
+                        WebkitTextFillColor: theme.palette.text.primary,
+                        caretColor: theme.palette.text.primary,
+                        borderRadius: '8px',
                     },
                 }}
                 InputProps={{
@@ -184,6 +196,18 @@ const LoginForm = () => {
                     textTransform: 'none',
                     fontSize: '16px',
                     fontWeight: 500,
+                    '&:focus': {
+                        outline: 'none',
+                    },
+                    '&:focus-visible': {
+                        outline: 'none',
+                    },
+                    '&.Mui-focusVisible': {
+                        outline: 'none',
+                    },
+                    '&:focus:not(:focus-visible)': {
+                        outline: 'none',
+                    },
                 }}
             >
                 {state.loading ? <CircularProgress size={24} color="inherit" /> : 'Войти'}

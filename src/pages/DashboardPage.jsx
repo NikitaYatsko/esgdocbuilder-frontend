@@ -1,4 +1,4 @@
-import { Button, Typography, Container, Box, CircularProgress, AppBar, Toolbar, IconButton } from "@mui/material";
+import { Button, Typography, Container, Box, CircularProgress, AppBar, Toolbar, IconButton, useTheme } from "@mui/material";
 import { useAuth } from "@features/auth/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { Sidebar } from "../features/main/Sidebar";
@@ -8,6 +8,7 @@ import { WelcomeContent } from "../features/main/WelcomeContent";
 export const DashboardPage = () => {
     const { logout, user, loading } = useAuth();
     const navigate = useNavigate();
+    const theme = useTheme()
 
     const handleLogout = async () => {
         await logout();
@@ -36,7 +37,7 @@ export const DashboardPage = () => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            bgcolor: '#EFEFEF',
+            bgcolor: theme.palette.background.default,
         }}>
             <Sidebar onMenuClick={handleMenuClick} />
             <TopBar />

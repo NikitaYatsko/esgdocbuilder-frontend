@@ -9,11 +9,12 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, 'src'),
       '@components': path.resolve(__dirname, 'src/shared/ui'),
-      '@hooks': path.resolve(__dirname, 'src/shared/lib/hooks'),
-      '@utils': path.resolve(__dirname, 'src/shared/lib/utils'),
+      // '@hooks': path.resolve(__dirname, 'src/shared/lib/hooks'),
+      // '@utils': path.resolve(__dirname, 'src/shared/lib/utils'),
       '@styles': path.resolve(__dirname, 'src/styles'),
       '@pages': path.resolve(__dirname, 'src/pages'),
       '@features': path.resolve(__dirname, 'src/features'),
+      '@contexts': path.resolve(__dirname, 'src/app/contexts'),
     },
   },
 })

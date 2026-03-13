@@ -1,0 +1,64 @@
+import { Box, Avatar, Typography, styled } from "@mui/material";
+
+const UserInfoContainer = styled(Box)({
+    display: 'flex',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 10,
+    padding: 16,
+});
+
+const UserAvatar = styled(Avatar)({
+    width: 50,
+    height: 50,
+    backgroundColor: (theme) => theme.palette.primary.main,
+});
+
+const UserName = styled(Typography)(({ theme }) => ({
+    fontSize: 16,
+    fontWeight: 500,
+    color: theme.palette.text.primary,
+    transition: theme.transitions.create('color', {
+        duration: theme.transitions.duration.standard,
+    }),
+}));
+
+const UserEmail = styled(Typography)(({ theme }) => ({
+    fontSize: 14,
+    color: theme.palette.text.secondary,
+    transition: theme.transitions.create('color', {
+        duration: theme.transitions.duration.standard,
+    }),
+}));
+
+const getInitials = (user) => {
+    if (user?.name) {
+        return user.name
+            .split(' ')
+            .map(word => word[0])
+            .join('')
+            .toUpperCase()
+            .slice(0, 2);
+    }
+    return user?.email?.charAt(0).toUpperCase() || '?';
+};
+
+export const UserInfo = ({ user }) => {
+    return (
+        <UserInfoContainer>
+            <UserAvatar>
+                {getInitials(user)}
+            </UserAvatar>
+            <Box sx={{ flex: 1 }}>
+                {user.name && (
+                    <UserName>
+                        {user.name}
+                    </UserName>
+                )}
+                <UserEmail>
+                    {user.email}
+                </UserEmail>
+            </Box>
+        </UserInfoContainer>
+    );
+};
