@@ -4,6 +4,7 @@ import { useLoginForm } from '../hooks/useLoginForm';
 import logoUrl from '@styles/img/logo.svg'
 import { Visibility, VisibilityOff, PersonOutline, LockOutline } from '@mui/icons-material';
 
+
 const LoginForm = () => {
     const { state, handleChange, handleSubmit } = useLoginForm();
     const [showPassword, setShowPassword] = useState(false);
@@ -187,7 +188,7 @@ const LoginForm = () => {
             <Button
                 variant="contained"
                 color="primary"
-                onClick={handleSubmit}
+                onClick={ handleSubmit }
                 disabled={state.loading}
                 sx={{
                     width: '185px',

@@ -51,9 +51,9 @@ export const WelcomeContent = ({ user, onLogout }) => {
                             <Typography variant="body2" sx={{ color: '#212121' }}>
                                 <strong>Email:</strong> {user.email}
                             </Typography>
-                            {user.name && (
+                            {user.fullName && (
                                 <Typography variant="body2" sx={{ color: '#212121' }}>
-                                    <strong>Имя:</strong> {user.name}
+                                    <strong>Имя:</strong> {user.fullName}
                                 </Typography>
                             )}
                         </Box>

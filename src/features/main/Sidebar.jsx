@@ -1,6 +1,6 @@
 import { Box, styled, Drawer, Divider, useTheme } from "@mui/material";
 import { useState } from "react";
-import { useAuth } from "@features/auth/hooks/useAuth";
+import { useAuth } from "@contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { useThemeContext } from "@contexts/ThemeContext";
 

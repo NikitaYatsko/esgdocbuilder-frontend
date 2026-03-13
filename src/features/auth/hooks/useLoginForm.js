@@ -1,12 +1,12 @@
 import { useReducer, useCallback } from "react";
-import { useAuth } from "./useAuth";
+import { useAuth } from "@contexts/AuthContext"; 
 import { useNavigate } from "react-router-dom";
 import * as yup from "yup";
 
 const schema = yup.object({
     email: yup.string().email("Неверный формат email").required("Email обязателен"),
     password: yup.string().min(6, "Пароль должен быть не менее 6 символов").required("Пароль обязателен"),
-})
+});
 
 const initialState = {
     email: "",
@@ -14,7 +14,7 @@ const initialState = {
     errors: {},
     loading: false,
     attempts: 0,
-}
+};
 
 function reducer(state, action) {
     switch (action.type) {
@@ -35,44 +35,39 @@ function reducer(state, action) {
 
 export const useLoginForm = () => {
     const [state, dispatch] = useReducer(reducer, initialState);
-    const { login } = useAuth();
+    const { login } = useAuth(); 
     const navigate = useNavigate();
 
     const handleChange = (field, value) => dispatch({ type: "SET_FIELD", field, value });
 
-    const handleSubmit = useCallback(async () => {
-        dispatch({ type: "SET_LOADING", loading: true });
-        dispatch({ type: "SET_ERRORS", errors: {} });
-        
+    const handleSubmit = async () => {
         try {
             await schema.validate({ email: state.email, password: state.password }, { abortEarly: false });
-            
-            const result = await login(state.email, state.password);
-            
-            if (result.success) {
-                navigate('/dashboard'); 
-            } else {
-                dispatch({ 
-                    type: "SET_ERRORS", 
-                    errors: { general: result.error } 
-                });
-            }
+            dispatch({ type: "SET_ERRORS", errors: {} });
         } catch (err) {
-            if (err.name === "ValidationError") {
-                const errors = err.inner.reduce((acc, cur) => ({ ...acc, [cur.path]: cur.message }), {});
-                dispatch({ type: "SET_ERRORS", errors });
-            } else {
-                dispatch({ 
-                    type: "SET_ERRORS", 
-                    errors: { general: "Ошибка при входе. Пожалуйста, попробуйте снова." } 
-                });
-            }
-        } finally {
-            dispatch({ type: "SET_LOADING", loading: false });
+            const errors = {};
+            err.inner.forEach((e) => {
+                errors[e.path] = e.message;
+            });
+            dispatch({ type: "SET_ERRORS", errors });
+            return;
         }
-    }, [state.email, state.password, login, navigate]);
+
+        dispatch({ type: "SET_LOADING", loading: true });
+
+        const result = await login(state.email, state.password);
+
+        if (result.success) {
+            navigate('/dashboard');
+        } else {
+            dispatch({
+                type: "SET_ERRORS",
+                errors: { general: result.error }
+            });
+        }
+
+        dispatch({ type: "SET_LOADING", loading: false });
+    };
 
     return { state, handleChange, handleSubmit };
-}
-
-
+};

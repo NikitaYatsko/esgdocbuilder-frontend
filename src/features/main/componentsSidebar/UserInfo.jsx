@@ -32,8 +32,8 @@ const UserEmail = styled(Typography)(({ theme }) => ({
 }));
 
 const getInitials = (user) => {
-    if (user?.name) {
-        return user.name
+    if (user?.fullName) {
+        return user.fullName
             .split(' ')
             .map(word => word[0])
             .join('')
@@ -50,9 +50,9 @@ export const UserInfo = ({ user }) => {
                 {getInitials(user)}
             </UserAvatar>
             <Box sx={{ flex: 1 }}>
-                {user.name && (
+                {user.fullName && (
                     <UserName>
-                        {user.name}
+                        {user.fullName}
                     </UserName>
                 )}
                 <UserEmail>

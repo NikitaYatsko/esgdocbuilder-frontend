@@ -1,5 +1,5 @@
 import { Box, Container, Typography, Paper, Grid, Divider, useTheme } from "@mui/material";
-import { useAuth } from "@features/auth/hooks/useAuth";
+import { useAuth } from "@contexts/AuthContext";
 import { Sidebar } from "@features/main/Sidebar";
 import { TopBar } from "@features/main/TopBar";
 import { useNavigate } from "react-router-dom";
@@ -31,8 +31,8 @@ export const ProfilePage = () => {
     };
 
     const getInitials = () => {
-        if (user?.name) {
-            return user.name
+        if (user?.fullName) {
+            return user.fullName
                 .split(' ')
                 .map(word => word[0])
                 .join('')
@@ -79,7 +79,6 @@ export const ProfilePage = () => {
                         }}
                     >
                         <Grid container spacing={4}>
-                            {/* Левая колонка - Аватар */}
                             <Grid size={{ xs: 12, md: 4 }}>
                                 <ProfileAvatar 
                                     user={user}
@@ -88,7 +87,6 @@ export const ProfilePage = () => {
                                 />
                             </Grid>
 
-                            {/* Правая колонка - Информация */}
                             <Grid size={{ xs: 12, md: 8 }}>
                                 <Typography variant="h6" gutterBottom sx={{ mb: 3 }}>
                                     Дополнительная информация

@@ -1,5 +1,5 @@
 import { Button, Typography, Container, Box, CircularProgress, AppBar, Toolbar, IconButton, useTheme } from "@mui/material";
-import { useAuth } from "@features/auth/hooks/useAuth";
+import { useAuth } from "@contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { Sidebar } from "../../features/main/Sidebar";
 import { TopBar } from "../../features/main/TopBar"

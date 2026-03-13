@@ -3,9 +3,10 @@ import { ThemeProviderWrapper } from './providers/ThemeProviderWrapper';
 import { ThemeProvider, useThemeContext } from './contexts/ThemeContext';
 import { LoginPage } from '@pages/LoginPage/LoginPage.jsx';
 import { DashboardPage } from '@pages/MainPage/DashboardPage.jsx';
-import { useAuth } from '@features/auth/hooks/useAuth';
+import { useAuth } from '@contexts/AuthContext'; 
 import { CircularProgress, Box } from '@mui/material';
 import { ProfilePage } from '@pages/ProfilePage/ProfilePage.jsx';
+import { AuthProvider } from '@contexts/AuthContext.jsx';
 
 const PrivateRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
@@ -53,7 +54,9 @@ const AppContent = () => {
 const App = () => (
   <BrowserRouter>
     <ThemeProvider>
-      <AppContent />
+      <AuthProvider> 
+        <AppContent />
+      </AuthProvider>
     </ThemeProvider>
   </BrowserRouter>
 );
