@@ -10,6 +10,8 @@ import BankPage from "@pages/Bank/BankPage.jsx";
 import CreateInvoicePage from "@pages/CreateInvoicePage/CreateInvoicePage.jsx";
 import { TopBar } from '@features/main/TopBar.jsx';
 import { Sidebar } from '@features/main/Sidebar';
+import ProductsPage from "@pages/ProductsPage/ProductsPage.jsx";
+
 
 const MainLayout = ({ children }) => {
   return (
@@ -60,6 +62,14 @@ const AppContent = () => {
                     element={
                         <PrivateRoute>
                             <BankPage/>
+                        </PrivateRoute>
+                    }
+                />
+                <Route
+                    path="/products"
+                    element={
+                        <PrivateRoute>
+                            <ProductsPage/>
                         </PrivateRoute>
                     }
                 />

@@ -78,7 +78,7 @@ export const Sidebar = ({onMenuClick}) => {
         {
             label: "Товар",
             icon: <ProductIcon/>,
-            action: () => console.log('Переход на Товар')
+            action: () => navigate("/products")
         },
         {
             label: "Создание фактуры",
