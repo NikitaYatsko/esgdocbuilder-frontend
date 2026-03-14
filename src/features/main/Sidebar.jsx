@@ -89,7 +89,7 @@ export const Sidebar = ({ onMenuClick }) => {
     };
 
     const handleBankClick = () => {
-        console.log('Переход на Банк');
+        navigate("/BankPage")
         handleCloseMenu();
     };
 

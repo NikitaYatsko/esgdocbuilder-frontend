@@ -58,7 +58,7 @@ export const useLoginForm = () => {
         const result = await login(state.email, state.password);
 
         if (result.success) {
-            navigate('/dashboard');
+            navigate('/profile');
         } else {
             dispatch({
                 type: "SET_ERRORS",
