@@ -1,9 +1,27 @@
-import { Button, Typography, Container, Box, CircularProgress, AppBar, Toolbar, IconButton, useTheme } from "@mui/material";
+import { Button, Typography, Container, Box, CircularProgress, AppBar, Toolbar, IconButton, useTheme, styled } from "@mui/material";
 import { useAuth } from "@contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { Sidebar } from "../../features/main/Sidebar";
 import { TopBar } from "../../features/main/TopBar"
 import { WelcomeContent } from "../../features/main/WelcomeContent";
+
+const LoadingContainer = styled(Container)({
+    marginTop: 32, 
+    display: 'flex',
+    justifyContent: 'center',
+});
+
+const DashboardWrapper = styled(Box)(({ theme }) => ({
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: theme.palette.background.default,
+}));
 
 export const DashboardPage = () => {
     const { logout, user, loading } = useAuth();
@@ -21,27 +39,17 @@ export const DashboardPage = () => {
 
     if (loading) {
         return (
-            <Container sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
+            <LoadingContainer>
                 <CircularProgress />
-            </Container>
+            </LoadingContainer>
         );
     }
 
     return (
-        <Box sx={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            bgcolor: theme.palette.background.default,
-        }}>
+        <DashboardWrapper>
             <Sidebar onMenuClick={handleMenuClick} />
             <TopBar />
             <WelcomeContent user={user} onLogout={handleLogout} />
-        </Box>
+        </DashboardWrapper>
     );
 };

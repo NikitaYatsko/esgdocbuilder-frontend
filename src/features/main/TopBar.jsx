@@ -15,20 +15,30 @@ const LogoText = styled(Typography)(({ theme }) => ({
     fontWeight: 500
 }));
 
+const StyledToolbar = styled(Toolbar)({
+    height: 70,
+    minHeight: '70px !important',
+});
+
+const Logo = styled(Box)({
+    width: 100,
+    height: 90,
+    marginBottom: 8, 
+});
+
 export const TopBar = ({ logo = logoUrl, title = "DocBuilder" }) => {
     return (
         <TopBarContainer position="fixed">
-            <Toolbar sx={{ height: 70, minHeight: '70px !important' }}>
-                <Box
+            <StyledToolbar>
+                <Logo
                     component="img"
                     src={logo}
                     alt="Logo"
-                    sx={{ width: 100, height: 90, mb: 1 }}
                 />
                 <LogoText>
                     {title}
                 </LogoText>
-            </Toolbar>
+            </StyledToolbar>
         </TopBarContainer>
     );
 };

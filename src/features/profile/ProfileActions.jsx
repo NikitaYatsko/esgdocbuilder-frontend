@@ -1,38 +1,41 @@
-import { Box, Button } from "@mui/material";
+import { Box, Button, styled  } from "@mui/material";
 import EditIcon from '@mui/icons-material/Edit';
 import LogoutIcon from '@mui/icons-material/Logout';
 
+const ActionsContainer = styled(Box)(({ theme }) => ({
+    display: 'flex',
+    gap: theme.spacing(2),
+    justifyContent: 'flex-end',
+}));
+
+const ActionButton = styled(Button)({
+    borderRadius: 8, 
+    textTransform: 'none',
+    paddingLeft: 24,  
+    paddingRight: 24,
+    paddingTop: 8,   
+    paddingBottom: 8,
+});
+
 export const ProfileActions = ({ onEdit, onLogout }) => {
     return (
-        <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
-            <Button
+        <ActionsContainer>
+            <ActionButton
                 variant="contained"
                 color="primary"
                 startIcon={<EditIcon />}
                 onClick={onEdit}
-                sx={{
-                    borderRadius: 2,
-                    textTransform: 'none',
-                    px: 3,
-                    py: 1,
-                }}
             >
                 Редактировать профиль
-            </Button>
-            <Button
+            </ActionButton>
+            <ActionButton
                 variant="contained"
                 color="primary"
                 startIcon={<LogoutIcon />}
                 onClick={onLogout}
-                sx={{
-                    borderRadius: 2,
-                    textTransform: 'none',
-                    px: 3,
-                    py: 1,
-                }}
             >
                 Выйти
-            </Button>
-        </Box>
+            </ActionButton>
+        </ActionsContainer>
     );
 };

@@ -37,26 +37,47 @@ const LogoutButton = styled(Button)({
     },
 });
 
+const CenteredBox = styled(Box)({
+    textAlign: 'center',
+});
+
+const UserInfoBox = styled(Box)(({ theme }) => ({
+    marginBottom: theme.spacing(4), 
+    padding: theme.spacing(2),       
+    backgroundColor: '#f5f5f5',
+    borderRadius: theme.shape.borderRadius, 
+}));
+
+const EmailText = styled(Typography)({
+    color: '#212121',
+    variant: 'body2', 
+});
+
+const NameText = styled(Typography)({
+    color: '#212121',
+    variant: 'body2',
+});
+
 export const WelcomeContent = ({ user, onLogout }) => {
     return (
         <ContentWrapper>
             <Container maxWidth="md">
-                <Box sx={{ textAlign: 'center' }}>
+                <CenteredBox>
                     <WelcomeText>
                         Добро пожаловать!
                     </WelcomeText>
 
                     {user && (
-                        <Box sx={{ mb: 4, p: 2, bgcolor: '#f5f5f5', borderRadius: 1 }}>
-                            <Typography variant="body2" sx={{ color: '#212121' }}>
+                        <UserInfoBox>
+                            <EmailText variant="body2">
                                 <strong>Email:</strong> {user.email}
-                            </Typography>
+                            </EmailText>
                             {user.fullName && (
-                                <Typography variant="body2" sx={{ color: '#212121' }}>
+                                <NameText variant="body2">
                                     <strong>Имя:</strong> {user.fullName}
-                                </Typography>
+                                </NameText>
                             )}
-                        </Box>
+                        </UserInfoBox>
                     )}
 
                     <LogoutButton
@@ -66,7 +87,7 @@ export const WelcomeContent = ({ user, onLogout }) => {
                     >
                         Выйти
                     </LogoutButton>
-                </Box>
+                </CenteredBox>
             </Container>
         </ContentWrapper>
     );

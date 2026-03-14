@@ -13,45 +13,59 @@ const SmallAvatar = styled(Avatar)(({ theme }) => ({
     },
 }));
 
+const AvatarContainer = styled(Box)(({ theme }) => ({
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    textAlign: 'center',
+    marginBottom: theme.spacing(2),
+}));
+
+const BigAvatar = styled(Avatar)(({ theme }) => ({
+    width: 150,
+    height: 150,
+    backgroundColor: theme.palette.primary.main,
+    fontSize: 48,
+}));
+
+const CameraIcon = styled(PhotoCameraIcon)({
+    fontSize: 18,
+});
+
+const UserName = styled(Typography)(({ theme }) => ({
+    marginBottom: theme.spacing(0.5), 
+}));
+
+const UserEmail = styled(Typography)(({ theme }) => ({
+    marginBottom: theme.spacing(3), 
+}));
+
 export const ProfileAvatar = ({ user, getInitials, onAvatarChange }) => {
     return (
-        <Box sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            textAlign: 'center',
-            mb: 2,
-        }}>
+        <AvatarContainer>
             <Badge
                 overlap="circular"
                 anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
                 badgeContent={
                     <SmallAvatar onClick={onAvatarChange}>
-                        <PhotoCameraIcon sx={{ fontSize: 18 }} />
+                        <CameraIcon />
                     </SmallAvatar>
                 }
             >
-                <Avatar
-                    sx={{
-                        width: 150,
-                        height: 150,
-                        bgcolor: 'primary.main',
-                        fontSize: 48,
-                    }}
-                >
+                <BigAvatar>
                     {getInitials()}
-                </Avatar>
+                </BigAvatar>
             </Badge>
 
             {user?.name && (
-                <Typography variant="h5" sx={{ mb: 0.5 }}>
+                <UserName variant="h5">
                     {user.name}
-                </Typography>
+                </UserName>
             )}
 
             <Typography variant="body1" color="text.primary" sx={{ mb: 3 }}>
                 {user?.email}
             </Typography>
-        </Box>
+        </AvatarContainer>
     );
 };
