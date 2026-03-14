@@ -1,7 +1,5 @@
 import { Box, Container, Typography, Paper, Grid, Divider, useTheme, styled  } from "@mui/material";
 import { useAuth } from "@contexts/AuthContext";
-import { Sidebar } from "@features/main/Sidebar";
-import { TopBar } from "@features/main/TopBar";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import PhoneIcon from '@mui/icons-material/Phone';
@@ -105,8 +103,6 @@ export const ProfilePage = () => {
 
     return (
          <PageContainer>
-            <Sidebar />
-            <TopBar />
             <MainContent component="main">
                 <CenteredContainer maxWidth="lg">
                     <ProfilePaper elevation={0}>

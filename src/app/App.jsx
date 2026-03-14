@@ -7,6 +7,22 @@ import {CircularProgress, Box} from '@mui/material';
 import {ProfilePage} from '@pages/ProfilePage/ProfilePage.jsx';
 import {AuthProvider} from '@contexts/AuthContext.jsx';
 import BankPage from "@pages/Bank/BankPage.jsx";
+import { TopBar } from '@features/main/TopBar.jsx';
+import { Sidebar } from '@features/main/Sidebar';
+
+const MainLayout = ({ children }) => {
+  return (
+    <Box sx={{ display: 'flex' }}>
+      <Sidebar />
+      <Box sx={{ flexGrow: 1 }}>
+        <TopBar />
+        <Box component="main" sx={{ p: 3 }}>
+          {children}
+        </Box>
+      </Box>
+    </Box>
+  );
+};
 
 const PrivateRoute = ({children}) => {
     const {isAuthenticated, loading} = useAuth();
@@ -19,7 +35,9 @@ const PrivateRoute = ({children}) => {
         );
     }
 
-    return isAuthenticated ? children : <Navigate to="/login"/>;
+        return isAuthenticated ? 
+        <MainLayout>{children}</MainLayout> : 
+        <Navigate to="/login"/>;
 };
 
 const AppContent = () => {
