@@ -8,16 +8,17 @@ import { BurgerButton } from './componentsSidebar/BurgerButton';
 import { UserInfo } from './componentsSidebar/UserInfo';
 import { MenuButton } from './componentsSidebar/MenuButton';
 import { ThemeToggle } from './componentsSidebar/ThemeToggle';
-import { 
-    ProfileIcon, 
-    ProductIcon, 
-    InvoiceIcon, 
-    BankIcon 
+
+import {
+    ProfileIcon,
+    ProductIcon,
+    InvoiceIcon,
+    BankIcon
 } from '@styles/icon/Icon';
+
 
 const SidebarContainer = styled(Box)(({ theme }) => ({
     width: 70,
-    backgroundColor: theme.palette.primary.main,
     height: '100vh',
     position: 'fixed',
     left: 0,
@@ -27,6 +28,7 @@ const SidebarContainer = styled(Box)(({ theme }) => ({
     alignItems: 'center',
     paddingTop: 16,
     zIndex: 1200,
+    backgroundColor: theme.palette.background.paper
 }));
 
 const MenuContent = styled(Box)(({ theme }) => ({
@@ -34,72 +36,72 @@ const MenuContent = styled(Box)(({ theme }) => ({
     height: '100%',
     backgroundColor: theme.palette.background.paper,
     display: 'flex',
-    flexDirection: 'column',
-    transition: theme.transitions.create('background-color', {
-        duration: theme.transitions.duration.standard,
-    }),
+    flexDirection: 'column'
 }));
 
 const StyledDivider = styled(Divider)(({ theme }) => ({
     borderColor: theme.palette.divider,
-    width: '100%',
-    transition: theme.transitions.create('border-color', {
-        duration: theme.transitions.duration.standard,
-    }),
+    width: '100%'
 }));
 
 const StyledDrawerPaper = styled('div')({
     width: 345,
-    backgroundColor: 'background.paper',
-    backgroundImage: 'none',
-    overflowX: 'hidden',
+    overflowX: 'hidden'
 });
 
+
 export const Sidebar = ({ onMenuClick }) => {
+
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const { user } = useAuth();
     const navigate = useNavigate();
     const { mode, togle } = useThemeContext();
     const theme = useTheme();
 
+
     const handleBurgerClick = () => {
-        setIsMenuOpen(!isMenuOpen);
-        if (onMenuClick) {
-            onMenuClick();
-        }
+        setIsMenuOpen(prev => !prev);
+        onMenuClick?.();
     };
 
     const handleCloseMenu = () => {
         setIsMenuOpen(false);
     };
 
-    const handleProfileClick = () => {
-        navigate('/profile');
-        handleCloseMenu(); 
-    };
 
-    const handleProductClick = () => {
-        console.log('Переход на Товар');
+    const menuItems = [
+        {
+            label: "Мой профиль",
+            icon: <ProfileIcon />,
+            action: () => navigate('/profile')
+        },
+        {
+            label: "Товар",
+            icon: <ProductIcon />,
+            action: () => console.log('Переход на Товар')
+        },
+        {
+            label: "Создание фактуры",
+            icon: <InvoiceIcon />,
+            action: () => console.log('Создание фактуры')
+        },
+        {
+            label: "Банк",
+            icon: <BankIcon />,
+            action: () => navigate('/BankPage')
+        }
+    ];
+
+
+    const handleMenuClick = (action) => {
+        action();
         handleCloseMenu();
     };
 
-    const handleInvoiceClick = () => {
-        console.log('Переход на Создание фактуры');
-        handleCloseMenu();
-    };
-
-    const handleBankClick = () => {
-        navigate("/BankPage")
-        handleCloseMenu();
-    };
-
-    const handleThemeToggle = () => {
-        togle();
-    };
 
     return (
         <>
-            <SidebarContainer sx={{ backgroundColor: theme.palette.background.paper}}>
+            <SidebarContainer>
                 <BurgerButton onClick={handleBurgerClick} />
             </SidebarContainer>
 
@@ -108,54 +110,38 @@ export const Sidebar = ({ onMenuClick }) => {
                 open={isMenuOpen}
                 onClose={handleCloseMenu}
                 PaperComponent={StyledDrawerPaper}
-                SlideProps={{
-                    timeout: 300,
-                }}
+                SlideProps={{ timeout: 300 }}
                 BackdropProps={{
-                    sx: {
-                        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                    }
+                    sx: { backgroundColor: 'rgba(0,0,0,0.5)' }
                 }}
             >
                 <MenuContent>
+
                     {user && (
                         <>
                             <UserInfo user={user} />
-                            <StyledDivider/>
-                            
-                            <MenuButton
-                                onClick={handleProfileClick}
-                                icon={<ProfileIcon />}
-                            >
-                                Мой профиль
-                            </MenuButton>
-                            
-                            <MenuButton
-                                onClick={handleProductClick}
-                                icon={<ProductIcon />}
-                            >
-                                Товар
-                            </MenuButton>
-                            
-                            <MenuButton
-                                onClick={handleInvoiceClick}
-                                icon={<InvoiceIcon />}
-                            >
-                                Создания фактуры
-                            </MenuButton>
-                            
-                            <MenuButton
-                                onClick={handleBankClick}
-                                icon={<BankIcon />}
-                            >
-                                Банк
-                            </MenuButton>
-                            
-                            <StyledDivider/>
-                            
-                            <ThemeToggle mode={mode} onToggle={handleThemeToggle} />
+
+                            <StyledDivider />
+
+                            {menuItems.map((item, index) => (
+                                <MenuButton
+                                    key={index}
+                                    icon={item.icon}
+                                    onClick={() => handleMenuClick(item.action)}
+                                >
+                                    {item.label}
+                                </MenuButton>
+                            ))}
+
+                            <StyledDivider />
+
+                            <ThemeToggle
+                                mode={mode}
+                                onToggle={togle}
+                            />
                         </>
                     )}
+
                 </MenuContent>
             </Drawer>
         </>
