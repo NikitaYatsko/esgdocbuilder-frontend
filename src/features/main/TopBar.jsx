@@ -1,0 +1,44 @@
+import { AppBar, Toolbar, Box, Typography, styled } from "@mui/material";
+import logoUrl from '@styles/img/logo.svg';
+
+const TopBarContainer = styled(AppBar)(({ theme }) => ({
+    height: 70,
+    backgroundColor: theme.palette.background.paper,
+    boxShadow: 'none',
+    left: 70,
+    width: 'calc(100% - 70px)',
+}));
+
+const LogoText = styled(Typography)(({ theme }) => ({
+    fontSize: 20,
+    color: theme.palette.text.primary,
+    fontWeight: 500
+}));
+
+const StyledToolbar = styled(Toolbar)({
+    height: 70,
+    minHeight: '70px !important',
+});
+
+const Logo = styled(Box)({
+    width: 100,
+    height: 90,
+    marginBottom: 8, 
+});
+
+export const TopBar = ({ logo = logoUrl, title = "DocBuilder" }) => {
+    return (
+        <TopBarContainer position="fixed">
+            <StyledToolbar>
+                <Logo
+                    component="img"
+                    src={logo}
+                    alt="Logo"
+                />
+                <LogoText>
+                    {title}
+                </LogoText>
+            </StyledToolbar>
+        </TopBarContainer>
+    );
+};
