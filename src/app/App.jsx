@@ -7,6 +7,7 @@ import {CircularProgress, Box} from '@mui/material';
 import {ProfilePage} from '@pages/ProfilePage/ProfilePage.jsx';
 import {AuthProvider} from '@contexts/AuthContext.jsx';
 import BankPage from "@pages/Bank/BankPage.jsx";
+import CreateInvoicePage from "@pages/CreateInvoicePage/CreateInvoicePage.jsx";
 
 const PrivateRoute = ({children}) => {
     const {isAuthenticated, loading} = useAuth();
@@ -38,10 +39,18 @@ const AppContent = () => {
                     }
                 />
                 <Route
-                    path="/BankPage"
+                    path="/bank"
                     element={
                         <PrivateRoute>
                             <BankPage/>
+                        </PrivateRoute>
+                    }
+                />
+                <Route
+                    path="/invoice"
+                    element={
+                        <PrivateRoute>
+                            <CreateInvoicePage/>
                         </PrivateRoute>
                     }
                 />

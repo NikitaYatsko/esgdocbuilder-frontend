@@ -1,13 +1,13 @@
-import { Box, styled, Drawer, Divider, useTheme } from "@mui/material";
-import { useState } from "react";
-import { useAuth } from "@contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
-import { useThemeContext } from "@contexts/ThemeContext";
+import {Box, styled, Drawer, Divider, useTheme} from "@mui/material";
+import {useState} from "react";
+import {useAuth} from "@contexts/AuthContext";
+import {useNavigate} from "react-router-dom";
+import {useThemeContext} from "@contexts/ThemeContext";
 
-import { BurgerButton } from './componentsSidebar/BurgerButton';
-import { UserInfo } from './componentsSidebar/UserInfo';
-import { MenuButton } from './componentsSidebar/MenuButton';
-import { ThemeToggle } from './componentsSidebar/ThemeToggle';
+import {BurgerButton} from './componentsSidebar/BurgerButton';
+import {UserInfo} from './componentsSidebar/UserInfo';
+import {MenuButton} from './componentsSidebar/MenuButton';
+import {ThemeToggle} from './componentsSidebar/ThemeToggle';
 
 import {
     ProfileIcon,
@@ -17,7 +17,7 @@ import {
 } from '@styles/icon/Icon';
 
 
-const SidebarContainer = styled(Box)(({ theme }) => ({
+const SidebarContainer = styled(Box)(({theme}) => ({
     width: 70,
     height: '100vh',
     position: 'fixed',
@@ -31,7 +31,7 @@ const SidebarContainer = styled(Box)(({ theme }) => ({
     backgroundColor: theme.palette.background.paper
 }));
 
-const MenuContent = styled(Box)(({ theme }) => ({
+const MenuContent = styled(Box)(({theme}) => ({
     width: '100%',
     height: '100%',
     backgroundColor: theme.palette.background.paper,
@@ -39,7 +39,7 @@ const MenuContent = styled(Box)(({ theme }) => ({
     flexDirection: 'column'
 }));
 
-const StyledDivider = styled(Divider)(({ theme }) => ({
+const StyledDivider = styled(Divider)(({theme}) => ({
     borderColor: theme.palette.divider,
     width: '100%'
 }));
@@ -50,12 +50,12 @@ const StyledDrawerPaper = styled('div')({
 });
 
 
-export const Sidebar = ({ onMenuClick }) => {
+export const Sidebar = ({onMenuClick}) => {
 
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const { user } = useAuth();
+    const {user} = useAuth();
     const navigate = useNavigate();
-    const { mode, togle } = useThemeContext();
+    const {mode, togle} = useThemeContext();
     const theme = useTheme();
 
 
@@ -72,23 +72,23 @@ export const Sidebar = ({ onMenuClick }) => {
     const menuItems = [
         {
             label: "Мой профиль",
-            icon: <ProfileIcon />,
+            icon: <ProfileIcon/>,
             action: () => navigate('/profile')
         },
         {
             label: "Товар",
-            icon: <ProductIcon />,
+            icon: <ProductIcon/>,
             action: () => console.log('Переход на Товар')
         },
         {
             label: "Создание фактуры",
-            icon: <InvoiceIcon />,
-            action: () => console.log('Создание фактуры')
+            icon: <InvoiceIcon/>,
+            action: () => navigate("/invoice")
         },
         {
             label: "Банк",
-            icon: <BankIcon />,
-            action: () => navigate('/BankPage')
+            icon: <BankIcon/>,
+            action: () => navigate('/bank')
         }
     ];
 
@@ -102,7 +102,7 @@ export const Sidebar = ({ onMenuClick }) => {
     return (
         <>
             <SidebarContainer>
-                <BurgerButton onClick={handleBurgerClick} />
+                <BurgerButton onClick={handleBurgerClick}/>
             </SidebarContainer>
 
             <Drawer
@@ -110,18 +110,18 @@ export const Sidebar = ({ onMenuClick }) => {
                 open={isMenuOpen}
                 onClose={handleCloseMenu}
                 PaperComponent={StyledDrawerPaper}
-                SlideProps={{ timeout: 300 }}
+                SlideProps={{timeout: 300}}
                 BackdropProps={{
-                    sx: { backgroundColor: 'rgba(0,0,0,0.5)' }
+                    sx: {backgroundColor: 'rgba(0,0,0,0.5)'}
                 }}
             >
                 <MenuContent>
 
                     {user && (
                         <>
-                            <UserInfo user={user} />
+                            <UserInfo user={user}/>
 
-                            <StyledDivider />
+                            <StyledDivider/>
 
                             {menuItems.map((item, index) => (
                                 <MenuButton
@@ -133,7 +133,7 @@ export const Sidebar = ({ onMenuClick }) => {
                                 </MenuButton>
                             ))}
 
-                            <StyledDivider />
+                            <StyledDivider/>
 
                             <ThemeToggle
                                 mode={mode}
