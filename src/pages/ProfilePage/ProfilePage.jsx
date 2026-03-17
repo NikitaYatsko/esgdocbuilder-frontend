@@ -125,17 +125,17 @@ export const ProfilePage = () => {
                                         <InfoCard
                                             icon={PhoneIcon}
                                             label="Телефон"
-                                            value={mockData.phone}
+                                            value={user.phone}
                                         />
                                         <InfoCard
                                             icon={CalendarTodayIcon}
                                             label="Дата регистрации"
-                                            value={mockData.registrationDate}
+                                            value={user.createdAt}
                                         />
                                         <InfoCard
                                             icon={AccessTimeIcon}
-                                            label="Последняя активность"
-                                            value={mockData.lastActive}
+                                            label="Обязанности"
+                                            value={user.roles?.[0]?.name}
                                         />
                                     </Grid>
                                 </Grid>
