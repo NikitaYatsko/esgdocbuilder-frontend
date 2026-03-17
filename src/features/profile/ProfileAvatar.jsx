@@ -33,11 +33,11 @@ const CameraIcon = styled(PhotoCameraIcon)({
 });
 
 const UserName = styled(Typography)(({ theme }) => ({
-    marginBottom: theme.spacing(0.5), 
+    marginBottom: theme.spacing(0.5),
 }));
 
 const UserEmail = styled(Typography)(({ theme }) => ({
-    marginBottom: theme.spacing(3), 
+    marginBottom: theme.spacing(3),
 }));
 
 export const ProfileAvatar = ({ user, getInitials, onAvatarChange }) => {
@@ -52,8 +52,8 @@ export const ProfileAvatar = ({ user, getInitials, onAvatarChange }) => {
                     </SmallAvatar>
                 }
             >
-                <BigAvatar>
-                    {getInitials()}
+                <BigAvatar src={user?.imageUrl || undefined}>
+                    {!user?.imageUrl && getInitials()}
                 </BigAvatar>
             </Badge>
 

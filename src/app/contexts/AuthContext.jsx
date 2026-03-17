@@ -28,20 +28,18 @@ export const AuthProvider = ({ children }) => {
       const accessToken = data.token; 
       const refreshToken = data.refreshToken;
 
-      const userRoles = data.roles ? data.roles.map(role => role.name) : [];
-
-      const userData = {
-        email: data.email,
-        fullName: data.fullName,
-        roles: userRoles
-      };
-
       localStorage.setItem("accessToken", accessToken);
       localStorage.setItem("refreshToken", refreshToken);
-      localStorage.setItem("user", JSON.stringify(userData)); 
+
+      const profileResponse = await authApi.getProfile();
+      const profile = profileResponse.data;
+
+      const userRoles = data.roles ? data.roles.map(role => role.name) : [];
+
+      localStorage.setItem("user", JSON.stringify(profile)); 
 
       setIsAuthenticated(true);
-      setUser(userData);
+      setUser(profile);
 
       return { success: true };
     } catch (error) {
