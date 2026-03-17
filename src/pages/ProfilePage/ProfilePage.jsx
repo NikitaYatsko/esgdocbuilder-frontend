@@ -10,7 +10,6 @@ import { ProfileAvatar } from '@features/profile/ProfileAvatar';
 import { InfoCard } from '@features/profile/InfoCard';
 import { ProfileActions } from '@features/profile/ProfileActions';
 import { EditProfileModal } from '@features/profile/EditProfileModal';
-import { mockData } from '@features/profile/MockData';
 
 const PageContainer = styled(Box)(({ theme }) => ({
     position: 'fixed',
