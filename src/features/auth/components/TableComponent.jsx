@@ -13,19 +13,47 @@ import { styled } from '@mui/material/styles';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 
-const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
+const StyledTableContainer = styled(TableContainer, {
+  shouldForwardProp: (prop) => prop !== 'customWidth' && prop !== 'customHeight'
+})(({ theme, customWidth, customHeight }) => ({
   borderRadius: '8px',
   boxShadow: theme.shadows[2],
   margin: theme.spacing(2, 0),
+  width: customWidth || '100%',
+  maxWidth: customWidth ? 'none' : '100%',
+  maxHeight: customHeight || 400,
+  overflowY: 'auto',
+
+  '&::-webkit-scrollbar': {
+    width: '8px',
+  },
+  '&::-webkit-scrollbar-track': {
+    background: theme.palette.background.paper,
+    borderRadius: '8px',
+  },
+  '&::-webkit-scrollbar-thumb': {
+    backgroundColor: theme.palette.primary.main,
+    borderRadius: '8px',
+    border: `2px solid ${theme.palette.background.paper}`,
+  },
+  '&::-webkit-scrollbar-thumb:hover': {
+    backgroundColor: theme.palette.primary.dark,
+  },
 }));
 
-const StyledTable = styled(Table)(({ theme }) => ({
-  minWidth: 1200,
+const StyledTable = styled(Table, {
+  shouldForwardProp: (prop) => prop !== 'customMinWidth'
+})(({ theme, customMinWidth }) => ({
+  minWidth: customMinWidth || 1350,
   borderCollapse: 'collapse',
+  width: '100%',
 }));
 
 const StyledTableHead = styled(TableHead)(({ theme }) => ({
   backgroundColor: theme.palette.primary.main,
+  position: 'sticky',
+  top: 0,
+  zIndex: 2,
 }));
 
 const StyledHeaderCell = styled(TableCell)(({ theme }) => ({
@@ -97,7 +125,9 @@ const TableComponent = ({
   showActions = false,
   onEdit,
   onDelete,
-  actionsColumn = 'vat' 
+  actionsColumn = 'vat',
+  tableWidth, 
+  tableMinWidth, 
 }) => {
   const allColumns = columns;
 
@@ -142,14 +172,21 @@ const TableComponent = ({
   };
 
   return (
-    <StyledTableContainer component={Paper}>
-      <StyledTable aria-label="simple table">
+    <StyledTableContainer 
+      component={Paper} 
+      customWidth={tableWidth}
+    >
+      <StyledTable 
+        aria-label="simple table"
+        customMinWidth={tableMinWidth}
+      >
         <StyledTableHead>
           <TableRow>
             {allColumns.map((column) => (
               <StyledHeaderCell
                 key={column.id}
                 align={column.align || 'left'}
+                sx={{ width: column.width }} 
               >
                 {column.label}
               </StyledHeaderCell>

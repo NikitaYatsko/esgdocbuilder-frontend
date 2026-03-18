@@ -5,4 +5,7 @@ export const authApi = {
     logout: () => axiosInstance.post('/auth/logout'),
     refreshToken: () => axiosInstance.post('/auth/refresh'),
     getProfile: () => axiosInstance.get('/profile'),
+    getBalance: () => axiosInstance.get('/bank/accounts'),
+    getOperations: () => axiosInstance.get('/bank/operations'),
+    postOperation: (operationData) => axiosInstance.post('/bank/operations', operationData),
 }

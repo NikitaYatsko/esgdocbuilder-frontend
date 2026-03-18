@@ -1,17 +1,18 @@
-import {Box, styled} from "@mui/material";
+import { Box, styled } from "@mui/material";
 
-const StyledContentBlock = styled(Box)(({theme}) => ({
+const StyledContentBlock = styled(Box)(({ theme }) => ({
     backgroundColor: theme.palette.background.default,
     marginLeft: '50px',
     marginTop: '50px',
-    width: 'calc(100% - 50px)',
-    height: 'calc(100vh - 50px)',
-    overflow: 'auto',
+    width: '100%',
+    minHeight: '100%',
+    overflow: 'visible',
     padding: 24,
-
+    display: 'flex',
+    justifyContent: 'center',
 }));
 
-const ContentBlock = ({children}) => {
+const ContentBlock = ({ children }) => {
     return (
         <StyledContentBlock>
             {children}

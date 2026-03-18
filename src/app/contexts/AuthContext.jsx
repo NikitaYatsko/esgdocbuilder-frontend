@@ -34,6 +34,9 @@ export const AuthProvider = ({ children }) => {
       const profileResponse = await authApi.getProfile();
       const profile = profileResponse.data;
 
+      const bankResponse = await authApi.getBalance();
+      const balance = bankResponse.data.balance;
+
       const userRoles = data.roles ? data.roles.map(role => role.name) : [];
 
       localStorage.setItem("user", JSON.stringify(profile)); 

@@ -1,10 +1,17 @@
 import ContentBlock from "@features/auth/components/ContentBlock.jsx";
-import { Typography, Box } from "@mui/material";
-import { styled } from '@mui/material/styles';
+import { Box } from "@mui/material";
 import TableComponent from "@features/auth/components/TableComponent.jsx";
+import PageHeader from "@features/auth/components/PageHeader.jsx";
+import SearchBar from "@features/auth/components/SearchBar";
+import { useState } from "react";
+import ProductModal from "@features/auth/components/ProductModal.jsx";
+
 
 
 const ProductsPage = () => {
+
+    const [openModal, setOpenModal] = useState(false);
+    const [selectedProduct, setSelectedProduct] = useState(null);
 
     const columns = [
         { id: 'name', label: 'Наименование', align: 'left' },
@@ -27,22 +34,52 @@ const ProductsPage = () => {
     };
 
     const handleEdit = (row) => {
-        console.log('Редактировать:', row);
+        setSelectedProduct(row);
+        setOpenModal(true);
     };
 
     const handleDelete = (row) => {
         console.log('Удалить:', row);
     };
 
+    const handleAddProduct = () => {
+        setSelectedProduct(null);
+        setOpenModal(true);
+    };
+
+    const handleSearch = (event) => {
+        console.log('Поиск:', event.target.value);
+    };
+
+    const handleFilter = () => {
+        console.log('Открыть фильтр');
+    };
+
+    const handleCloseModal = () => {
+        setOpenModal(false);
+    };
+
     return (
         <ContentBlock>
-            <TableComponent
-                columns={columns}
-                rows={rows}
-                onRowClick={handleRowClick}
-                showActions={true}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
+            <PageHeader title="Товары" onAdd={handleAddProduct} />
+            <SearchBar onSearch={handleSearch} onFilter={handleFilter} />
+
+            <Box>
+                <TableComponent
+                    columns={columns}
+                    rows={rows}
+                    onRowClick={handleRowClick}
+                    showActions={true}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                    tableWidth="800px"
+                    tableMinWidth="600px"
+                />
+            </Box>
+            <ProductModal
+                open={openModal}
+                onClose={handleCloseModal}
+                product={selectedProduct}
             />
         </ContentBlock>
     )
