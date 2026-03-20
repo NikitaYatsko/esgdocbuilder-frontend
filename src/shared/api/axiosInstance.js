@@ -1,53 +1,79 @@
 import axios from "axios";
 
+let isRefreshing = false;
+let refreshPromise = null;
+
+let accessToken = null;
+
+export const setAccessToken = (token) => {
+  accessToken = token;
+};
+
 const axiosInstance = axios.create({
-    baseURL: 'https://juristic-zain-unconvened.ngrok-free.dev',
-    withCredentials: true,
-});     
+  baseURL: 'https://juristic-zain-unconvened.ngrok-free.dev',
+  withCredentials: true,
+});
+
+const refreshClient = axios.create({
+  baseURL: 'https://juristic-zain-unconvened.ngrok-free.dev',
+  withCredentials: true,
+});
 
 axiosInstance.interceptors.request.use((config) => {
-    const token = localStorage.getItem('accessToken');
-    if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-    }
-    
-    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
-    if (csrfToken) {
-        config.headers['X-CSRF-Token'] = csrfToken;
-    }
-    return config;
+
+  if (accessToken) {
+    config.headers.Authorization = `Bearer ${accessToken}`;
+  }
+
+  const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+  if (csrfToken) {
+    config.headers['X-CSRF-Token'] = csrfToken;
+  }
+
+  return config;
 });
 
 axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
-
     const originalRequest = error.config;
+    if (
+      originalRequest.url.includes('/auth/refresh') ||
+      originalRequest.url.includes('/auth/logout')
+    ) {
+      return Promise.reject(error);
+    }
 
     if (error.response?.status === 401 && !originalRequest._retry) {
 
-      originalRequest._retry = true;
+      if (!isRefreshing) {
+        isRefreshing = true;
+
+        refreshPromise = refreshClient.post('/auth/refresh')
+          .then(res => {
+            const { accessToken: newToken } = res.data;
+            setAccessToken(newToken);
+            return newToken;
+          })
+          .catch(err => {
+            console.log("REFRESH FAILED");
+            throw err;
+          })
+          .finally(() => {
+            isRefreshing = false;
+          });
+      }
 
       try {
+        const newToken = await refreshPromise;
 
-        const response = await axiosInstance.get('/auth/refresh/token');
-
-        const { accessToken } = response.data;
-
-        localStorage.setItem("accessToken", accessToken);
-
-        originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+        originalRequest._retry = true;
+        originalRequest.headers.Authorization = `Bearer ${newToken}`;
 
         return axiosInstance(originalRequest);
 
-      } catch (refreshError) {
-
-        localStorage.removeItem("accessToken");
-        localStorage.removeItem("refreshToken");
-
-        window.location.href = "/login";
-
-        return Promise.reject(refreshError);
+      } catch (e) {
+        return Promise.reject(e);
       }
     }
 

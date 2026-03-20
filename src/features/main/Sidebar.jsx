@@ -44,11 +44,6 @@ const StyledDivider = styled(Divider)(({theme}) => ({
     width: '100%'
 }));
 
-const StyledDrawerPaper = styled('div')({
-    width: 345,
-    overflowX: 'hidden'
-});
-
 
 export const Sidebar = ({onMenuClick}) => {
 
@@ -109,14 +104,18 @@ export const Sidebar = ({onMenuClick}) => {
                 anchor="left"
                 open={isMenuOpen}
                 onClose={handleCloseMenu}
-                PaperComponent={StyledDrawerPaper}
+                PaperProps={{
+                    sx: {
+                        width: 345,
+                        overflowX: 'hidden'
+                    }
+                }}
                 SlideProps={{timeout: 300}}
                 BackdropProps={{
                     sx: {backgroundColor: 'rgba(0,0,0,0.5)'}
                 }}
             >
                 <MenuContent>
-
                     {user && (
                         <>
                             <UserInfo user={user}/>
@@ -141,7 +140,6 @@ export const Sidebar = ({onMenuClick}) => {
                             />
                         </>
                     )}
-
                 </MenuContent>
             </Drawer>
         </>

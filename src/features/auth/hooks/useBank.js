@@ -16,14 +16,16 @@ export const useBank = () => {
 
             setAccounts(accountsRes.data);
 
-            const formattedOperations = operationsRes.data.map((op, index) => ({
-                id: index,
-                type: op.type === "INCOME" ? "Доход" : "Расход",
-                amount: op.amount,
-                comment: op.comment,
-                account: op.accountName,
-                date: op.createdAt,
-            }));
+            const formattedOperations = operationsRes.data
+                .map((op, index) => ({
+                    id: op.id,
+                    type: op.type === "INCOME" ? "Доход" : "Расход",
+                    amount: op.amount,
+                    comment: op.comment,
+                    account: op.accountName,
+                    date: op.createdAt,
+                }))
+                .sort((a, b) => new Date(b.date) - new Date(a.date));
 
             setOperations(formattedOperations);
 

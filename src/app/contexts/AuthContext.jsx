@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { authApi } from "@features/auth/api/authApi";
+import { setAccessToken } from "@/shared/api/axiosInstance";
 
 const AuthContext = createContext();
 
@@ -9,44 +10,62 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('accessToken');
-    const userData = localStorage.getItem('user'); 
-    
-    if (token && userData) {
-      setIsAuthenticated(true);
-      setUser(JSON.parse(userData));
+    const initAuth = async () => {
+
+      if (!document.cookie.includes('refreshToken')) {
+      setLoading(false);
+      return;
     }
-    setLoading(false);
+
+      try {
+        console.log("=== INIT AUTH ===");
+
+        const res = await authApi.refreshToken(); 
+        const newToken = res.data.accessToken;
+
+        console.log("INIT TOKEN:", newToken);
+
+        setAccessToken(newToken);
+
+        const profileResponse = await authApi.getProfile();
+        const profile = profileResponse.data;
+
+        setUser(profile);
+        setIsAuthenticated(true);
+
+      } catch (error) {
+        console.log("No active session");
+        setIsAuthenticated(false);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    initAuth();
   }, []);
 
   const login = async (email, password) => {
     try {
+      console.log("=== LOGIN START ===");
+
       const response = await authApi.login({ email, password });
-      
       const data = response.data;
 
-      const accessToken = data.token; 
-      const refreshToken = data.refreshToken;
+      const accessToken = data.token;
 
-      localStorage.setItem("accessToken", accessToken);
-      localStorage.setItem("refreshToken", refreshToken);
+      setAccessToken(accessToken);
 
       const profileResponse = await authApi.getProfile();
       const profile = profileResponse.data;
-
-      const bankResponse = await authApi.getBalance();
-      const balance = bankResponse.data.balance;
-
-      const userRoles = data.roles ? data.roles.map(role => role.name) : [];
-
-      localStorage.setItem("user", JSON.stringify(profile)); 
 
       setIsAuthenticated(true);
       setUser(profile);
 
       return { success: true };
+
     } catch (error) {
-      console.error('Login error:', error);
+      console.error("LOGIN ERROR:", error);
+
       return {
         success: false,
         error: error.response?.data?.message || "Ошибка входа"
@@ -54,23 +73,27 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const logout = () => {
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken");
-    localStorage.removeItem("user");
-
-    setIsAuthenticated(false);
-    setUser(null);
-  };
+const logout = async () => {
+  try {
+    await authApi.logout();
+  } catch (e) {
+    if (e.response?.status !== 401) {
+      console.error("LOGOUT ERROR:", e);
+    }
+  }
+  setAccessToken(null);
+  setIsAuthenticated(false);
+  setUser(null);
+};
 
   return (
     <AuthContext.Provider
-      value={{ 
-        isAuthenticated, 
-        user, 
-        login, 
-        logout, 
-        loading 
+      value={{
+        isAuthenticated,
+        user,
+        login,
+        logout,
+        loading
       }}
     >
       {children}

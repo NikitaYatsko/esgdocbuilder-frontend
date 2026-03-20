@@ -18,4 +18,13 @@ export default defineConfig({
       '@constants': path.resolve(__dirname, 'src/shared/constants'),
     },
   },
+  // server: {
+  //   proxy: {
+  //     '/api': {
+  //       target: 'https://exostotic-lineolate-shantel.ngrok-free.dev', // твой backend
+  //       changeOrigin: true,
+  //       secure: false,
+  //     },
+  //   },
+  // },
 })

@@ -51,8 +51,7 @@ const AmountTextField = styled(TextField)({
   },
 });
 
-const CreateTransaction = ({ accounts = [] }) => {
-  const { createOperation } = useBank(); 
+const CreateTransaction = ({ accounts = [], onCreate }) => {
   const [formData, setFormData] = useState({
     type: '',
     account: '',
@@ -69,7 +68,7 @@ const CreateTransaction = ({ accounts = [] }) => {
     if (!formData.type || !formData.account || !formData.amount || !formData.comment) return;
 
     try {
-        await createOperation(formData); 
+        await onCreate(formData); 
         setFormData({ type: '', account: '', amount: '', comment: '' });
     } catch (e) {
         console.error("Ошибка при добавлении:", e);

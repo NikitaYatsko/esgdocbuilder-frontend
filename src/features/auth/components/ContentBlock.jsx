@@ -1,6 +1,8 @@
 import { Box, styled } from "@mui/material";
 
-const StyledContentBlock = styled(Box)(({ theme }) => ({
+const StyledContentBlock = styled(Box, {
+    shouldForwardProp: (prop) => prop !== '$centered'
+})(({ theme, $centered }) => ({
     backgroundColor: theme.palette.background.default,
     marginLeft: '50px',
     marginTop: '50px',
@@ -9,12 +11,12 @@ const StyledContentBlock = styled(Box)(({ theme }) => ({
     overflow: 'visible',
     padding: 24,
     display: 'flex',
-    justifyContent: 'center',
+    justifyContent: $centered ? 'center' : 'flex-start',
 }));
 
-const ContentBlock = ({ children }) => {
+const ContentBlock = ({ children, centered = false }) => {
     return (
-        <StyledContentBlock>
+        <StyledContentBlock $centered={centered}>
             {children}
         </StyledContentBlock>
     )

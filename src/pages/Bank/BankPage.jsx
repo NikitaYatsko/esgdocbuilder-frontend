@@ -41,7 +41,7 @@ const RightContent = styled(Box)({
 
 
 const BankPage = () => {
-    const { accounts, operations, loading } = useBank();
+    const { accounts, operations, loading, createOperation } = useBank();
 
     if (loading) {
         return <Typography variant="h6">Загрузка...</Typography>;
@@ -51,7 +51,7 @@ const BankPage = () => {
     const bank = accounts.find(acc => acc.name === "Bank");
 
     return (
-        <ContentBlock>
+        <ContentBlock centered={true}>
             <MainContainer>
                 <LeftContent>
                     <Box>
@@ -75,7 +75,7 @@ const BankPage = () => {
                     </Box>
                 </LeftContent>
                 <RightContent>
-                    <CreateTransaction accounts={accounts} />
+                    <CreateTransaction accounts={accounts} onCreate={createOperation} />
                 </RightContent>
             </MainContainer>
         </ContentBlock>

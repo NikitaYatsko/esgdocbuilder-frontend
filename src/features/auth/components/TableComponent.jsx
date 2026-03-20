@@ -73,17 +73,21 @@ const StyledBodyCell = styled(TableCell)(({ theme }) => ({
   borderRight: 'none',
 }));
 
-const StyledTableRow = styled(TableRow)(({ theme }) => ({
-  '&:nth-of-type(odd)': {
-    backgroundColor: theme.palette.background.default,
-  },
+const StyledTableRow = styled(TableRow)(({ theme, type }) => ({
+  backgroundColor:
+    type === "Доход"
+      ? "rgba(76, 175, 80, 0.1)"   
+      : type === "Расход"
+      ? "rgba(244, 67, 54, 0.1)"   
+      : "inherit",
+
   '&:hover': {
-    backgroundColor: theme.palette.action?.hover || '#f5f5f5',
-    cursor: 'pointer',
-    transition: 'background-color 0.2s ease',
-  },
-  '&:last-child td, &:last-child th': {
-    border: 0,
+    backgroundColor:
+      type === "Доход"
+        ? "rgba(76, 175, 80, 0.2)"
+        : type === "Расход"
+        ? "rgba(244, 67, 54, 0.2)"
+        : theme.palette.action.hover,
   },
 }));
 
@@ -197,6 +201,7 @@ const TableComponent = ({
           {rows.map((row, index) => (
             <StyledTableRow
               key={row.id || index}
+              type={row.type}
               onClick={() => onRowClick && onRowClick(row)}
             >
               {allColumns.map((column) => (

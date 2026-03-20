@@ -60,7 +60,7 @@ const ProductsPage = () => {
     };
 
     return (
-        <ContentBlock>
+        <ContentBlock centered={false}>
             <PageHeader title="Товары" onAdd={handleAddProduct} />
             <SearchBar onSearch={handleSearch} onFilter={handleFilter} />
 
