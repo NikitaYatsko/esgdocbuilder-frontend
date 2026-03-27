@@ -1,7 +1,7 @@
 import { Box, useTheme, styled } from '@mui/material';
 import { lazy, Suspense } from 'react';
 
-const LoginForm = lazy(() => import('@features/auth/ui/LoginForm'));
+const LoginForm = lazy(() => import('@features/auth/components/LoginForm/LoginForm.jsx'));
 
 const LoginWrapper = styled(Box)(({ theme }) => ({
   position: 'fixed',

@@ -10,7 +10,7 @@ const StyledMenuButton = styled(Button)(({ theme }) => ({
     backgroundColor: theme.palette.background.paper,
     textTransform: 'none',
     color: theme.palette.text.primary,
-    fontSize: 16,
+    fontSize: 13,
     fontWeight: 400,
     transition: theme.transitions.create(['background-color', 'color'], {
         duration: theme.transitions.duration.standard,
@@ -23,6 +23,9 @@ const StyledMenuButton = styled(Button)(({ theme }) => ({
     },
     '&:focus-visible': {
         outline: 'none',
+    },
+    '& .MuiButton-startIcon svg': {
+        fontSize: '21px !important',
     },
 }));
 

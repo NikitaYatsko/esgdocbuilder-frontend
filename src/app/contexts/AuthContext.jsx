@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { authApi } from "@features/auth/api/authApi";
+import { setAccessToken } from "@/shared/api/axiosInstance";
 
 const AuthContext = createContext();
 
@@ -9,41 +10,51 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('accessToken');
-    const userData = localStorage.getItem('user'); 
-    
-    if (token && userData) {
-      setIsAuthenticated(true);
-      setUser(JSON.parse(userData));
-    }
-    setLoading(false);
+    const initAuth = async () => {
+      setLoading(true);
+      
+      try {
+        const refreshResponse = await authApi.refreshToken();
+        const newToken = refreshResponse.data.accessToken || refreshResponse.data.token;
+        
+        if (newToken) {
+          setAccessToken(newToken);
+          const profileResponse = await authApi.getProfile();
+          setUser(profileResponse.data);
+          setIsAuthenticated(true);
+        }
+      } catch (error) {
+        if (error.response?.status !== 401) {
+          console.error("Init auth error:", error);
+        }
+        setIsAuthenticated(false);
+        setUser(null);
+        setAccessToken(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    initAuth();
   }, []);
 
   const login = async (email, password) => {
     try {
       const response = await authApi.login({ email, password });
+      const accessToken = response.data.accessToken || response.data.token;
       
-      const data = response.data;
-
-      const accessToken = data.token; 
-      const refreshToken = data.refreshToken;
-
-      localStorage.setItem("accessToken", accessToken);
-      localStorage.setItem("refreshToken", refreshToken);
-
+      if (!accessToken) {
+        throw new Error('No access token received');
+      }
+      
+      setAccessToken(accessToken);
+      
       const profileResponse = await authApi.getProfile();
-      const profile = profileResponse.data;
-
-      const userRoles = data.roles ? data.roles.map(role => role.name) : [];
-
-      localStorage.setItem("user", JSON.stringify(profile)); 
-
+      setUser(profileResponse.data);
       setIsAuthenticated(true);
-      setUser(profile);
-
+      
       return { success: true };
     } catch (error) {
-      console.error('Login error:', error);
       return {
         success: false,
         error: error.response?.data?.message || "Ошибка входа"
@@ -51,23 +62,30 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const logout = () => {
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken");
-    localStorage.removeItem("user");
-
+  const logout = async () => {
+    try {
+      await authApi.logout();
+    } catch (e) {
+    }
+    
+    setAccessToken(null);
     setIsAuthenticated(false);
     setUser(null);
   };
 
+  const updateUser = (updatedUser) => {
+  setUser(updatedUser);
+};
+
   return (
     <AuthContext.Provider
-      value={{ 
-        isAuthenticated, 
-        user, 
-        login, 
-        logout, 
-        loading 
+      value={{
+        isAuthenticated,
+        user,
+        login,
+        logout,
+        loading,
+        updateUser,
       }}
     >
       {children}
@@ -75,4 +93,10 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within AuthProvider');
+  }
+  return context;
+};

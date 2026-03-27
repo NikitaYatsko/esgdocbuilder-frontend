@@ -1,12 +1,12 @@
 import { Paper, useTheme, styled  } from '@mui/material';
 import { useState } from 'react';
-import { useLoginForm } from '../hooks/useLoginForm';
-import { ErrorAlert } from '../components/ErrorAlert';
-import { LoginHeader } from '../components/LoginHeader';
-import { EmailField } from '../components/EmailField';
-import { PasswordField } from '../components/PasswordField';
-import { ForgotPasswordLink } from '../components/ForgotPasswordLink';
-import { SubmitButton } from '../components/SubmitButton';
+import { useLoginForm } from '../../hooks/useLoginForm';
+import { ErrorAlert } from '../ErrorAlert';
+import { LoginHeader } from '../LoginHeader';
+import { EmailField } from '../EmailField';
+import { PasswordField } from '../PasswordField';
+import { ForgotPasswordLink } from '../ForgotPasswordLink';
+import { SubmitButton } from '../SubmitButton';
 import { UI_CONSTANTS } from '@constants/ui.constants';
 
 const StyledPaper = styled(Paper)(({ theme }) => ({

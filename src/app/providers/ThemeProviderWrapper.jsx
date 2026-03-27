@@ -1,4 +1,4 @@
-import { ThemeProvider, CssVarsProvider } from "@mui/material";
+import { ThemeProvider, CssVarsProvider, CssBaseline } from "@mui/material";
 import { getTheme } from "@styles/theme/theme";
 
 export const ThemeProviderWrapper = ({ children, mode }) => {
@@ -7,6 +7,7 @@ export const ThemeProviderWrapper = ({ children, mode }) => {
     return (
         <ThemeProvider theme={theme}>
             <CssVarsProvider theme={theme}>
+                <CssBaseline />
                 {children}
             </CssVarsProvider>
         </ThemeProvider>
