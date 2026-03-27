@@ -2,25 +2,37 @@ import axios from "axios";
 
 let isRefreshing = false;
 let refreshPromise = null;
-
 let accessToken = null;
 
 export const setAccessToken = (token) => {
   accessToken = token;
 };
 
+export const getAccessToken = () => {
+  return accessToken;
+};
+
+const baseURL = import.meta.env.DEV ? '/api' : 'http://26.3.166.214:8089/';
+
 const axiosInstance = axios.create({
-  baseURL: 'https://juristic-zain-unconvened.ngrok-free.dev',
+  baseURL: baseURL,
   withCredentials: true,
 });
 
 const refreshClient = axios.create({
-  baseURL: 'https://juristic-zain-unconvened.ngrok-free.dev',
+  baseURL: baseURL,
   withCredentials: true,
 });
 
-axiosInstance.interceptors.request.use((config) => {
 
+refreshClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+axiosInstance.interceptors.request.use((config) => {
   if (accessToken) {
     config.headers.Authorization = `Bearer ${accessToken}`;
   }
@@ -37,26 +49,27 @@ axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
+    
     if (
-      originalRequest.url.includes('/auth/refresh') ||
-      originalRequest.url.includes('/auth/logout')
+      originalRequest?.url?.includes('/auth/refresh') ||
+      originalRequest?.url?.includes('/auth/logout')
     ) {
       return Promise.reject(error);
     }
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
-
+    if (error.response?.status === 401 && !originalRequest?._retry) {
       if (!isRefreshing) {
         isRefreshing = true;
-
+        
         refreshPromise = refreshClient.post('/auth/refresh')
           .then(res => {
-            const { accessToken: newToken } = res.data;
+            const newToken = res.data.accessToken || res.data.token;
+            if (!newToken) throw new Error('No token received');
             setAccessToken(newToken);
             return newToken;
           })
           .catch(err => {
-            console.log("REFRESH FAILED");
+            setAccessToken(null);
             throw err;
           })
           .finally(() => {
@@ -66,13 +79,13 @@ axiosInstance.interceptors.response.use(
 
       try {
         const newToken = await refreshPromise;
-
         originalRequest._retry = true;
         originalRequest.headers.Authorization = `Bearer ${newToken}`;
-
         return axiosInstance(originalRequest);
-
       } catch (e) {
+        if (window.location.pathname !== '/login') {
+          window.location.href = '/login';
+        }
         return Promise.reject(e);
       }
     }

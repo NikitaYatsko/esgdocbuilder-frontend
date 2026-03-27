@@ -1,10 +1,11 @@
-import { Box, Container, Typography, Paper, Grid, Divider, useTheme, styled  } from "@mui/material";
+import { Box, Container, Typography, Paper, Grid, Divider, useTheme, styled } from "@mui/material";
 import { useAuth } from "@contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import PhoneIcon from '@mui/icons-material/Phone';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import { authApi } from "@features/auth/api/authApi";
 
 import { ProfileAvatar } from '@features/profile/ProfileAvatar';
 import { InfoCard } from '@features/profile/InfoCard';
@@ -28,7 +29,7 @@ const MainContent = styled(Box)({
     width: 'calc(100% - 70px)',
     height: 'calc(100vh - 70px)',
     overflow: 'auto',
-    padding: 24, 
+    padding: 24,
 });
 
 const CenteredContainer = styled(Container)({
@@ -39,7 +40,7 @@ const CenteredContainer = styled(Container)({
 
 const ProfilePaper = styled(Paper)(({ theme }) => ({
     padding: theme.spacing(4),
-    borderRadius: 8, 
+    borderRadius: 8,
     border: '1px solid',
     borderColor: theme.palette.divider,
     backgroundColor: theme.palette.background.paper,
@@ -56,7 +57,7 @@ const StyledDivider = styled(Divider)(({ theme }) => ({
 }));
 
 export const ProfilePage = () => {
-    const { user, logout } = useAuth();
+    const { user, logout, updateUser } = useAuth();
     const theme = useTheme();
     const navigate = useNavigate();
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -77,16 +78,36 @@ export const ProfilePage = () => {
 
     const handleSaveProfile = (updatedData) => {
         console.log('Сохраненные данные:', updatedData);
-        
+
         if (updateUser) {
             updateUser(updatedData);
         }
-        
+
     };
 
+    const fileInputRef = useRef(null);
+
     const handleAvatarChange = () => {
-        console.log('Смена аватарки');
+        fileInputRef.current.click();
     };
+
+    const handleFileSelect = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    try {
+        console.log("[avatar] Selected file:", file);
+
+        const response = await authApi.uploadAvatar(file);
+
+        console.log("[avatar] Response:", response.data);
+
+        updateUser(response.data);
+
+    } catch (error) {
+        console.error("[avatar] Upload error:", error);
+    }
+};
 
     const getInitials = () => {
         if (user?.fullName) {
@@ -101,23 +122,30 @@ export const ProfilePage = () => {
     };
 
     return (
-         <PageContainer>
+        <PageContainer>
             <MainContent component="main">
                 <CenteredContainer maxWidth="lg">
                     <ProfilePaper elevation={0}>
                         <Grid container spacing={4}>
                             <Grid size={{ xs: 12, md: 4 }}>
-                                <ProfileAvatar 
+                                <ProfileAvatar
                                     user={user}
                                     getInitials={getInitials}
                                     onAvatarChange={handleAvatarChange}
                                 />
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    ref={fileInputRef}
+                                    style={{ display: 'none' }}
+                                    onChange={handleFileSelect}
+                                />
                             </Grid>
-
                             <Grid size={{ xs: 12, md: 8 }}>
                                 <SectionTitle variant="h6" gutterBottom>
                                     Дополнительная информация
                                 </SectionTitle>
+                                
 
                                 <Grid container spacing={3}>
                                     <Grid size={{ xs: 12, md: 6 }}>
@@ -141,7 +169,7 @@ export const ProfilePage = () => {
 
                                 <StyledDivider />
 
-                                <ProfileActions 
+                                <ProfileActions
                                     onEdit={handleEditProfile}
                                     onLogout={handleLogout}
                                 />

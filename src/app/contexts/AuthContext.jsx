@@ -11,31 +11,25 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const initAuth = async () => {
-
-      if (!document.cookie.includes('refreshToken')) {
-      setLoading(false);
-      return;
-    }
-
+      setLoading(true);
+      
       try {
-        console.log("=== INIT AUTH ===");
-
-        const res = await authApi.refreshToken(); 
-        const newToken = res.data.accessToken;
-
-        console.log("INIT TOKEN:", newToken);
-
-        setAccessToken(newToken);
-
-        const profileResponse = await authApi.getProfile();
-        const profile = profileResponse.data;
-
-        setUser(profile);
-        setIsAuthenticated(true);
-
+        const refreshResponse = await authApi.refreshToken();
+        const newToken = refreshResponse.data.accessToken || refreshResponse.data.token;
+        
+        if (newToken) {
+          setAccessToken(newToken);
+          const profileResponse = await authApi.getProfile();
+          setUser(profileResponse.data);
+          setIsAuthenticated(true);
+        }
       } catch (error) {
-        console.log("No active session");
+        if (error.response?.status !== 401) {
+          console.error("Init auth error:", error);
+        }
         setIsAuthenticated(false);
+        setUser(null);
+        setAccessToken(null);
       } finally {
         setLoading(false);
       }
@@ -46,26 +40,21 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      console.log("=== LOGIN START ===");
-
       const response = await authApi.login({ email, password });
-      const data = response.data;
-
-      const accessToken = data.token;
-
+      const accessToken = response.data.accessToken || response.data.token;
+      
+      if (!accessToken) {
+        throw new Error('No access token received');
+      }
+      
       setAccessToken(accessToken);
-
+      
       const profileResponse = await authApi.getProfile();
-      const profile = profileResponse.data;
-
+      setUser(profileResponse.data);
       setIsAuthenticated(true);
-      setUser(profile);
-
+      
       return { success: true };
-
     } catch (error) {
-      console.error("LOGIN ERROR:", error);
-
       return {
         success: false,
         error: error.response?.data?.message || "Ошибка входа"
@@ -73,17 +62,19 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-const logout = async () => {
-  try {
-    await authApi.logout();
-  } catch (e) {
-    if (e.response?.status !== 401) {
-      console.error("LOGOUT ERROR:", e);
+  const logout = async () => {
+    try {
+      await authApi.logout();
+    } catch (e) {
     }
-  }
-  setAccessToken(null);
-  setIsAuthenticated(false);
-  setUser(null);
+    
+    setAccessToken(null);
+    setIsAuthenticated(false);
+    setUser(null);
+  };
+
+  const updateUser = (updatedUser) => {
+  setUser(updatedUser);
 };
 
   return (
@@ -93,7 +84,8 @@ const logout = async () => {
         user,
         login,
         logout,
-        loading
+        loading,
+        updateUser,
       }}
     >
       {children}
@@ -101,4 +93,10 @@ const logout = async () => {
   );
 };
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within AuthProvider');
+  }
+  return context;
+};

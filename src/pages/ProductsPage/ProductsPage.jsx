@@ -2,9 +2,9 @@ import ContentBlock from "@features/auth/components/ContentBlock.jsx";
 import { Box } from "@mui/material";
 import TableComponent from "@features/auth/components/TableComponent.jsx";
 import PageHeader from "@features/auth/components/PageHeader.jsx";
-import SearchBar from "@features/auth/components/SearchBar";
+import SearchBar from "@features/products/components/SearchBar";
 import { useState } from "react";
-import ProductModal from "@features/auth/components/ProductModal.jsx";
+import ProductModal from "@features/products/components/ProductModal.jsx";
 
 
 

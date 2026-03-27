@@ -42,6 +42,7 @@ const MenuContent = styled(Box)(({theme}) => ({
 const StyledDivider = styled(Divider)(({theme}) => ({
     borderColor: theme.palette.divider,
     width: '100%'
+    
 }));
 
 
@@ -67,7 +68,7 @@ export const Sidebar = ({onMenuClick}) => {
     const menuItems = [
         {
             label: "Мой профиль",
-            icon: <ProfileIcon/>,
+            icon: <ProfileIcon />,
             action: () => navigate('/profile')
         },
         {

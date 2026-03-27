@@ -1,9 +1,11 @@
+import React, { useMemo } from "react";
 import { Box, Typography, styled } from "@mui/material";
 import ContentBlock from "@features/auth/components/ContentBlock.jsx";
-import { MoneyBlock, BlocksRow } from "@features/auth/components/MoneyBlock.jsx";
-import { useBank } from "@features/auth/hooks/useBank";
+import { MoneyBlock, BlocksRow } from "@features/transactions/components/MoneyBlock.jsx";
+import { useBank } from "@features/transactions/hooks/useBank";
 import TableComponent from "@features/auth/components/TableComponent.jsx";
-import CreateTransaction from "@features/auth/components/CreateTransaction.jsx";
+import CreateTransaction from "@features/transactions/components/CreateTransaction.jsx";
+import HistoryIcon from "@mui/icons-material/History";
 
 const transactionColumns = [
     { id: 'type', label: 'Тип', align: 'right' },
@@ -16,11 +18,13 @@ const SectionTitle = styled(Typography)(({ theme }) => ({
     fontWeight: 600,
     color: theme.palette.text.primary,
     marginBottom: 16,
+    display: 'flex',
+    gap: 8,
+    alignItems: 'center',
 }));
 
 const MainContainer = styled(Box)({
     display: 'flex',
-
     gap: 24,
     height: '100%',
     width: '1200px',
@@ -34,36 +38,52 @@ const LeftContent = styled(Box)({
 });
 
 const RightContent = styled(Box)({
-    width: '320px',
+    minWidth: '320px',
     marginLeft: 24,
-    flexShrink: 0,
+    paddingLeft: 24,
 });
-
 
 const BankPage = () => {
     const { accounts, operations, loading, createOperation } = useBank();
 
+    const { cashbox, bank } = useMemo(() => {
+        return {
+            cashbox: accounts.find(acc => acc.name === "Cashbox"),
+            bank: accounts.find(acc => acc.name === "Bank"),
+        };
+    }, [accounts]);
+
     if (loading) {
         return <Typography variant="h6">Загрузка...</Typography>;
     }
-
-    const cashbox = accounts.find(acc => acc.name === "Cashbox");
-    const bank = accounts.find(acc => acc.name === "Bank");
 
     return (
         <ContentBlock centered={true}>
             <MainContainer>
                 <LeftContent>
                     <Box>
-                        <SectionTitle variant="h5">Финансовые счета</SectionTitle>
+                        <SectionTitle variant="h5">
+                            Финансовые счета
+                        </SectionTitle>
+
                         <BlocksRow>
-                            <MoneyBlock title="Касса" amount={cashbox?.balance || 0} />
-                            <MoneyBlock title="Банк" amount={bank?.balance || 0} />
+                            <MoneyBlock
+                                title="Касса"
+                                amount={cashbox?.balance ?? 0}
+                            />
+                            <MoneyBlock
+                                title="Банк"
+                                amount={bank?.balance ?? 0}
+                            />
                         </BlocksRow>
                     </Box>
 
                     <Box>
-                        <SectionTitle variant="h5">История операций</SectionTitle>
+                        <SectionTitle variant="h5">
+                            <HistoryIcon color="primary" sx={{ fontSize: 28 }} />
+                            История операций
+                        </SectionTitle>
+
                         <TableComponent
                             columns={transactionColumns}
                             rows={operations}
@@ -74,8 +94,12 @@ const BankPage = () => {
                         />
                     </Box>
                 </LeftContent>
+
                 <RightContent>
-                    <CreateTransaction accounts={accounts} onCreate={createOperation} />
+                    <CreateTransaction
+                        accounts={accounts}
+                        onCreate={createOperation}
+                    />
                 </RightContent>
             </MainContainer>
         </ContentBlock>

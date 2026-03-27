@@ -46,8 +46,8 @@ const getInitials = (user) => {
 export const UserInfo = ({ user }) => {
     return (
         <UserInfoContainer>
-            <UserAvatar>
-                {getInitials(user)}
+            <UserAvatar src={user?.imageUrl || undefined}>
+                {!user?.imageUrl && getInitials(user)}
             </UserAvatar>
             <Box sx={{ flex: 1 }}>
                 {user.fullName && (

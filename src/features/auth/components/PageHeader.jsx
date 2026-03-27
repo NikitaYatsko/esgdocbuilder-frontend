@@ -1,6 +1,6 @@
 import { Box, Typography } from "@mui/material";
 import { styled } from '@mui/material/styles';
-import AddButton from "./AddButton";
+import AddButton from "../../products/components/AddButton";
 
 const HeaderContainer = styled(Box)(({ theme }) => ({
     display: 'flex',
