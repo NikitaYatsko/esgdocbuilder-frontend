@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useCallback } from "react";
 import { Box, Typography, styled } from "@mui/material";
 import ContentBlock from "@features/auth/components/ContentBlock.jsx";
 import { MoneyBlock, BlocksRow } from "@features/transactions/components/MoneyBlock.jsx";
@@ -6,6 +6,7 @@ import { useBank } from "@features/transactions/hooks/useBank";
 import TableComponent from "@features/auth/components/TableComponent.jsx";
 import CreateTransaction from "@features/transactions/components/CreateTransaction.jsx";
 import HistoryIcon from "@mui/icons-material/History";
+import PaginationBox from "@features/main/PaginationBox";
 
 const transactionColumns = [
     { id: 'type', label: 'Тип', align: 'right' },
@@ -44,18 +45,34 @@ const RightContent = styled(Box)({
 });
 
 const BankPage = () => {
-    const { accounts, operations, loading, createOperation } = useBank();
+    const {
+        accounts,
+        operations,
+        loading,
+        createOperation,
+        page,
+        pagination,
+        nextPage,
+        prevPage
+    } = useBank();
 
     const { cashbox, bank } = useMemo(() => {
-        return {
-            cashbox: accounts.find(acc => acc.name === "Cashbox"),
-            bank: accounts.find(acc => acc.name === "Bank"),
-        };
+        let cashbox = null;
+        let bank = null;
+
+        for (const acc of accounts) {
+            if (acc.name === "Cashbox") cashbox = acc;
+            if (acc.name === "Bank") bank = acc;
+        }
+
+        return { cashbox, bank };
     }, [accounts]);
 
-    if (loading) {
-        return <Typography variant="h6">Загрузка...</Typography>;
-    }
+    const columns = useMemo(() => transactionColumns, []);
+
+    const handleCreate = useCallback((data) => {
+        return createOperation(data);
+    }, [createOperation]);
 
     return (
         <ContentBlock centered={true}>
@@ -85,12 +102,19 @@ const BankPage = () => {
                         </SectionTitle>
 
                         <TableComponent
-                            columns={transactionColumns}
+                            columns={columns}
                             rows={operations}
                             showActions={false}
                             tableWidth="100%"
                             tableMinWidth="600px"
                             tableHeight={500}
+                        />
+
+                        <PaginationBox
+                            page={page}
+                            totalPages={pagination?.pages}
+                            onNext={nextPage}
+                            onPrev={prevPage}
                         />
                     </Box>
                 </LeftContent>
@@ -98,7 +122,7 @@ const BankPage = () => {
                 <RightContent>
                     <CreateTransaction
                         accounts={accounts}
-                        onCreate={createOperation}
+                        onCreate={handleCreate}
                     />
                 </RightContent>
             </MainContainer>

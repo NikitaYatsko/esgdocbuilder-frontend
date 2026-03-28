@@ -6,7 +6,7 @@ export const authApi = {
     refreshToken: () => axiosInstance.post('/auth/refresh'),
     getProfile: () => axiosInstance.get('/profile'),
     getBalance: () => axiosInstance.get('/bank/accounts'),
-    getOperations: () => axiosInstance.get('/bank/operations'),
+    getOperations: (params) => axiosInstance.get('/bank/operations', params),
     postOperation: (operationData) => axiosInstance.post('/bank/operations', operationData),
 
     uploadAvatar: (file) => {
