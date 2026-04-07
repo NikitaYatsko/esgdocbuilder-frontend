@@ -22,7 +22,7 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/api': {
-        target: 'http://esg-docbuilder-production-1693.up.railway.app',
+        target: 'https://esg-docbuilder-production-1693.up.railway.app',
         changeOrigin: true,
         secure: false, 
         rewrite: (path) => path.replace(/^\/api/, ''),
