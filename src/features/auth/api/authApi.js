@@ -5,8 +5,10 @@ export const authApi = {
     logout: () => axiosInstance.post('/auth/logout'),
     refreshToken: () => axiosInstance.post('/auth/refresh'),
     getProfile: () => axiosInstance.get('/profile'),
+    updateProfile: (data) => axiosInstance.put('/profile/data', data),
+    getAllUsers: () => axiosInstance.get('/users'),
     getBalance: () => axiosInstance.get('/bank/accounts'),
-    getOperations: () => axiosInstance.get('/bank/operations'),
+    getOperations: (params) => axiosInstance.get('/bank/operations', params),
     postOperation: (operationData) => axiosInstance.post('/bank/operations', operationData),
 
     uploadAvatar: (file) => {
