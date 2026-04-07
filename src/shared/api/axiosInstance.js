@@ -14,7 +14,7 @@ export const getAccessToken = () => {
 
 const baseURL = import.meta.env.DEV
   ? '/api'
-  : 'https://cors-anywhere.herokuapp.com/https://esg-docbuilder-production-1693.up.railway.app';
+  : 'https://esg-docbuilder-production-1693.up.railway.app';
 
 const axiosInstance = axios.create({
   baseURL: baseURL,
