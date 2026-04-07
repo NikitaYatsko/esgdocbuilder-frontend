@@ -6,7 +6,8 @@ import {
     FormControl,
     InputLabel,
     Select,
-    FormHelperText
+    FormHelperText,
+    Box
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 
@@ -154,36 +155,40 @@ const ProductModal = ({ open, onClose, product, onSave, loading = false }) => {
                         required
                     />
 
-                    <FormControl fullWidth error={!!errors.categoryId} required>
-                        <InputLabel>Категория</InputLabel>
-                        <Select
-                            value={form.categoryId}
-                            onChange={handleChange("categoryId")}
-                            label="Категория"
-                        >
-                            {CATEGORIES.map((cat) => (
-                                <MenuItem key={cat.id} value={cat.id}>
-                                    {cat.name}
-                                </MenuItem>
-                            ))}
-                        </Select>
-                        {errors.categoryId && <FormHelperText>{errors.categoryId}</FormHelperText>}
-                    </FormControl>
+                    <Box sx={{ mb: 2 }}>
+                        <FormControl fullWidth error={!!errors.categoryId} required>
+                            <InputLabel>Категория</InputLabel>
+                            <Select
+                                value={form.categoryId}
+                                onChange={handleChange("categoryId")}
+                                label="Категория"
+                            >
+                                {CATEGORIES.map((cat) => (
+                                    <MenuItem key={cat.id} value={cat.id}>
+                                        {cat.name}
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                            {errors.categoryId && <FormHelperText>{errors.categoryId}</FormHelperText>}
+                        </FormControl>
+                    </Box>
 
-                    <FormControl fullWidth>
-                        <InputLabel>Единица измерения</InputLabel>
-                        <Select
-                            value={form.typeOfUnit}
-                            onChange={handleChange("typeOfUnit")}
-                            label="Единица измерения"
-                        >
-                            {UNIT_TYPES.map((unit) => (
-                                <MenuItem key={unit.value} value={unit.value}>
-                                    {unit.label}
-                                </MenuItem>
-                            ))}
-                        </Select>
-                    </FormControl>
+                    <Box sx={{ mb: 2 }}>
+                        <FormControl fullWidth>
+                            <InputLabel>Единица измерения</InputLabel>
+                            <Select
+                                value={form.typeOfUnit}
+                                onChange={handleChange("typeOfUnit")}
+                                label="Единица измерения"
+                            >
+                                {UNIT_TYPES.map((unit) => (
+                                    <MenuItem key={unit.value} value={unit.value}>
+                                        {unit.label}
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+                    </Box>
 
                     <StyledInput
                         label="Цена закупки"

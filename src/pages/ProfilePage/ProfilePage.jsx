@@ -1,7 +1,7 @@
 import { Box, Container, Typography, Paper, Grid, Divider, useTheme, styled } from "@mui/material";
 import { useAuth } from "@contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import PhoneIcon from '@mui/icons-material/Phone';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
@@ -11,6 +11,7 @@ import { ProfileAvatar } from '@features/profile/ProfileAvatar';
 import { InfoCard } from '@features/profile/InfoCard';
 import { ProfileActions } from '@features/profile/ProfileActions';
 import { EditProfileModal } from '@features/profile/EditProfileModal';
+import TableComponent from "@features/auth/components/TableComponent";
 
 const PageContainer = styled(Box)(({ theme }) => ({
     position: 'fixed',
@@ -61,6 +62,7 @@ export const ProfilePage = () => {
     const theme = useTheme();
     const navigate = useNavigate();
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
 
     const handleLogout = async () => {
         await logout();
@@ -68,7 +70,6 @@ export const ProfilePage = () => {
     };
 
     const handleEditProfile = () => {
-        console.log('Редактирование профиля');
         setIsEditModalOpen(true);
     };
 
@@ -76,13 +77,29 @@ export const ProfilePage = () => {
         setIsEditModalOpen(false);
     };
 
-    const handleSaveProfile = (updatedData) => {
-        console.log('Сохраненные данные:', updatedData);
+    const handleSaveProfile = async (updatedData) => {
+        setIsLoading(true);
+        try {
+            const response = await authApi.updateProfile(updatedData);
 
-        if (updateUser) {
-            updateUser(updatedData);
+            if (updateUser && response.data) {
+                const fullName = `${updatedData.firstName} ${updatedData.lastName}`.trim();
+                updateUser({
+                    ...response.data,
+                    firstName: updatedData.firstName,
+                    lastName: updatedData.lastName,
+                    fullName: fullName,
+                    phone: updatedData.phone,
+                });
+            }
+
+            setIsEditModalOpen(false);
+
+        } catch (error) {
+            console.error('Ошибка при обновлении профиля:', error);
+        } finally {
+            setIsLoading(false);
         }
-
     };
 
     const fileInputRef = useRef(null);
@@ -92,22 +109,22 @@ export const ProfilePage = () => {
     };
 
     const handleFileSelect = async (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
+        const file = event.target.files[0];
+        if (!file) return;
 
-    try {
-        console.log("[avatar] Selected file:", file);
+        try {
+            console.log("[avatar] Selected file:", file);
 
-        const response = await authApi.uploadAvatar(file);
+            const response = await authApi.uploadAvatar(file);
 
-        console.log("[avatar] Response:", response.data);
+            console.log("[avatar] Response:", response.data);
 
-        updateUser(response.data);
+            updateUser(response.data);
 
-    } catch (error) {
-        console.error("[avatar] Upload error:", error);
-    }
-};
+        } catch (error) {
+            console.error("[avatar] Upload error:", error);
+        }
+    };
 
     const getInitials = () => {
         if (user?.fullName) {
@@ -121,6 +138,10 @@ export const ProfilePage = () => {
         return user?.email?.charAt(0).toUpperCase() || '?';
     };
 
+    const displayName = user?.firstName && user?.lastName 
+        ? `${user.firstName} ${user.lastName}`
+        : user?.fullName || user?.email;
+
     return (
         <PageContainer>
             <MainContent component="main">
@@ -129,7 +150,7 @@ export const ProfilePage = () => {
                         <Grid container spacing={4}>
                             <Grid size={{ xs: 12, md: 4 }}>
                                 <ProfileAvatar
-                                    user={user}
+                                    user={{ ...user, fullName: displayName }}
                                     getInitials={getInitials}
                                     onAvatarChange={handleAvatarChange}
                                 />
@@ -145,7 +166,7 @@ export const ProfilePage = () => {
                                 <SectionTitle variant="h6" gutterBottom>
                                     Дополнительная информация
                                 </SectionTitle>
-                                
+
 
                                 <Grid container spacing={3}>
                                     <Grid size={{ xs: 12, md: 6 }}>

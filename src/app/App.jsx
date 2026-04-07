@@ -14,6 +14,7 @@ import { FullScreenLoader } from '@features/main/FullScreenLoader.jsx';
 const BankPage = lazy(() => import("@pages/Bank/BankPage.jsx"));
 const CreateInvoicePage = lazy(() => import("@pages/CreateInvoicePage/CreateInvoicePage.jsx"));
 const ProductsPage = lazy(() => import("@pages/ProductsPage/ProductsPage.jsx"));
+const UserList = lazy(() => import("@pages/UserList/UserList.jsx"));
 
 const MainLayout = ({ children }) => {
     return (
@@ -84,6 +85,14 @@ const AppContent = () => {
                     element={
                         <PrivateRoute>
                             <CreateInvoicePage />
+                        </PrivateRoute>
+                    }
+                />
+                <Route
+                    path="/users"
+                    element={
+                        <PrivateRoute>
+                            <UserList />
                         </PrivateRoute>
                     }
                 />

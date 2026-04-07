@@ -6,16 +6,18 @@ import { StyledModal, ModalContent, ModalHeader, ModalTitle, ModalBody, ModalFoo
 import { StyledInput } from '../modal/StyledInput';
 import { StyledButton } from '../modal/StyledButton';
 
+
 const validationSchema = yup.object({
-    fullName: yup
+    firstName: yup
         .string()
         .required('Имя обязательно')
         .min(2, 'Имя должно содержать минимум 2 символа')
         .max(50, 'Имя должно содержать максимум 50 символов'),
-    email: yup
+    lastName: yup
         .string()
-        .required('Email обязателен')
-        .email('Введите корректный email'),
+        .required('Фамилия обязательна')
+        .min(2, 'Фамилия должна содержать минимум 2 символа')
+        .max(50, 'Фамилия должна содержать максимум 50 символов'),
     phone: yup
         .string()
         .required('Телефон обязателен')
@@ -24,10 +26,10 @@ const validationSchema = yup.object({
         .max(20, 'Телефон должен содержать максимум 20 символов'),
 });
 
-export const EditProfileModal = ({ open, onClose, user, onSave }) => {
+export const EditProfileModal = ({ open, onClose, user, onSave, loading = false }) => {
     const [formData, setFormData] = useState({
-        fullName: '',
-        email: '',
+        firstName: '',
+        lastName: '',
         phone: '',
     });
     const [errors, setErrors] = useState({});
@@ -35,13 +37,18 @@ export const EditProfileModal = ({ open, onClose, user, onSave }) => {
 
     useEffect(() => {
         if (user) {
+            const fullName = user.fullName || '';
+            const spaceIndex = fullName.indexOf(' ');
+            const firstName = spaceIndex === -1 ? fullName : fullName.substring(0, spaceIndex);
+            const lastName = spaceIndex === -1 ? '' : fullName.substring(spaceIndex + 1);
+
             setFormData({
-                fullName: user.fullName || '',
-                email: user.email || '',
+                firstName: user.firstName || firstName || '',
+                lastName: user.lastName || lastName || '',
                 phone: user.phone || '',
             });
         }
-    }, [user]);
+    }, [user, open]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -49,7 +56,7 @@ export const EditProfileModal = ({ open, onClose, user, onSave }) => {
             ...prev,
             [name]: value,
         }));
-        
+
         if (touched[name]) {
             validateField(name, value);
         }
@@ -90,13 +97,13 @@ export const EditProfileModal = ({ open, onClose, user, onSave }) => {
                 newErrors[err.path] = err.message;
             });
             setErrors(newErrors);
-            
+
             const allTouched = {};
             Object.keys(formData).forEach(key => {
                 allTouched[key] = true;
             });
             setTouched(allTouched);
-            
+
             return false;
         }
     };
@@ -104,8 +111,11 @@ export const EditProfileModal = ({ open, onClose, user, onSave }) => {
     const handleSubmit = async () => {
         const isValid = await validateForm();
         if (isValid) {
-            onSave(formData);
-            onClose();
+            onSave({
+                firstName: formData.firstName,
+                lastName: formData.lastName,
+                phone: formData.phone,
+            });
         }
     };
 
@@ -135,26 +145,27 @@ export const EditProfileModal = ({ open, onClose, user, onSave }) => {
 
                 <ModalBody>
                     <StyledInput
-                        name="fullName"
+                        name="firstName"
                         label="Имя"
-                        value={formData.fullName}
+                        value={formData.firstName}
                         onChange={handleChange}
                         onBlur={handleBlur}
-                        error={touched.fullName && !!errors.fullName}
-                        helperText={touched.fullName && errors.fullName}
+                        error={touched.firstName && !!errors.firstName}
+                        helperText={touched.firstName && errors.firstName}
                         fullWidth
+                        required
                     />
 
                     <StyledInput
-                        name="email"
-                        label="Email"
-                        type="email"
-                        value={formData.email}
+                        name="lastName"
+                        label="Фамилия"
+                        value={formData.lastName}
                         onChange={handleChange}
                         onBlur={handleBlur}
-                        error={touched.email && !!errors.email}
-                        helperText={touched.email && errors.email}
+                        error={touched.lastName && !!errors.lastName}
+                        helperText={touched.lastName && errors.lastName}
                         fullWidth
+                        required
                     />
 
                     <StyledInput
@@ -171,10 +182,10 @@ export const EditProfileModal = ({ open, onClose, user, onSave }) => {
                 </ModalBody>
 
                 <ModalFooter>
-                    <StyledButton variant="outlined" onClick={handleClose}>
+                    <StyledButton variant="outlined" onClick={handleClose} disabled={loading}>
                         Отмена
                     </StyledButton>
-                    <StyledButton variant="contained" onClick={handleSubmit}>
+                    <StyledButton variant="contained" onClick={handleSubmit} disabled={loading}>
                         Сохранить изменения
                     </StyledButton>
                 </ModalFooter>

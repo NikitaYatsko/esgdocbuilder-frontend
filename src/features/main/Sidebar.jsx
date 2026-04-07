@@ -13,8 +13,10 @@ import {
     ProfileIcon,
     ProductIcon,
     InvoiceIcon,
-    BankIcon
+    BankIcon,
 } from '@styles/icon/Icon';
+
+import PeopleIcon from '@mui/icons-material/People';
 
 
 const SidebarContainer = styled(Box)(({theme}) => ({
@@ -54,6 +56,8 @@ export const Sidebar = ({onMenuClick}) => {
     const {mode, togle} = useThemeContext();
     const theme = useTheme();
 
+    const isAdmin = user?.roles?.some(role => role.name === 'ADMIN') || false;
+
 
     const handleBurgerClick = () => {
         setIsMenuOpen(prev => !prev);
@@ -88,6 +92,13 @@ export const Sidebar = ({onMenuClick}) => {
         }
     ];
 
+    if (isAdmin) {
+        menuItems.push({
+            label: "Список сотрудников",
+            icon: <PeopleIcon/>, 
+            action: () => navigate('/users')
+        });
+    }
 
     const handleMenuClick = (action) => {
         action();

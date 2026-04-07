@@ -40,6 +40,7 @@ const ProductsPage = () => {
     const columns = [
         { id: 'name', label: 'Наименование', align: 'left' },
         { id: 'category', label: 'Категория', align: 'left' },
+        { id: 'typeOfUnit', label: 'Единица измерения', align: 'left' },
         { id: 'costPrice', label: 'Цена Закупки', align: 'left' },
         { id: 'sellPrice', label: 'Цена Продажи', align: 'left' },
         { id: 'marginality', label: 'Маржинальность', align: 'left' },
@@ -50,6 +51,7 @@ const ProductsPage = () => {
         id: p.id,
         name: p.name,
         category: p.category?.name || p.category,
+        typeOfUnit: p.typeOfUnit?.name || p.typeOfUnit,
         costPrice: p.costPrice,
         sellPrice: p.sellPrice,
         marginality: p.marginality,
@@ -67,7 +69,6 @@ const ProductsPage = () => {
     };
 
     const handleDelete = async (row) => {
-        if (window.confirm(`Вы уверены, что хотите удалить товар "${row.name}"?`)) {
             const result = await deleteProduct(row.id);
             if (result.success) {
                 setSnackbar({
@@ -82,8 +83,7 @@ const ProductsPage = () => {
                     severity: "error"
                 });
             }
-        }
-    };
+        };
 
     const handleAddProduct = () => {
         setSelectedProduct(null);
