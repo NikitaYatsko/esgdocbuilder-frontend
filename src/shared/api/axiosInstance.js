@@ -12,7 +12,7 @@ export const getAccessToken = () => {
   return accessToken;
 };
 
-const baseURL = import.meta.env.DEV ? '/api' : 'http://26.3.166.214:8089/';
+const baseURL = import.meta.env.DEV ? '/api' : 'http://esg-docbuilder-production-1693.up.railway.app';
 
 const axiosInstance = axios.create({
   baseURL: baseURL,
