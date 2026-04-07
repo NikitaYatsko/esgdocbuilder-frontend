@@ -12,7 +12,9 @@ export const getAccessToken = () => {
   return accessToken;
 };
 
-const baseURL = import.meta.env.DEV ? '/api' : 'https://esg-docbuilder-production-1693.up.railway.app';
+const baseURL = import.meta.env.DEV
+  ? '/api'
+  : 'https://cors-anywhere.herokuapp.com/https://esg-docbuilder-production-1693.up.railway.app';
 
 const axiosInstance = axios.create({
   baseURL: baseURL,
@@ -49,7 +51,7 @@ axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-    
+
     if (
       originalRequest?.url?.includes('/auth/refresh') ||
       originalRequest?.url?.includes('/auth/logout')
@@ -60,7 +62,7 @@ axiosInstance.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest?._retry) {
       if (!isRefreshing) {
         isRefreshing = true;
-        
+
         refreshPromise = refreshClient.post('/auth/refresh')
           .then(res => {
             const newToken = res.data.accessToken || res.data.token;
