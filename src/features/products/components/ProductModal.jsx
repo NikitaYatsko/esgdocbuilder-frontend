@@ -65,6 +65,42 @@ const ProductModal = ({ open, onClose, product, onSave, loading = false }) => {
 
     const [errors, setErrors] = useState({});
 
+    const calculateMarginality = (costPrice, sellPrice) => {
+        if (!costPrice || !sellPrice) return "";
+        
+        const cost = Number(costPrice);
+        const sell = Number(sellPrice);
+        
+        if (isNaN(cost) || isNaN(sell)) return "";
+        
+        if (sell > 0) {
+            const marginality = ((sell - cost) / sell) * 100;
+            return Math.round(marginality * 100) / 100;
+        } else {
+            return 0;
+        }
+    };
+
+    const handleChange = (field) => (e) => {
+        const value = e.target.value;
+        
+        setForm(prev => {
+            const newForm = { ...prev, [field]: value };
+            
+            if (field === 'costPrice' || field === 'sellPrice') {
+                const costPrice = field === 'costPrice' ? value : prev.costPrice;
+                const sellPrice = field === 'sellPrice' ? value : prev.sellPrice;
+                newForm.marginality = calculateMarginality(costPrice, sellPrice);
+            }
+            
+            return newForm;
+        });
+
+        if (errors[field]) {
+            setErrors(prev => ({ ...prev, [field]: "" }));
+        }
+    };
+
     useEffect(() => {
         if (product) {
             setForm({
@@ -89,17 +125,6 @@ const ProductModal = ({ open, onClose, product, onSave, loading = false }) => {
         }
         setErrors({});
     }, [product, open]);
-
-    const handleChange = (field) => (e) => {
-        setForm(prev => ({
-            ...prev,
-            [field]: e.target.value
-        }));
-
-        if (errors[field]) {
-            setErrors(prev => ({ ...prev, [field]: "" }));
-        }
-    };
 
     const validate = () => {
         const newErrors = {};

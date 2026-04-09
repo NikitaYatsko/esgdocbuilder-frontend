@@ -24,7 +24,9 @@ const StyledTableContainer = styled(TableContainer, {
   overflowY: 'auto',
 }));
 
-const StyledTable = styled(Table)(({ customMinWidth }) => ({
+const StyledTable = styled(Table, {
+  shouldForwardProp: (prop) => prop !== 'customMinWidth'
+})(({ customMinWidth }) => ({
   minWidth: customMinWidth || 1350,
   width: '100%',
 }));
@@ -153,7 +155,7 @@ const TableComponent = ({
         <TableBody>
           {rows.map((row, index) => (
             <TableRowComponent
-              key={row.id || `row-${index}`}  // Добавляем уникальный ключ
+              key={row.id || `row-${index}`} 
               row={row}
               columns={columns}
               showActions={showActions}
