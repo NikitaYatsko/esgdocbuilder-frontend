@@ -89,7 +89,11 @@ const createInvoice = async (invoiceData) => {
     try {
         const payload = {
             invoiceName: invoiceData.invoiceName,
-            power: invoiceData.power
+            power: invoiceData.power,
+            vat_amount: invoiceData.vat_amount || 0,
+            sumMarginality: invoiceData.sumMarginality || 0,
+            sum: invoiceData.sum || 0,
+            items: invoiceData.items || []
         };
         const response = await invoiceApi.create(payload);
         await fetchInvoices();

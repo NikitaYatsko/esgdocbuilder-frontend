@@ -65,7 +65,7 @@ const ProductModal = ({ open, onClose, product, onSave, loading = false }) => {
 
     const [errors, setErrors] = useState({});
 
-    const calculateMarginality = (costPrice, sellPrice) => {
+     const calculateMarginality = (costPrice, sellPrice) => {
         if (!costPrice || !sellPrice) return "";
         
         const cost = Number(costPrice);
@@ -73,12 +73,8 @@ const ProductModal = ({ open, onClose, product, onSave, loading = false }) => {
         
         if (isNaN(cost) || isNaN(sell)) return "";
         
-        if (sell > 0) {
-            const marginality = ((sell - cost) / sell) * 100;
-            return Math.round(marginality * 100) / 100;
-        } else {
-            return 0;
-        }
+        const marginality = sell - cost;
+        return marginality;
     };
 
     const handleChange = (field) => (e) => {
@@ -236,7 +232,7 @@ const ProductModal = ({ open, onClose, product, onSave, loading = false }) => {
                     />
 
                     <StyledInput
-                        label="Маржинальность (%)"
+                        label="Маржинальность"
                         value={form.marginality}
                         onChange={handleChange("marginality")}
                         type="number"

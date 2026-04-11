@@ -18,6 +18,7 @@ const CreateInvoicePage = () => {
     const [modalMode, setModalMode] = useState('create');
     const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
     const [modalLoading, setModalLoading] = useState(false);
+    const [editingItem, setEditingItem] = useState(null);
 
     const {
         invoices,
@@ -27,6 +28,8 @@ const CreateInvoicePage = () => {
         deleteInvoice,
         createInvoice,
         addItem,
+        updateItem,
+        deleteItem,
     } = useInvoices();
 
     const { columns, rows } = useInvoiceTable(items);
@@ -44,6 +47,31 @@ const CreateInvoicePage = () => {
             setSnackbar({
                 open: true,
                 message: result.error || "Ошибка при удалении сметы",
+                severity: "error"
+            });
+        }
+    };
+
+    const handleEditItem = (row) => {
+        const fullItem = items.find(item => item.id === row.id);
+        setEditingItem(fullItem);
+        setModalMode('editItem');
+        setOpenModal(true);
+    };
+
+    const handleDeleteItem = async (row) => {
+        if (!selectedInvoice) return;
+        const result = await deleteItem(selectedInvoice.id, row.id);
+        if (result.success) {
+            setSnackbar({
+                open: true,
+                message: "Товар успешно удален из сметы",
+                severity: "success"
+            });
+        } else {
+            setSnackbar({
+                open: true,
+                message: result.error || "Ошибка при удалении товара",
                 severity: "error"
             });
         }
@@ -72,16 +100,31 @@ const CreateInvoicePage = () => {
 
         let result;
         if (modalMode === 'create') {
-            result = await createInvoice({ 
+            result = await createInvoice({
                 invoiceName: data.invoiceName,
-                power: data.power
+                power: data.power,
+                vat_amount: 0,
+                sumMarginality: 0,
+                sum: 0,
+                items: []
             });
+        } else if (modalMode === 'editItem') {
+            const itemPayload = {
+                productId: data.productId,
+                quantity: data.quantity,
+                unitPrice: data.price,
+                vatMultiplier: data.vat,
+                marginality: data.marginality,
+                totalPrice: data.total
+            };
+            result = await updateItem(selectedInvoice.id, editingItem.id, itemPayload);
         } else {
             const itemPayload = {
                 productId: data.productId,
                 quantity: data.quantity,
                 unitPrice: data.price,
                 vatMultiplier: data.vat,
+                marginality: data.marginality,
                 totalPrice: data.total
             };
             result = await addItem(selectedInvoice.id, itemPayload);
@@ -92,10 +135,12 @@ const CreateInvoicePage = () => {
         if (result.success) {
             setSnackbar({
                 open: true,
-                message: modalMode === 'create' ? "Смета успешно создана" : "Товар успешно добавлен",
+                message: modalMode === 'create' ? "Смета успешно создана" :
+                    modalMode === 'editItem' ? "Товар успешно обновлен" : "Товар успешно добавлен",
                 severity: "success"
             });
             setOpenModal(false);
+            setEditingItem(null);
         } else {
             setSnackbar({
                 open: true,
@@ -157,10 +202,10 @@ const CreateInvoicePage = () => {
                                 <TableComponent
                                     columns={columns}
                                     rows={rows}
-                                    onRowClick={() => {}}
+                                    onRowClick={() => { }}
                                     showActions={true}
-                                    onEdit={() => {}}
-                                    onDelete={() => {}}
+                                    onEdit={handleEditItem} 
+                                    onDelete={handleDeleteItem}
                                     tableWidth="1200px"
                                     tableMinWidth="600px"
                                 />
@@ -179,6 +224,7 @@ const CreateInvoicePage = () => {
                     onSave={handleSave}
                     loading={modalLoading}
                     mode={modalMode}
+                    initialData={editingItem}
                 />
 
                 <Snackbar

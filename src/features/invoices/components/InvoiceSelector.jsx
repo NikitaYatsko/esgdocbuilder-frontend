@@ -16,7 +16,7 @@ const InvoiceSelector = ({ invoices, selectedInvoice, onSelectInvoice }) => {
                 <MenuItem value="">-- Выберите смету --</MenuItem>
                 {invoices.map((invoice) => (
                     <MenuItem key={invoice.id} value={invoice.id}>
-                        {invoice.invoiceNumber || `Смета №${invoice.id}`}
+                        {invoice.invoiceName || `Смета №${invoice.id}`}
                     </MenuItem>
                 ))}
             </StyledSelect>

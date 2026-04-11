@@ -22,7 +22,7 @@ import { StyledInput } from "@features/modal/StyledInput";
 import { StyledButton } from "@features/modal/StyledButton";
 import { useProducts } from "@features/products/hooks/useProducts";
 
-const InvoiceModal = ({ open, onClose, onSave, loading = false, mode = 'create' }) => {
+const InvoiceModal = ({ open, onClose, onSave, loading = false, mode = 'create', initialData = null }) => {
 
     const { products, loading: productsLoading } = useProducts();
 
@@ -34,6 +34,8 @@ const InvoiceModal = ({ open, onClose, onSave, loading = false, mode = 'create' 
         quantity: 1,
         price: 0,
         vat: 0,
+        unitMarginality: 0, 
+        totalMarginality: 0, 
         total: 0
     });
 
@@ -45,17 +47,25 @@ const InvoiceModal = ({ open, onClose, onSave, loading = false, mode = 'create' 
         return subtotal + vatAmount;
     };
 
+    const calculateTotalMarginality = (unitMarginality, quantity) => {
+        return unitMarginality * quantity;
+    };
+
     const handleProductChange = (_, value) => {
         const product = value;
         const price = product?.sellPrice || 0;
         const vat = product?.vat || 0;
+        const unitMarginality = product?.marginality || 0;
+        const quantity = form.quantity;
         
         setForm(prev => ({
             product,
-            quantity: prev.quantity,
+            quantity,
             price,
             vat,
-            total: calculateTotal(price, prev.quantity, vat)
+            unitMarginality,
+            totalMarginality: calculateTotalMarginality(unitMarginality, quantity),
+            total: calculateTotal(price, quantity, vat)
         }));
         
         if (errors.product) {
@@ -68,6 +78,7 @@ const InvoiceModal = ({ open, onClose, onSave, loading = false, mode = 'create' 
         setForm(prev => ({
             ...prev,
             quantity,
+            totalMarginality: calculateTotalMarginality(prev.unitMarginality, quantity),
             total: calculateTotal(prev.price, quantity, prev.vat)
         }));
         
@@ -77,22 +88,46 @@ const InvoiceModal = ({ open, onClose, onSave, loading = false, mode = 'create' 
     };
 
     useEffect(() => {
-        if (open) {
-            if (mode === 'create') {
-                setInvoiceName("");
-                setPower("");
-            } else {
-                setForm({
-                    product: null,
-                    quantity: 1,
-                    price: 0,
-                    vat: 0,
-                    total: 0
-                });
-            }
-            setErrors({});
+    if (open) {
+        if (mode === 'create') {
+            setInvoiceName("");
+            setPower("");
+            setForm({
+                product: null,
+                quantity: 1,
+                price: 0,
+                vat: 0,
+                unitMarginality: 0,
+                totalMarginality: 0,
+                total: 0
+            });
+        } else if (mode === 'editItem' && initialData) {
+            // Заполняем форму для редактирования
+            setForm({
+                product: initialData.product || null,
+                quantity: initialData.quantity || 1,
+                price: initialData.unitPrice || initialData.price || 0,
+                vat: initialData.vatMultiplier || initialData.vat || 0,
+                unitMarginality: initialData.marginality / initialData.quantity || 0,
+                totalMarginality: initialData.marginality || 0,
+                total: initialData.totalPrice || initialData.total || 0
+            });
+            setInvoiceName("");
+            setPower("");
+        } else {
+            setForm({
+                product: null,
+                quantity: 1,
+                price: 0,
+                vat: 0,
+                unitMarginality: 0,
+                totalMarginality: 0,
+                total: 0
+            });
         }
-    }, [open, mode]);
+        setErrors({});
+    }
+}, [open, mode, initialData]);
 
     const validate = () => {
         const newErrors = {};
@@ -126,6 +161,7 @@ const InvoiceModal = ({ open, onClose, onSave, loading = false, mode = 'create' 
                 quantity: form.quantity,
                 price: form.price,
                 vat: form.vat,
+                marginality: form.totalMarginality,
                 total: form.total
             };
         }
@@ -200,7 +236,7 @@ const InvoiceModal = ({ open, onClose, onSave, loading = false, mode = 'create' 
                             <Box sx={{ display: 'flex', gap: 2 }}>
                                 <Box sx={{ flex: 1 }}>
                                     <StyledInput
-                                        label="Цена"
+                                        label="Цена за единицу"
                                         type="number"
                                         value={form.price}
                                         disabled
@@ -222,9 +258,24 @@ const InvoiceModal = ({ open, onClose, onSave, loading = false, mode = 'create' 
                                     />
                                 </Box>
                             </Box>
+
+                            <Box sx={{ display: 'flex', gap: 2 }}>
+                                
+                                <Box sx={{ flex: 1 }}>
+                                    <StyledInput
+                                        label="Общая маржинальность"
+                                        type="number"
+                                        value={Math.round(form.totalMarginality)}
+                                        disabled
+                                        InputProps={{ readOnly: true }}
+                                        helperText="Ед. маржинальность × Количество"
+                                        fullWidth
+                                    />
+                                </Box>
+                            </Box>
                             
                             <StyledInput
-                                label="Общая сумма"
+                                label="Общая сумма (с НДС)"
                                 type="number"
                                 value={Math.round(form.total)}
                                 disabled

@@ -59,6 +59,7 @@ const StyledTableRow = styled(TableRow)(({ theme, rowtype }) => ({
 const ActionsContainer = styled('div')({
   display: 'flex',
   gap: '4px',
+  justifyContent: 'center',
 });
 
 const TableRowComponent = React.memo(function TableRowComponent({
@@ -67,7 +68,6 @@ const TableRowComponent = React.memo(function TableRowComponent({
   showActions,
   onEdit,
   onDelete,
-  actionsColumn,
   onRowClick
 }) {
   const handleEdit = (e) => {
@@ -87,37 +87,29 @@ const TableRowComponent = React.memo(function TableRowComponent({
     >
       {columns.map((column) => {
         const value = row[column.id];
-
-        if (column.id === actionsColumn && showActions) {
-          return (
-            <StyledBodyCell key={column.id} align={column.align || 'left'}>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span>{value}</span>
-
-                <ActionsContainer>
-                  <IconButton size="small" onClick={handleEdit}>
-                    <EditIcon fontSize="small" />
-                  </IconButton>
-
-                  <IconButton size="small" onClick={handleDelete}>
-                    <DeleteIcon fontSize="small" />
-                  </IconButton>
-                </ActionsContainer>
-              </div>
-            </StyledBodyCell>
-          );
-        }
-
+        
         return (
           <StyledBodyCell key={column.id} align={column.align || 'left'}>
             {value}
           </StyledBodyCell>
         );
       })}
+      
+      {showActions && (
+        <StyledBodyCell align="center">
+          <ActionsContainer>
+            <IconButton size="small" onClick={handleEdit}>
+              <EditIcon fontSize="small" />
+            </IconButton>
+            <IconButton size="small" onClick={handleDelete}>
+              <DeleteIcon fontSize="small" />
+            </IconButton>
+          </ActionsContainer>
+        </StyledBodyCell>
+      )}
     </StyledTableRow>
   );
 });
-
 
 const TableComponent = ({
   columns = [],
@@ -126,7 +118,6 @@ const TableComponent = ({
   showActions = false,
   onEdit,
   onDelete,
-  actionsColumn = 'vat',
   tableWidth,
   tableMinWidth,
   tableHeight
@@ -149,6 +140,11 @@ const TableComponent = ({
                 {column.label}
               </StyledHeaderCell>
             ))}
+            {showActions && (
+              <StyledHeaderCell align="center">
+                Действия
+              </StyledHeaderCell>
+            )}
           </TableRow>
         </StyledTableHead>
 
@@ -161,7 +157,6 @@ const TableComponent = ({
               showActions={showActions}
               onEdit={onEdit}
               onDelete={onDelete}
-              actionsColumn={actionsColumn}
               onRowClick={onRowClick}
             />
           ))}
