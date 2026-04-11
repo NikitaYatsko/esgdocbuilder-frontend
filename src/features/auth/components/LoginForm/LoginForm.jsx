@@ -11,7 +11,6 @@ import { UI_CONSTANTS } from '@constants/ui.constants';
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
   width: UI_CONSTANTS.FORM_WIDTH,
-  height: UI_CONSTANTS.FORM_HEIGHT,
   backgroundColor: theme.palette.background.paper,
   borderRadius: '2rem',
   border: `1px solid ${theme.palette.divider}`,
