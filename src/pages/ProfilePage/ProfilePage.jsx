@@ -1,4 +1,4 @@
-import {Typography, Paper, Grid, Divider, useTheme, styled} from "@mui/material";
+import {Typography, Paper, Grid, Divider, useTheme, styled, Container,} from "@mui/material";
 import {useAuth} from "@contexts/AuthContext";
 import {useNavigate} from "react-router-dom";
 import {useState, useRef} from "react";
@@ -10,6 +10,7 @@ import {ProfileAvatar} from '@features/profile/ProfileAvatar';
 import {InfoCard} from '@features/profile/InfoCard';
 import {ProfileActions} from '@features/profile/ProfileActions';
 import {EditProfileModal} from '@features/profile/EditProfileModal';
+import {CenteredContainer} from "@/layouts/CenteredContainer.jsx";
 
 
 const ProfilePaper = styled(Paper)(({theme}) => ({
@@ -18,7 +19,7 @@ const ProfilePaper = styled(Paper)(({theme}) => ({
     border: '1px solid',
     borderColor: theme.palette.divider,
     backgroundColor: theme.palette.background.paper,
-    width: '100%',
+    minWidth: "900px",
 }));
 
 const SectionTitle = styled(Typography)(({theme}) => ({
@@ -136,7 +137,7 @@ export const ProfilePage = () => {
     return (
 
 
-        <>
+        <CenteredContainer fullHeight={true} width={1200}>
             <ProfilePaper elevation={0}>
                 <Grid container spacing={4}>
                     <Grid size={{xs: 12, md: 4}}>
@@ -157,20 +158,18 @@ export const ProfilePage = () => {
                         <SectionTitle variant="h6" gutterBottom>
                             Дополнительная информация
                         </SectionTitle>
-
-
-                        <Grid container spacing={3}>
-                            <Grid size={{xs: 12, md: 6}}>
-                                {infoItems.map((item, index) => (
-                                    <InfoCard
-                                        key={index}
-                                        icon={item.icon}
-                                        label={item.label}
-                                        value={item.value}
-                                    />
-                                ))}
+                            <Grid container spacing={3}>
+                                <Grid size={{xs: 12, md: 6}}>
+                                    {infoItems.map((item, index) => (
+                                        <InfoCard
+                                            key={index}
+                                            icon={item.icon}
+                                            label={item.label}
+                                            value={item.value}
+                                        />
+                                    ))}
+                                </Grid>
                             </Grid>
-                        </Grid>
 
                         <StyledDivider/>
 
@@ -189,7 +188,7 @@ export const ProfilePage = () => {
                 user={user}
                 onSave={handleSaveProfile}
             />
-        </>
+        </CenteredContainer>
 
 
     );
