@@ -1,4 +1,4 @@
-import {Typography, Paper, Grid, Divider, useTheme, styled, Container,} from "@mui/material";
+import {Typography, Paper, Grid, Divider, useTheme, styled,} from "@mui/material";
 import {useAuth} from "@contexts/AuthContext";
 import {useNavigate} from "react-router-dom";
 import {useState, useRef} from "react";
@@ -19,7 +19,7 @@ const ProfilePaper = styled(Paper)(({theme}) => ({
     border: '1px solid',
     borderColor: theme.palette.divider,
     backgroundColor: theme.palette.background.paper,
-    minWidth: "900px",
+    minWidth: "800px",
 }));
 
 const SectionTitle = styled(Typography)(({theme}) => ({

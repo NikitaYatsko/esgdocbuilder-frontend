@@ -11,7 +11,7 @@ import {CenteredContainer} from "@/layouts/CenteredContainer.jsx";
 const PageContainer = styled(Box)(({theme}) => ({
     display: 'flex',
     flexDirection: 'column',
-    width: '800px',
+    width: '100%',
     height: '100%', // Теперь будет занимать 100% родителя (MainLayout)
     backgroundColor: theme.palette.background.default,
 }));
@@ -115,7 +115,7 @@ const UserList = () => {
         );
     }
 
-    return (<CenteredContainer>
+    return (<CenteredContainer width={1200}>
             <PageContainer>
                 <UserPaper elevation={0}>
                     <Typography variant="h6" gutterBottom sx={{mb: 2}}>

@@ -30,7 +30,6 @@ export const MainLayout = ({ children }) => {
                 component="main"
                 sx={{
                     gridArea: "content",
-                    p: 3
                 }}
             >
                 {children}
