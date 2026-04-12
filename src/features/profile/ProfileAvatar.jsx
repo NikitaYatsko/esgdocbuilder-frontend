@@ -1,7 +1,7 @@
-import { Box, Avatar, Badge, styled, Typography } from "@mui/material";
+import {Box, Avatar, Badge, styled, Typography} from "@mui/material";
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 
-const SmallAvatar = styled(Avatar)(({ theme }) => ({
+const SmallAvatar = styled(Avatar)(({theme}) => ({
     width: 32,
     height: 32,
     backgroundColor: theme.palette.primary.main,
@@ -13,7 +13,7 @@ const SmallAvatar = styled(Avatar)(({ theme }) => ({
     },
 }));
 
-const AvatarContainer = styled(Box)(({ theme }) => ({
+const AvatarContainer = styled(Box)(({theme}) => ({
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
@@ -21,7 +21,7 @@ const AvatarContainer = styled(Box)(({ theme }) => ({
     marginBottom: theme.spacing(2),
 }));
 
-const BigAvatar = styled(Avatar)(({ theme }) => ({
+const BigAvatar = styled(Avatar)(({theme}) => ({
     width: 150,
     height: 150,
     backgroundColor: theme.palette.primary.main,
@@ -32,23 +32,15 @@ const CameraIcon = styled(PhotoCameraIcon)({
     fontSize: 18,
 });
 
-const UserName = styled(Typography)(({ theme }) => ({
-    marginBottom: theme.spacing(0.5),
-}));
-
-const UserEmail = styled(Typography)(({ theme }) => ({
-    marginBottom: theme.spacing(3),
-}));
-
-export const ProfileAvatar = ({ user, getInitials, onAvatarChange }) => {
+export const ProfileAvatar = ({user, getInitials, onAvatarChange}) => {
     return (
         <AvatarContainer>
             <Badge
                 overlap="circular"
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                anchorOrigin={{vertical: 'bottom', horizontal: 'right'}}
                 badgeContent={
                     <SmallAvatar onClick={onAvatarChange}>
-                        <CameraIcon />
+                        <CameraIcon/>
                     </SmallAvatar>
                 }
             >
@@ -57,14 +49,12 @@ export const ProfileAvatar = ({ user, getInitials, onAvatarChange }) => {
                 </BigAvatar>
             </Badge>
 
-            {user?.name && (
-                <UserName variant="h5">
-                    {user.name}
-                </UserName>
-            )}
 
-            <Typography variant="body1" color="text.primary" sx={{ mb: 3 }}>
+            <Typography variant="body1" color="text.primary">
                 {user?.email}
+            </Typography>
+            <Typography variant="h6" color="text.primary">
+                {user?.fullName}
             </Typography>
         </AvatarContainer>
     );

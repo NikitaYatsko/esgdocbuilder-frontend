@@ -96,12 +96,10 @@ export const useBank = () => {
         operations,
         pagination,
         loading,
-
         page,
         nextPage,
         prevPage,
         goToPage,
-
         createOperation
     };
 };

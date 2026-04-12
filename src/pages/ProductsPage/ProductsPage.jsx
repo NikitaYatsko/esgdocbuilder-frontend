@@ -1,4 +1,4 @@
-import ContentBlock from "@features/auth/components/ContentBlock.jsx";
+
 import { Box, Snackbar, Alert } from "@mui/material";
 import TableComponent from "@features/auth/components/TableComponent.jsx";
 import PageHeader from "@features/auth/components/PageHeader.jsx";
@@ -14,7 +14,6 @@ const StyledBox = styled(Box)(({ theme }) => ({
     width: '100%',
     height: '100%',
     display: 'block',
-    marginLeft: '100px',
 }));
 
 const ProductsPage = () => {
@@ -137,7 +136,6 @@ const ProductsPage = () => {
     };
 
     return (
-        <ContentBlock centered={true}>
             <StyledBox>
                 <PageHeader title="Товары" onAdd={handleAddProduct} />
                 <SearchBar onSearch={handleSearch} onFilter={handleFilter} />
@@ -182,7 +180,6 @@ const ProductsPage = () => {
                     </Alert>
                 </Snackbar>
             </StyledBox>
-        </ContentBlock>
     );
 };
 
