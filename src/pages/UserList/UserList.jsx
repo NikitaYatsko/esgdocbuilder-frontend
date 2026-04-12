@@ -1,26 +1,23 @@
-import {Box, Container, Typography, Paper, Avatar} from "@mui/material";
+import {Box, Typography, Paper, Avatar} from "@mui/material";
 import {styled} from "@mui/material/styles";
 import {useAuth} from "@contexts/AuthContext";
 import {useState, useEffect} from "react";
 import {authApi} from "@features/auth/api/authApi";
 import TableComponent from "@features/auth/components/TableComponent";
 
+
+
+// ✅ Замените на простой Box
 const PageContainer = styled(Box)(({theme}) => ({
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
     display: 'flex',
+    flexDirection: 'column',
+    height: '100%', // Теперь будет занимать 100% родителя (MainLayout)
     backgroundColor: theme.palette.background.default,
 }));
 
-const CenteredContainer = styled(Container)({
-    height: '100%',
-    display: 'flex',
-    alignItems: 'center',
-});
 
+
+// Остальные стили оставляем без изменений
 const UserPaper = styled(Paper)(({theme}) => ({
     padding: theme.spacing(4),
     borderRadius: 8,
@@ -52,6 +49,7 @@ const UserList = () => {
     const [usersLoading, setUsersLoading] = useState(false);
 
     const isAdmin = user?.roles?.some(role => role.name === 'ADMIN') || false;
+
     const userColumns = [
         {
             id: 'imageUrl',
@@ -61,7 +59,7 @@ const UserList = () => {
                 <Avatar
                     src={value}
                     alt="user"
-                    sx={{ width: 40, height: 40,margin: '0 auto' }}
+                    sx={{ width: 40, height: 40, margin: '0 auto' }}
                 />
             ),
         },
@@ -106,43 +104,41 @@ const UserList = () => {
     if (!isAdmin) {
         return (
             <PageContainer>
-                    <CenteredContainer maxWidth="lg">
-                        <UserPaper elevation={0}>
-                            <Typography color="error" align="center">
-                                Доступ запрещён. Только для администраторов.
-                            </Typography>
-                        </UserPaper>
-                    </CenteredContainer>
+                <CenteredContainer maxWidth="lg">
+                    <UserPaper elevation={0}>
+                        <Typography color="error" align="center">
+                            Доступ запрещён. Только для администраторов.
+                        </Typography>
+                    </UserPaper>
+                </CenteredContainer>
             </PageContainer>
         );
     }
 
     return (
         <PageContainer>
-                <CenteredContainer maxWidth="lg">
-                    <UserPaper elevation={0}>
-                        <Typography variant="h6" gutterBottom sx={{mb: 2}}>
-                            Управление пользователями
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary" sx={{mb: 3}}>
-                            Всего пользователей: {users.length}
-                        </Typography>
+                <UserPaper elevation={0}>
+                    <Typography variant="h6" gutterBottom sx={{mb: 2}}>
+                        Управление пользователями
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{mb: 3}}>
+                        Всего пользователей: {users.length}
+                    </Typography>
 
-                        {usersLoading ? (
-                            <Box sx={{display: 'flex', justifyContent: 'center', py: 4}}>
-                                <Typography>Загрузка...</Typography>
-                            </Box>
-                        ) : (
-                            <TableComponent
-                                columns={userColumns}
-                                rows={userRows}
-                                tableWidth="100%"
-                                tableMinWidth="600px"
-                                tableHeight="400px"
-                            />
-                        )}
-                    </UserPaper>
-                </CenteredContainer>
+                    {usersLoading ? (
+                        <Box sx={{display: 'flex', justifyContent: 'center', py: 4}}>
+                            <Typography>Загрузка...</Typography>
+                        </Box>
+                    ) : (
+                        <TableComponent
+                            columns={userColumns}
+                            rows={userRows}
+                            tableWidth="100%"
+                            tableMinWidth="600px"
+                            tableHeight="400px"
+                        />
+                    )}
+                </UserPaper>
         </PageContainer>
     );
 };

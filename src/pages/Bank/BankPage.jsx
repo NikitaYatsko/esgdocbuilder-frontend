@@ -1,6 +1,5 @@
 import React, {useMemo, useCallback} from "react";
 import {Box, Typography, styled} from "@mui/material";
-import ContentBlock from "@features/auth/components/ContentBlock.jsx";
 import {MoneyBlock, BlocksRow} from "@features/transactions/components/MoneyBlock.jsx";
 import {useBank} from "@features/transactions/hooks/useBank";
 import TableComponent from "@features/auth/components/TableComponent.jsx";
@@ -9,8 +8,8 @@ import HistoryIcon from "@mui/icons-material/History";
 import PaginationBox from "@features/main/PaginationBox";
 
 const transactionColumns = [
-    { id: 'type', label: 'Тип', align: 'right' },
-    { id: 'amount', label: 'Сумма', align: 'right' },
+    {id: 'type', label: 'Тип', align: 'right'},
+    {id: 'amount', label: 'Сумма', align: 'right'},
     {
         id: 'account',
         label: 'Счет',
@@ -21,7 +20,7 @@ const transactionColumns = [
             return value;
         }
     },
-    { id: 'comment', label: 'Комментарий', align: 'right' },
+    {id: 'comment', label: 'Комментарий', align: 'right'},
     {
         id: 'date',
         label: 'Дата',
@@ -105,7 +104,6 @@ const BankPage = () => {
     ];
 
     return (
-        <ContentBlock centered={true}>
             <MainContainer>
                 <LeftContent>
                     <Box>
@@ -153,7 +151,6 @@ const BankPage = () => {
                     />
                 </RightContent>
             </MainContainer>
-        </ContentBlock>
     );
 };
 

@@ -9,13 +9,13 @@ import {
     Paper,
     IconButton
 } from '@mui/material';
-import { styled } from '@mui/material/styles';
+import {styled} from '@mui/material/styles';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 
 const StyledTableContainer = styled(TableContainer, {
     shouldForwardProp: (prop) => prop !== 'customWidth' && prop !== 'customHeight'
-})(({ theme, customWidth, customHeight }) => ({
+})(({theme, customWidth, customHeight}) => ({
     borderRadius: '8px',
     boxShadow: theme.shadows[2],
     margin: theme.spacing(2, 0),
@@ -24,28 +24,28 @@ const StyledTableContainer = styled(TableContainer, {
     overflowY: 'auto',
 }));
 
-const StyledTable = styled(Table)(({ customMinWidth }) => ({
+const StyledTable = styled(Table)(({customMinWidth}) => ({
     minWidth: customMinWidth || 1350,
     width: '100%',
 }));
 
-const StyledTableHead = styled(TableHead)(({ theme }) => ({
+const StyledTableHead = styled(TableHead)(({theme}) => ({
     backgroundColor: theme.palette.primary.main,
     position: 'sticky',
     top: 0,
     zIndex: 2,
 }));
 
-const StyledHeaderCell = styled(TableCell)(({ theme }) => ({
+const StyledHeaderCell = styled(TableCell)(({theme}) => ({
     color: theme.palette.text.white,
     fontWeight: 600,
 }));
 
-const StyledBodyCell = styled(TableCell)(({ theme }) => ({
+const StyledBodyCell = styled(TableCell)(({theme}) => ({
     color: theme.palette.text.primary,
 }));
 
-const StyledTableRow = styled(TableRow)(({rowtype }) => ({
+const StyledTableRow = styled(TableRow)(({rowtype}) => ({
     backgroundColor:
         rowtype === "Доход"
             ? "rgba(76, 175, 80, 0.1)"
@@ -89,18 +89,18 @@ const TableRowComponent = React.memo(function TableRowComponent({
                 if (column.id === actionsColumn && showActions) {
                     return (
                         <StyledBodyCell key={column.id} align={column.align || 'left'}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <div style={{display: 'flex', justifyContent: 'space-between'}}>
                 <span>
                   {column.render ? column.render(value, row) : value}
                 </span>
 
                                 <ActionsContainer>
                                     <IconButton size="small" onClick={handleEdit}>
-                                        <EditIcon fontSize="small" />
+                                        <EditIcon fontSize="small"/>
                                     </IconButton>
 
                                     <IconButton size="small" onClick={handleDelete}>
-                                        <DeleteIcon fontSize="small" />
+                                        <DeleteIcon fontSize="small"/>
                                     </IconButton>
                                 </ActionsContainer>
                             </div>
@@ -135,7 +135,7 @@ const TableComponent = ({
         <StyledTableContainer
             component={Paper}
             customWidth={tableWidth}
-            style={{ maxHeight: tableHeight }}
+            style={{maxHeight: tableHeight}}
         >
             <StyledTable customMinWidth={tableMinWidth}>
                 <StyledTableHead>

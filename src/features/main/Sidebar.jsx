@@ -3,7 +3,7 @@ import {useState} from "react";
 import {useAuth} from "@contexts/AuthContext";
 import {useNavigate} from "react-router-dom";
 import {useThemeContext} from "@contexts/ThemeContext";
-
+import LogoutIcon from '@mui/icons-material/Logout';
 import {BurgerButton} from './componentsSidebar/BurgerButton';
 import {UserInfo} from './componentsSidebar/UserInfo';
 import {MenuButton} from './componentsSidebar/MenuButton';
@@ -22,15 +22,11 @@ import PeopleIcon from '@mui/icons-material/People';
 const SidebarContainer = styled(Box)(({theme}) => ({
     width: 70,
     height: '100vh',
-    position: 'fixed',
-    left: 0,
-    top: 0,
+    zIndex: 1200, // важно
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    paddingTop: 16,
-    zIndex: 1200,
-    backgroundColor: theme.palette.background.paper
+    backgroundColor: theme.palette.background.paper,
 }));
 
 const MenuContent = styled(Box)(({theme}) => ({
@@ -44,7 +40,7 @@ const MenuContent = styled(Box)(({theme}) => ({
 const StyledDivider = styled(Divider)(({theme}) => ({
     borderColor: theme.palette.divider,
     width: '100%'
-    
+
 }));
 
 
@@ -72,7 +68,7 @@ export const Sidebar = ({onMenuClick}) => {
     const menuItems = [
         {
             label: "Мой профиль",
-            icon: <ProfileIcon />,
+            icon: <ProfileIcon/>,
             action: () => navigate('/profile')
         },
         {
@@ -95,7 +91,7 @@ export const Sidebar = ({onMenuClick}) => {
     if (isAdmin) {
         menuItems.push({
             label: "Список сотрудников",
-            icon: <PeopleIcon/>, 
+            icon: <PeopleIcon/>,
             action: () => navigate('/users')
         });
     }
@@ -110,6 +106,7 @@ export const Sidebar = ({onMenuClick}) => {
         <>
             <SidebarContainer>
                 <BurgerButton onClick={handleBurgerClick}/>
+                <LogoutIcon></LogoutIcon>
             </SidebarContainer>
 
             <Drawer
