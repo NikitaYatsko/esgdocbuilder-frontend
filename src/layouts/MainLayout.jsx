@@ -1,36 +1,50 @@
-import {Box} from "@mui/material";
+// MainLayout.jsx
 import {Sidebar} from "@features/main/Sidebar.jsx";
 import {TopBar} from "@features/main/TopBar.jsx";
+import {Box} from "@mui/material";
 
 export const MainLayout = ({ children }) => {
     return (
         <Box
             sx={{
                 display: "grid",
-                gridTemplateAreas: `
-                    "sidebar topbar"
-                    "sidebar content"
-                `,
                 gridTemplateColumns: "70px 1fr",
                 gridTemplateRows: "70px 1fr",
-                height: "100vh",
-                overflow: "hidden",
+                minHeight: "100vh",
+
             }}
         >
-            <Box sx={{ gridArea: "sidebar", overflow: "auto" }}>
+
+            <Box
+                sx={{
+                    gridRow: "1 / span 2",
+                    gridColumn: "1",
+                    position: "sticky",
+                    height: "100vh",
+                }}
+            >
                 <Sidebar />
             </Box>
 
-            <Box sx={{ gridArea: "topbar" }}>
+
+            <Box
+                sx={{
+                    gridRow: "1",
+                    gridColumn: "2",
+                    position: "sticky",
+                    top: 0,
+                    zIndex: 1200,
+
+                }}
+            >
                 <TopBar />
             </Box>
 
+
             <Box
-                component="main"
                 sx={{
-                    gridArea: "content",
-                    overflow: "auto",
-                    p: 3
+                    gridRow: "2",
+                    gridColumn: "2",
                 }}
             >
                 {children}
