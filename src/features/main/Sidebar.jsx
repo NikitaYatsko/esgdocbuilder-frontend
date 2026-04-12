@@ -1,4 +1,4 @@
-import {Box, styled, Drawer, Divider, useTheme} from "@mui/material";
+import {Box, styled, Drawer, Divider, useTheme, Typography} from "@mui/material";
 import {useState} from "react";
 import {useAuth} from "@contexts/AuthContext";
 import {useNavigate} from "react-router-dom";
@@ -24,8 +24,11 @@ const SidebarContainer = styled(Box)(({theme}) => ({
     height: '100vh',
     zIndex: 1200, // важно
     display: 'flex',
+    gap: "20px",
     flexDirection: 'column',
+    padding: "10px 0 30px 0",
     alignItems: 'center',
+
     backgroundColor: theme.palette.background.paper,
 }));
 
@@ -106,7 +109,7 @@ export const Sidebar = ({onMenuClick}) => {
         <>
             <SidebarContainer>
                 <BurgerButton onClick={handleBurgerClick}/>
-                <LogoutIcon></LogoutIcon>
+                <LogoutIcon sx={{cursor: "pointer"}}></LogoutIcon>
             </SidebarContainer>
 
             <Drawer
