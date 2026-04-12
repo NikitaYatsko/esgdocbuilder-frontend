@@ -86,7 +86,6 @@ const TableRowComponent = React.memo(function TableRowComponent({
             {columns.map((column) => {
                 const value = row[column.id];
 
-                // 🔥 Actions колонка
                 if (column.id === actionsColumn && showActions) {
                     return (
                         <StyledBodyCell key={column.id} align={column.align || 'left'}>
@@ -109,7 +108,6 @@ const TableRowComponent = React.memo(function TableRowComponent({
                     );
                 }
 
-                // 🔥 Обычные колонки (с поддержкой render)
                 return (
                     <StyledBodyCell key={column.id} align={column.align || 'left'}>
                         {column.render ? column.render(value, row) : value}
