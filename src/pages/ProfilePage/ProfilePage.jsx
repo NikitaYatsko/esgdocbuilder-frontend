@@ -19,7 +19,7 @@ const ProfilePaper = styled(Paper)(({theme}) => ({
     border: '1px solid',
     borderColor: theme.palette.divider,
     backgroundColor: theme.palette.background.paper,
-    minWidth: "800px",
+    width:"100%"
 }));
 
 const SectionTitle = styled(Typography)(({theme}) => ({
