@@ -15,16 +15,6 @@ const PageContainer = styled(Box)(({theme}) => ({
     backgroundColor: theme.palette.background.default,
 }));
 
-const MainContent = styled(Box)({
-    flexGrow: 1,
-    marginLeft: '70px',
-    marginTop: '70px',
-    width: 'calc(100% - 70px)',
-    height: 'calc(100vh - 70px)',
-    overflow: 'auto',
-    padding: 24,
-});
-
 const CenteredContainer = styled(Container)({
     height: '100%',
     display: 'flex',
@@ -116,7 +106,6 @@ const UserList = () => {
     if (!isAdmin) {
         return (
             <PageContainer>
-                <MainContent component="main">
                     <CenteredContainer maxWidth="lg">
                         <UserPaper elevation={0}>
                             <Typography color="error" align="center">
@@ -124,14 +113,12 @@ const UserList = () => {
                             </Typography>
                         </UserPaper>
                     </CenteredContainer>
-                </MainContent>
             </PageContainer>
         );
     }
 
     return (
         <PageContainer>
-            <MainContent component="main">
                 <CenteredContainer maxWidth="lg">
                     <UserPaper elevation={0}>
                         <Typography variant="h6" gutterBottom sx={{mb: 2}}>
@@ -156,7 +143,6 @@ const UserList = () => {
                         )}
                     </UserPaper>
                 </CenteredContainer>
-            </MainContent>
         </PageContainer>
     );
 };
