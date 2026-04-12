@@ -1,11 +1,11 @@
-import { Box, Container, Typography, Paper } from "@mui/material";
-import { styled } from "@mui/material/styles";
-import { useAuth } from "@contexts/AuthContext";
-import { useState, useEffect } from "react";
-import { authApi } from "@features/auth/api/authApi";
+import {Box, Container, Typography, Paper, Avatar} from "@mui/material";
+import {styled} from "@mui/material/styles";
+import {useAuth} from "@contexts/AuthContext";
+import {useState, useEffect} from "react";
+import {authApi} from "@features/auth/api/authApi";
 import TableComponent from "@features/auth/components/TableComponent";
 
-const PageContainer = styled(Box)(({ theme }) => ({
+const PageContainer = styled(Box)(({theme}) => ({
     position: 'fixed',
     top: 0,
     left: 0,
@@ -31,7 +31,7 @@ const CenteredContainer = styled(Container)({
     alignItems: 'center',
 });
 
-const UserPaper = styled(Paper)(({ theme }) => ({
+const UserPaper = styled(Paper)(({theme}) => ({
     padding: theme.spacing(4),
     borderRadius: 8,
     border: '1px solid',
@@ -40,11 +40,13 @@ const UserPaper = styled(Paper)(({ theme }) => ({
     width: '100%',
 }));
 
-const RowStyled = styled(Box)(({ theme, role }) => ({
+const RowStyled = styled(Box, {
+    shouldForwardProp: (prop) => prop !== 'role'
+})(({theme, role}) => ({
     display: 'inline-block',
     padding: '4px 12px',
     borderRadius: '12px',
-    fontSize: '12px',
+    fontSize: '0.875rem',
     fontWeight: 500,
     backgroundColor: role === 'ADMIN'
         ? theme.palette.error.light
@@ -55,13 +57,25 @@ const RowStyled = styled(Box)(({ theme, role }) => ({
 }));
 
 const UserList = () => {
-    const { user } = useAuth();
+    const {user} = useAuth();
     const [users, setUsers] = useState([]);
     const [usersLoading, setUsersLoading] = useState(false);
 
     const isAdmin = user?.roles?.some(role => role.name === 'ADMIN') || false;
-
     const userColumns = [
+        {
+            id: 'imageUrl',
+            label: ' ',
+            align: 'left',
+            render: (value) => (
+                <Avatar
+                    src={value}
+                    alt="user"
+                    sx={{ width: 40, height: 40,margin: '0 auto' }}
+                />
+            ),
+        },
+        { id: 'id', label: 'ID', align: 'left' },
         { id: 'fullName', label: 'Имя', align: 'left' },
         { id: 'email', label: 'Email', align: 'left' },
         { id: 'phone', label: 'Телефон', align: 'left' },
@@ -87,7 +101,8 @@ const UserList = () => {
     };
 
     const userRows = users.map((userItem) => ({
-        id: userItem.email,
+        imageUrl: userItem.imageUrl || undefined,
+        id: userItem.id,
         fullName: userItem.fullName || '—',
         email: userItem.email,
         phone: userItem.phone || '—',
@@ -119,15 +134,15 @@ const UserList = () => {
             <MainContent component="main">
                 <CenteredContainer maxWidth="lg">
                     <UserPaper elevation={0}>
-                        <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
+                        <Typography variant="h6" gutterBottom sx={{mb: 2}}>
                             Управление пользователями
                         </Typography>
-                        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                        <Typography variant="body2" color="text.secondary" sx={{mb: 3}}>
                             Всего пользователей: {users.length}
                         </Typography>
 
                         {usersLoading ? (
-                            <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+                            <Box sx={{display: 'flex', justifyContent: 'center', py: 4}}>
                                 <Typography>Загрузка...</Typography>
                             </Box>
                         ) : (
