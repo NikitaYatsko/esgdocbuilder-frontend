@@ -118,7 +118,7 @@ export const Sidebar = ({onMenuClick}) => {
                 onClose={handleCloseMenu}
                 PaperProps={{
                     sx: {
-                        width: 345,
+                        width: 300,
                         overflowX: 'hidden'
                     }
                 }}

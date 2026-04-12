@@ -1,17 +1,15 @@
 import { Box, Container, Typography, Paper, Grid, Divider, useTheme, styled } from "@mui/material";
 import { useAuth } from "@contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef} from "react";
 import PhoneIcon from '@mui/icons-material/Phone';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import { authApi } from "@features/auth/api/authApi";
-
 import { ProfileAvatar } from '@features/profile/ProfileAvatar';
 import { InfoCard } from '@features/profile/InfoCard';
 import { ProfileActions } from '@features/profile/ProfileActions';
 import { EditProfileModal } from '@features/profile/EditProfileModal';
-import TableComponent from "@features/auth/components/TableComponent";
 
 const PageContainer = styled(Box)(({ theme }) => ({
     position: 'fixed',
