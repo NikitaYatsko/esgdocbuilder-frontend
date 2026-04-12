@@ -142,6 +142,24 @@ export const ProfilePage = () => {
         ? `${user.firstName} ${user.lastName}`
         : user?.fullName || user?.email;
 
+    const infoItems = [
+        {
+            icon: PhoneIcon,
+            label: "Телефон",
+            value: user.phone,
+        },
+        {
+            icon: CalendarTodayIcon,
+            label: "Дата регистрации",
+            value: user.createdAt,
+        },
+        {
+            icon: AccessTimeIcon,
+            label: "Обязанности",
+            value: user.roles?.[0]?.name,
+        },
+    ];
+
     return (
         <PageContainer>
             <MainContent component="main">
@@ -170,21 +188,14 @@ export const ProfilePage = () => {
 
                                 <Grid container spacing={3}>
                                     <Grid size={{ xs: 12, md: 6 }}>
-                                        <InfoCard
-                                            icon={PhoneIcon}
-                                            label="Телефон"
-                                            value={user.phone}
-                                        />
-                                        <InfoCard
-                                            icon={CalendarTodayIcon}
-                                            label="Дата регистрации"
-                                            value={user.createdAt}
-                                        />
-                                        <InfoCard
-                                            icon={AccessTimeIcon}
-                                            label="Обязанности"
-                                            value={user.roles?.[0]?.name}
-                                        />
+                                        {infoItems.map((item, index) => (
+                                            <InfoCard
+                                                key={index}
+                                                icon={item.icon}
+                                                label={item.label}
+                                                value={item.value}
+                                            />
+                                        ))}
                                     </Grid>
                                 </Grid>
 
