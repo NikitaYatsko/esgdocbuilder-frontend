@@ -20,7 +20,6 @@ const SectionTitle = styled(Typography)(({ theme }) => ({
     color: theme.palette.text.primary,
     marginBottom: 16,
     display: 'flex',
-    gap: 8,
     alignItems: 'center',
 }));
 
@@ -28,7 +27,6 @@ const MainContainer = styled(Box)({
     display: 'flex',
     gap: 24,
     height: '100%',
-    width: '1200px',
 });
 
 const LeftContent = styled(Box)({
@@ -39,7 +37,7 @@ const LeftContent = styled(Box)({
 });
 
 const RightContent = styled(Box)({
-    minWidth: '320px',
+    minWidth: '350px',
     marginLeft: 24,
     paddingLeft: 24,
 });

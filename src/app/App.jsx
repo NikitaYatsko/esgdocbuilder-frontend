@@ -18,11 +18,11 @@ const UserList = lazy(() => import("@pages/UserList/UserList.jsx"));
 
 const MainLayout = ({ children }) => {
     return (
-        <Box sx={{ display: 'flex' }}>
+        <Box>
             <Sidebar />
-            <Box sx={{ flexGrow: 1 }}>
+            <Box>
                 <TopBar />
-                <Box component="main" sx={{ p: 3 }}>
+                <Box component="main">
                     {children}
                 </Box>
             </Box>
