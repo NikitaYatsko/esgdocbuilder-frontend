@@ -8,46 +8,29 @@ export const MainLayout = ({ children }) => {
         <Box
             sx={{
                 display: "grid",
+                gridTemplateAreas: `
+                    "sidebar topbar"
+                    "sidebar content"
+                `,
                 gridTemplateColumns: "70px 1fr",
                 gridTemplateRows: "70px 1fr",
-                minHeight: "100vh", // Меняем height на minHeight
-                // Убираем overflow: hidden
+                height: "100vh",
+                overflow: "auto ",
             }}
         >
-            {/* Sidebar */}
-            <Box
-                sx={{
-                    gridRow: "1 / span 2",
-                    gridColumn: "1",
-                    position: "sticky", // Возвращаем sticky
-                    top: 0,
-                    height: "100vh",
-                }}
-            >
+            <Box sx={{ gridArea: "sidebar", overflow: "auto",position:"sticky" }}>
                 <Sidebar />
             </Box>
 
-            {/* TopBar */}
-            <Box
-                sx={{
-                    gridRow: "1",
-                    gridColumn: "2",
-                    position: "sticky",
-                    top: 0,
-                    zIndex: 1200,
-
-                }}
-            >
+            <Box sx={{ gridArea: "topbar" }}>
                 <TopBar />
             </Box>
 
-            {/* Content - убираем overflow */}
             <Box
+                component="main"
                 sx={{
-                    gridRow: "2",
-                    gridColumn: "2",
-                    height: "100%",
-                    width:"100%",
+                    gridArea: "content",
+                    p: 3
                 }}
             >
                 {children}

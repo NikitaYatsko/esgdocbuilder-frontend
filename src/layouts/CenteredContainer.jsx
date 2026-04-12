@@ -7,9 +7,10 @@ export const CenteredContainer = ({children, fullHeight = false, width}) => {
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
-                width: width + "px",
+                padding:"20px",
+                maxWidth: width + "px",
                 margin: "0 auto",
-                height: fullHeight ? "100%" : "auto",
+                height: fullHeight ? "100vh" : "auto",
             }}
         >
             {children}
