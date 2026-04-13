@@ -1,6 +1,6 @@
 import { Modal, Box, styled } from "@mui/material";
 
-export const StyledModal = styled(Modal)(({ theme }) => ({
+export const StyledModal = styled(Modal)(() => ({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -22,7 +22,7 @@ export const ModalHeader = styled(Box)(({ theme }) => ({
     marginBottom: theme.spacing(3),
 }));
 
-export const ModalTitle = styled(Box)(({ theme }) => ({
+export const ModalTitle = styled(Box)(() => ({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
