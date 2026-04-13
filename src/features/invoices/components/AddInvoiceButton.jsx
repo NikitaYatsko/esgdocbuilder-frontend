@@ -31,7 +31,6 @@ const AddInvoiceButton = ({ onClick, children = 'Добавить смету', d
     return (
         <StyledAddButton
             variant="contained"
-            startIcon={<Add />}
             onClick={onClick}
             disabled={disabled}
         >

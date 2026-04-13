@@ -6,6 +6,7 @@ export const invoiceApi = {
     update: (id, data) => axiosInstance.put(`/api/invoices/${id}`, data),
     create: (data) => axiosInstance.post("/api/invoices", data),
     delete: (id) => axiosInstance.delete(`/api/invoices/${id}`),
+    getAllInvoices: () => axiosInstance.get("api/invoices/invoice-title"),
 
     getItems: (invoiceId) => axiosInstance.get(`/api/invoices/${invoiceId}/items`),
     addItem: (invoiceId, data) => axiosInstance.post(`/api/invoices/${invoiceId}/items`, data),
