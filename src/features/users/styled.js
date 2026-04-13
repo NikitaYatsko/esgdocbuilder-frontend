@@ -30,3 +30,10 @@ export const FormRow = styled(Box)({
     flexDirection: 'column',
     gap: 16,
 });
+
+export const HeaderWrapper = styled(Box)(() => ({
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '24px',
+}));

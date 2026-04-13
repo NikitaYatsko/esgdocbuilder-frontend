@@ -12,7 +12,7 @@ import TableComponent from "@features/auth/components/TableComponent";
 import {CenteredContainer} from "@/layouts/CenteredContainer.jsx";
 import AddIcon from '@mui/icons-material/Add';
 import {usersApi} from "@features/users/users.api.js";
-import {RowStyled, UserPaper} from "@features/users/styled.js";
+import {HeaderWrapper, RowStyled, UserPaper} from "@features/users/styled.js";
 import CreateUserModal from "@features/users/CreateUserModal.jsx";
 import {getUserColumns} from "@features/users/UserColumns.jsx";
 
@@ -36,7 +36,7 @@ const UserList = () => {
 
     const isAdmin = user?.roles?.some(role => role.name === 'ADMIN') || false;
 
-    // ========== ЗАГРУЗКА ДАННЫХ ==========
+
     const fetchUsers = useCallback(async () => {
         try {
             setLoading(true);
@@ -157,7 +157,7 @@ const UserList = () => {
     return (
         <CenteredContainer width={1200}>
             <UserPaper elevation={0}>
-                <Box sx={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3}}>
+                <HeaderWrapper>
                     <Box>
                         <Typography variant="h5" fontWeight={600}>
                             Управление пользователями
@@ -174,7 +174,7 @@ const UserList = () => {
                     >
                         Создать пользователя
                     </Button>
-                </Box>
+                </HeaderWrapper>
 
                 {loading ? (
                     <Box sx={{display: 'flex', justifyContent: 'center', py: 8}}>

@@ -15,6 +15,7 @@ import UserList from "@pages/UserList/UserList.jsx";
 const BankPage = lazy(() => import("@pages/Bank/BankPage.jsx"));
 const CreateInvoicePage = lazy(() => import("@pages/CreateInvoicePage/CreateInvoicePage.jsx"));
 const ProductsPage = lazy(() => import("@pages/ProductsPage/ProductsPage.jsx"));
+const UsersPage = lazy(() => import("@pages/UserList/UserList.jsx"));
 
 
 
@@ -83,7 +84,7 @@ const AppContent = () => {
                     path="/users"
                     element={
                         <PrivateRoute>
-                            <UserList/>
+                            <UsersPage/>
 
                         </PrivateRoute>
                     }
