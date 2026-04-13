@@ -1,4 +1,3 @@
-import ContentBlock from "@features/auth/components/ContentBlock.jsx";
 import { Box, Snackbar, Alert, Typography } from "@mui/material";
 import TableComponent from "@features/auth/components/TableComponent.jsx";
 import InvoiceSearchBar from "@features/invoices/components/InvoiceSearchBar";
@@ -168,7 +167,6 @@ const CreateInvoicePage = () => {
     };
 
     return (
-        <ContentBlock centered={true}>
             <StyledBox>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
                     <Typography variant="h4" component="h1">
@@ -239,7 +237,6 @@ const CreateInvoicePage = () => {
                     </Alert>
                 </Snackbar>
             </StyledBox>
-        </ContentBlock>
     );
 };
 
