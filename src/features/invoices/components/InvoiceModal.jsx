@@ -75,28 +75,28 @@ const InvoiceModal = ({ open, onClose, onSave, loading = false, mode = 'create',
     };
 
     const handleQuantityChange = (e) => {
-    const value = e.target.value;
+        const value = e.target.value;
 
-    if (value === "") {
+        if (value === "") {
+            setForm(prev => ({
+                ...prev,
+                quantity: "",
+            }));
+            return;
+        }
+
+        const quantity = Number(value);
+
+        if (isNaN(quantity)) return;
+
         setForm(prev => ({
             ...prev,
-            quantity: "",
+            quantity,
+            vatTotal: prev.vatPerUnit * quantity,
+            totalMarginality: calculateTotalMarginality(prev.unitMarginality, quantity),
+            total: calculateTotal(prev.price, quantity)
         }));
-        return;
-    }
-
-    const quantity = Number(value);
-
-    if (isNaN(quantity)) return;
-
-    setForm(prev => ({
-        ...prev,
-        quantity,
-        vatTotal: prev.vatPerUnit * quantity,
-        totalMarginality: calculateTotalMarginality(prev.unitMarginality, quantity),
-        total: calculateTotal(prev.price, quantity)
-    }));
-};
+    };
     useEffect(() => {
         if (open) {
             if (mode === 'create') {
@@ -114,13 +114,17 @@ const InvoiceModal = ({ open, onClose, onSave, loading = false, mode = 'create',
                 });
             } else if (mode === 'editItem' && initialData) {
 
+                const productFromList = products.find(
+                    p => p.name === initialData.nameProduct
+                );
+
                 const quantity = initialData.quantity || 1;
                 const price = initialData.unitPrice || initialData.price || 0;
                 const vatPerUnit = (initialData.vatTotal || initialData.vatAmount || 0) / quantity;
                 const unitMarginality = (initialData.marginality || 0) / quantity;
 
                 setForm({
-                    product: initialData.product || null,
+                    product: productFromList  || null,
                     quantity: quantity,
                     price: price,
                     vatPerUnit: vatPerUnit,
