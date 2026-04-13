@@ -126,7 +126,6 @@ const BankPage = () => {
                                 <HistoryIcon color="primary" sx={{fontSize: 28}}/>
                                 История операций
                             </SectionTitle>
-                            {console.log(operations[0])}
                             <TableComponent
                                 columns={columns}
                                 rows={operations}

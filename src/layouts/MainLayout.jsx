@@ -3,7 +3,7 @@ import {Sidebar} from "@features/main/Sidebar.jsx";
 import {TopBar} from "@features/main/TopBar.jsx";
 import {Box} from "@mui/material";
 
-export const MainLayout = ({ children }) => {
+export const MainLayout = ({children}) => {
     return (
         <Box
             sx={{
@@ -15,15 +15,15 @@ export const MainLayout = ({ children }) => {
                 gridTemplateColumns: "70px 1fr",
                 gridTemplateRows: "70px 1fr",
                 height: "100vh",
-                overflow: "auto ",
+                overflow: "auto",
             }}
         >
-            <Box sx={{ gridArea: "sidebar", overflow: "auto",position:"sticky" }}>
-                <Sidebar />
+            <Box sx={{gridArea: "sidebar"}}>
+                <Sidebar/>
             </Box>
 
-            <Box sx={{ gridArea: "topbar" }}>
-                <TopBar />
+            <Box sx={{gridArea: "topbar"}}>
+                <TopBar/>
             </Box>
 
             <Box
