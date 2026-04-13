@@ -24,6 +24,7 @@ const StyledTableContainer = styled(TableContainer, {
     overflowY: 'auto',
 }));
 
+
 const StyledTable = styled(Table)(({customMinWidth}) => ({
     minWidth: customMinWidth || 1350,
     width: '100%',
@@ -55,6 +56,7 @@ const StyledTableRow = styled(TableRow)(({rowtype}) => ({
 }));
 
 const ActionsContainer = styled('div')({
+
     display: 'flex',
     gap: '4px',
 });
@@ -72,6 +74,7 @@ const TableRowComponent = React.memo(function TableRowComponent({
         e.stopPropagation();
         onEdit?.(row);
     };
+
 
     const handleDelete = (e) => {
         e.stopPropagation();

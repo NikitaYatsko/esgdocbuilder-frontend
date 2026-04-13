@@ -12,9 +12,11 @@ export const getAccessToken = () => {
   return accessToken;
 };
 
+
 const baseURL = import.meta.env.DEV
   ? '/api'
   : 'https://docbuilder-application.up.railway.app';
+
 
 const axiosInstance = axios.create({
   baseURL: baseURL,

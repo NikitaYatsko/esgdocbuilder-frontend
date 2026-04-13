@@ -15,7 +15,7 @@ import {MainLayout} from "@/layouts/MainLayout.jsx";
 const BankPage = lazy(() => import("@pages/Bank/BankPage.jsx"));
 const CreateInvoicePage = lazy(() => import("@pages/CreateInvoicePage/CreateInvoicePage.jsx"));
 const ProductsPage = lazy(() => import("@pages/ProductsPage/ProductsPage.jsx"));
-const UserList = lazy(() => import("@pages/UserList/UserList.jsx"));
+const UserListPage = lazy(() => import("@pages/UserListPage/UserListPage.jsx"));
 
 
 const PrivateRoute = ({children}) => {
@@ -83,7 +83,8 @@ const AppContent = () => {
                     path="/users"
                     element={
                         <PrivateRoute>
-                            <UserList/>
+                            <UserListPage />
+
                         </PrivateRoute>
                     }
                 />
