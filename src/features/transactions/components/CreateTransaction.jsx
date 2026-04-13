@@ -1,6 +1,5 @@
 import {useState} from 'react';
 import {
-    Box,
     Typography,
     TextField,
     FormControl,
@@ -20,7 +19,7 @@ const TransactionCard = styled(Paper)(({theme}) => ({
     borderRadius: 12,
     backgroundColor: theme.palette.background.paper,
     boxShadow: theme.shadows[3],
-    minWidth: 300,
+    minWidth: 250,
     display: 'flex',
     flexDirection: 'column',
     gap: 20,

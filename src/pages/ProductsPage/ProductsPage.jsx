@@ -8,6 +8,7 @@ import ProductModal from "@features/products/components/ProductModal.jsx";
 import styled from "@emotion/styled";
 import { useProducts } from "@features/products/hooks/useProducts.js";
 import PaginationBox from "@features/main/PaginationBox";
+import {CenteredContainer} from "@/layouts/CenteredContainer.jsx";
 
 const StyledBox = styled(Box)(({ theme }) => ({
     backgroundColor: theme.palette.background.default,
@@ -136,50 +137,51 @@ const ProductsPage = () => {
     };
 
     return (
-            <StyledBox>
-                <PageHeader title="Товары" onAdd={handleAddProduct} />
-                <SearchBar onSearch={handleSearch} onFilter={handleFilter} />
+            <CenteredContainer width="1200">
+                <StyledBox>
+                    <PageHeader title="Товары" onAdd={handleAddProduct} />
+                    <SearchBar onSearch={handleSearch} onFilter={handleFilter} />
 
-                <Box>
-                    <TableComponent
-                        columns={columns}
-                        rows={rows}
-                        onRowClick={handleRowClick}
-                        showActions={true}
-                        onEdit={handleEdit}
-                        onDelete={handleDelete}
-                        tableWidth="1200px"
-                        tableMinWidth="600px"
-                    />
-                    {pagination && (
-                        <PaginationBox
-                            page={page}
-                            totalPages={pagination.pages}
-                            onNext={nextPage}
-                            onPrev={prevPage}
+                    <Box>
+                        <TableComponent
+                            columns={columns}
+                            rows={rows}
+                            onRowClick={handleRowClick}
+                            showActions={true}
+                            onEdit={handleEdit}
+                            onDelete={handleDelete}
+                            tableWidth="100%"
+                            tableMinWidth="600px"
                         />
-                    )}
-                </Box>
-                
-                <ProductModal
-                    open={openModal}
-                    onClose={handleCloseModal}
-                    product={selectedProduct}
-                    onSave={handleSaveProduct}
-                    loading={modalLoading}
-                />
-                
-                <Snackbar 
-                    open={snackbar.open} 
-                    autoHideDuration={6000} 
-                    onClose={handleCloseSnackbar}
-                    anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-                >
-                    <Alert onClose={handleCloseSnackbar} severity={snackbar.severity}>
-                        {snackbar.message}
-                    </Alert>
-                </Snackbar>
-            </StyledBox>
+                        {pagination && (
+                            <PaginationBox
+                                page={page}
+                                totalPages={pagination.pages}
+                                onNext={nextPage}
+                                onPrev={prevPage}
+                            />
+                        )}
+                    </Box>
+                    <ProductModal
+                        open={openModal}
+                        onClose={handleCloseModal}
+                        product={selectedProduct}
+                        onSave={handleSaveProduct}
+                        loading={modalLoading}
+                    />
+
+                    <Snackbar
+                        open={snackbar.open}
+                        autoHideDuration={6000}
+                        onClose={handleCloseSnackbar}
+                        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                    >
+                        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity}>
+                            {snackbar.message}
+                        </Alert>
+                    </Snackbar>
+                </StyledBox>
+            </CenteredContainer>
     );
 };
 

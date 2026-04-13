@@ -6,6 +6,7 @@ import TableComponent from "@features/auth/components/TableComponent.jsx";
 import CreateTransaction from "@features/transactions/components/CreateTransaction.jsx";
 import HistoryIcon from "@mui/icons-material/History";
 import PaginationBox from "@features/main/PaginationBox";
+import {CenteredContainer} from "@/layouts/CenteredContainer.jsx";
 
 const transactionColumns = [
     {id: 'type', label: 'Тип', align: 'right'},
@@ -41,7 +42,6 @@ const SectionTitle = styled(Typography)(({theme}) => ({
 
 const MainContainer = styled(Box)({
     display: 'flex',
-    gap: 24,
     height: '100%',
 });
 
@@ -54,7 +54,6 @@ const LeftContent = styled(Box)({
 
 const RightContent = styled(Box)({
     minWidth: '350px',
-    marginLeft: 24,
     paddingLeft: 24,
 });
 
@@ -104,53 +103,54 @@ const BankPage = () => {
     ];
 
     return (
-            <MainContainer>
-                <LeftContent>
-                    <Box>
-                        <SectionTitle variant="h5">
-                            Финансовые счета
-                        </SectionTitle>
+            <CenteredContainer width={1200} fullHeight={true}>
+                <MainContainer>
+                    <LeftContent>
+                        <Box>
+                            <SectionTitle variant="h5">
+                                Финансовые счета
+                            </SectionTitle>
 
-                        <BlocksRow>
-                            {moneyData.map((item) => (
-                                <MoneyBlock
-                                    key={item.title}
-                                    title={item.title}
-                                    amount={item.amount}
-                                />
-                            ))}
-                        </BlocksRow>
-                    </Box>
-                    <Box>
-                        <SectionTitle variant="h5">
-                            <HistoryIcon color="primary" sx={{fontSize: 28}}/>
-                            История операций
-                        </SectionTitle>
-                        {console.log(operations[0])}
-                        <TableComponent
-                            columns={columns}
-                            rows={operations}
-                            showActions={false}
-                            tableMinWidth="600px"
-                            tableHeight={500}
+                            <BlocksRow>
+                                {moneyData.map((item) => (
+                                    <MoneyBlock
+                                        key={item.title}
+                                        title={item.title}
+                                        amount={item.amount}
+                                    />
+                                ))}
+                            </BlocksRow>
+                        </Box>
+                        <Box>
+                            <SectionTitle variant="h5">
+                                <HistoryIcon color="primary" sx={{fontSize: 28}}/>
+                                История операций
+                            </SectionTitle>
+                            <TableComponent
+                                columns={columns}
+                                rows={operations}
+                                showActions={false}
+                                tableMinWidth="600px"
+                                tableHeight={500}
+                            />
+
+                            <PaginationBox
+                                page={page}
+                                totalPages={pagination?.pages}
+                                onNext={nextPage}
+                                onPrev={prevPage}
+                            />
+                        </Box>
+                    </LeftContent>
+
+                    <RightContent>
+                        <CreateTransaction
+                            accounts={accounts}
+                            onCreate={handleCreate}
                         />
-
-                        <PaginationBox
-                            page={page}
-                            totalPages={pagination?.pages}
-                            onNext={nextPage}
-                            onPrev={prevPage}
-                        />
-                    </Box>
-                </LeftContent>
-
-                <RightContent>
-                    <CreateTransaction
-                        accounts={accounts}
-                        onCreate={handleCreate}
-                    />
-                </RightContent>
-            </MainContainer>
+                    </RightContent>
+                </MainContainer>
+            </CenteredContainer>
     );
 };
 

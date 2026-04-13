@@ -3,51 +3,33 @@ import {Sidebar} from "@features/main/Sidebar.jsx";
 import {TopBar} from "@features/main/TopBar.jsx";
 import {Box} from "@mui/material";
 
-export const MainLayout = ({ children }) => {
+export const MainLayout = ({children}) => {
     return (
         <Box
             sx={{
                 display: "grid",
+                gridTemplateAreas: `
+                    "sidebar topbar"
+                    "sidebar content"
+                `,
                 gridTemplateColumns: "70px 1fr",
                 gridTemplateRows: "70px 1fr",
-                minHeight: "100vh", // Меняем height на minHeight
-                // Убираем overflow: hidden
+                height: "100vh",
+                overflow: "auto",
             }}
         >
-            {/* Sidebar */}
-            <Box
-                sx={{
-                    gridRow: "1 / span 2",
-                    gridColumn: "1",
-                    position: "sticky", // Возвращаем sticky
-                    top: 0,
-                    height: "100vh",
-                }}
-            >
-                <Sidebar />
+            <Box sx={{gridArea: "sidebar"}}>
+                <Sidebar/>
             </Box>
 
-            {/* TopBar */}
-            <Box
-                sx={{
-                    gridRow: "1",
-                    gridColumn: "2",
-                    position: "sticky",
-                    top: 0,
-                    zIndex: 1200,
-
-                }}
-            >
-                <TopBar />
+            <Box sx={{gridArea: "topbar"}}>
+                <TopBar/>
             </Box>
 
-            {/* Content - убираем overflow */}
             <Box
+                component="main"
                 sx={{
-                    gridRow: "2",
-                    gridColumn: "2",
-                    height: "100%",
-                    width:"100%",
+                    gridArea: "content",
                 }}
             >
                 {children}

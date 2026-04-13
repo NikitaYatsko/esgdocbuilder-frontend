@@ -4,17 +4,17 @@ import {useAuth} from "@contexts/AuthContext";
 import {useState, useEffect} from "react";
 import {authApi} from "@features/auth/api/authApi";
 import TableComponent from "@features/auth/components/TableComponent";
-
+import {CenteredContainer} from "@/layouts/CenteredContainer.jsx";
 
 
 // ✅ Замените на простой Box
 const PageContainer = styled(Box)(({theme}) => ({
     display: 'flex',
     flexDirection: 'column',
+    width: '100%',
     height: '100%', // Теперь будет занимать 100% родителя (MainLayout)
     backgroundColor: theme.palette.background.default,
 }));
-
 
 
 // Остальные стили оставляем без изменений
@@ -59,15 +59,15 @@ const UserList = () => {
                 <Avatar
                     src={value}
                     alt="user"
-                    sx={{ width: 40, height: 40, margin: '0 auto' }}
+                    sx={{width: 40, height: 40, margin: '0 auto'}}
                 />
             ),
         },
-        { id: 'id', label: 'ID', align: 'left' },
-        { id: 'fullName', label: 'Имя', align: 'left' },
-        { id: 'email', label: 'Email', align: 'left' },
-        { id: 'phone', label: 'Телефон', align: 'left' },
-        { id: 'role', label: 'Роль', align: 'left' },
+        {id: 'id', label: 'ID', align: 'left'},
+        {id: 'fullName', label: 'Имя', align: 'left'},
+        {id: 'email', label: 'Email', align: 'left'},
+        {id: 'phone', label: 'Телефон', align: 'left'},
+        {id: 'role', label: 'Роль', align: 'left'},
     ];
 
     useEffect(() => {
@@ -115,8 +115,8 @@ const UserList = () => {
         );
     }
 
-    return (
-        <PageContainer>
+    return (<CenteredContainer width={1200}>
+            <PageContainer>
                 <UserPaper elevation={0}>
                     <Typography variant="h6" gutterBottom sx={{mb: 2}}>
                         Управление пользователями
@@ -139,7 +139,8 @@ const UserList = () => {
                         />
                     )}
                 </UserPaper>
-        </PageContainer>
+            </PageContainer>
+        </CenteredContainer>
     );
 };
 
