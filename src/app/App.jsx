@@ -3,7 +3,7 @@ import { ThemeProviderWrapper } from './providers/ThemeProviderWrapper';
 import { ThemeProvider, useThemeContext } from './contexts/ThemeContext';
 import { LoginPage } from '@pages/LoginPage/LoginPage.jsx';
 import { useAuth } from '@contexts/AuthContext';
-import { CircularProgress, Box } from '@mui/material';
+import { Box } from '@mui/material';
 import { ProfilePage } from '@pages/ProfilePage/ProfilePage.jsx';
 import { AuthProvider } from '@contexts/AuthContext.jsx';
 import { TopBar } from '@features/main/TopBar.jsx';

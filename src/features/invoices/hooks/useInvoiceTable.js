@@ -16,7 +16,7 @@ export const useInvoiceTable = (items) => {
         quantity: item.quantity,
         price: `${item.unitPrice || item.price}`,
         marginality: `${Math.round(item.marginality || 0)}`,
-        vat: `${item.vatMultiplier || item.vat || 20}%`,
+        vat: `${item.vatMultiplier || item.vat || 20}`,
         total: `${Math.round(item.totalPrice || item.total)}`,
     })), [items]);
 

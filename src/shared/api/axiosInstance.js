@@ -12,7 +12,7 @@ export const getAccessToken = () => {
   return accessToken;
 };
 
-const baseURL = import.meta.env.DEV ? '/api' : 'http://26.251.69.210:8089/';
+const baseURL = import.meta.env.DEV ? '/api' : 'http://26.251.69.210:8089'; 
 
 const axiosInstance = axios.create({
   baseURL: baseURL,

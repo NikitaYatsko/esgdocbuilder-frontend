@@ -28,23 +28,23 @@ const InvoiceModal = ({ open, onClose, onSave, loading = false, mode = 'create',
 
     const [invoiceName, setInvoiceName] = useState("");
     const [power, setPower] = useState("");
-    
+
     const [form, setForm] = useState({
         product: null,
         quantity: 1,
         price: 0,
-        vat: 0,
-        unitMarginality: 0, 
-        totalMarginality: 0, 
+        vatPerUnit: 0,
+        vatTotal: 0,
+        unitMarginality: 0,
+        totalMarginality: 0,
         total: 0
     });
 
     const [errors, setErrors] = useState({});
 
-    const calculateTotal = (price, quantity, vat) => {
+    const calculateTotal = (price, quantity) => {
         const subtotal = price * quantity;
-        const vatAmount = subtotal * (vat / 100);
-        return subtotal + vatAmount;
+        return subtotal;
     };
 
     const calculateTotalMarginality = (unitMarginality, quantity) => {
@@ -54,84 +54,102 @@ const InvoiceModal = ({ open, onClose, onSave, loading = false, mode = 'create',
     const handleProductChange = (_, value) => {
         const product = value;
         const price = product?.sellPrice || 0;
-        const vat = product?.vat || 0;
+        const vatPerUnit = product?.vat || 0;
         const unitMarginality = product?.marginality || 0;
         const quantity = form.quantity;
-        
+
         setForm(prev => ({
             product,
             quantity,
             price,
-            vat,
+            vatPerUnit,
             unitMarginality,
+            vatTotal: vatPerUnit * quantity,
             totalMarginality: calculateTotalMarginality(unitMarginality, quantity),
-            total: calculateTotal(price, quantity, vat)
+            total: calculateTotal(price, quantity)
         }));
-        
+
         if (errors.product) {
             setErrors(prev => ({ ...prev, product: "" }));
         }
     };
 
     const handleQuantityChange = (e) => {
-        const quantity = Number(e.target.value) || 0;
+    const value = e.target.value;
+
+    if (value === "") {
         setForm(prev => ({
             ...prev,
-            quantity,
-            totalMarginality: calculateTotalMarginality(prev.unitMarginality, quantity),
-            total: calculateTotal(prev.price, quantity, prev.vat)
+            quantity: "",
         }));
-        
-        if (errors.quantity) {
-            setErrors(prev => ({ ...prev, quantity: "" }));
-        }
-    };
-
-    useEffect(() => {
-    if (open) {
-        if (mode === 'create') {
-            setInvoiceName("");
-            setPower("");
-            setForm({
-                product: null,
-                quantity: 1,
-                price: 0,
-                vat: 0,
-                unitMarginality: 0,
-                totalMarginality: 0,
-                total: 0
-            });
-        } else if (mode === 'editItem' && initialData) {
-            // Заполняем форму для редактирования
-            setForm({
-                product: initialData.product || null,
-                quantity: initialData.quantity || 1,
-                price: initialData.unitPrice || initialData.price || 0,
-                vat: initialData.vatMultiplier || initialData.vat || 0,
-                unitMarginality: initialData.marginality / initialData.quantity || 0,
-                totalMarginality: initialData.marginality || 0,
-                total: initialData.totalPrice || initialData.total || 0
-            });
-            setInvoiceName("");
-            setPower("");
-        } else {
-            setForm({
-                product: null,
-                quantity: 1,
-                price: 0,
-                vat: 0,
-                unitMarginality: 0,
-                totalMarginality: 0,
-                total: 0
-            });
-        }
-        setErrors({});
+        return;
     }
-}, [open, mode, initialData]);
+
+    const quantity = Number(value);
+
+    if (isNaN(quantity)) return;
+
+    setForm(prev => ({
+        ...prev,
+        quantity,
+        vatTotal: prev.vatPerUnit * quantity,
+        totalMarginality: calculateTotalMarginality(prev.unitMarginality, quantity),
+        total: calculateTotal(prev.price, quantity)
+    }));
+};
+    useEffect(() => {
+        if (open) {
+            if (mode === 'create') {
+                setInvoiceName("");
+                setPower("");
+                setForm({
+                    product: null,
+                    quantity: 1,
+                    price: 0,
+                    vatPerUnit: 0,
+                    vatTotal: 0,
+                    unitMarginality: 0,
+                    totalMarginality: 0,
+                    total: 0
+                });
+            } else if (mode === 'editItem' && initialData) {
+
+                const quantity = initialData.quantity || 1;
+                const price = initialData.unitPrice || initialData.price || 0;
+                const vatPerUnit = (initialData.vatTotal || initialData.vatAmount || 0) / quantity;
+                const unitMarginality = (initialData.marginality || 0) / quantity;
+
+                setForm({
+                    product: initialData.product || null,
+                    quantity: quantity,
+                    price: price,
+                    vatPerUnit: vatPerUnit,
+                    vatTotal: initialData.vatTotal || initialData.vatAmount || 0,
+                    unitMarginality: unitMarginality,
+                    totalMarginality: initialData.marginality || 0,
+                    total: initialData.totalPrice || initialData.total || 0
+                });
+                setInvoiceName("");
+                setPower("");
+            } else {
+                setForm({
+                    product: null,
+                    quantity: 1,
+                    price: 0,
+                    vatPerUnit: 0,
+                    vatTotal: 0,
+                    unitMarginality: 0,
+                    totalMarginality: 0,
+                    total: 0
+                });
+            }
+            setErrors({});
+        }
+    }, [open, mode, initialData]);
 
     const validate = () => {
         const newErrors = {};
-        
+
         if (mode === 'create') {
             if (!invoiceName.trim()) newErrors.invoiceName = "Введите название сметы";
             if (!power.trim()) newErrors.power = "Введите мощность";
@@ -140,7 +158,7 @@ const InvoiceModal = ({ open, onClose, onSave, loading = false, mode = 'create',
             if (!form.product) newErrors.product = "Выберите товар";
             if (!form.quantity || form.quantity <= 0) newErrors.quantity = "Введите корректное количество";
         }
-        
+
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -150,7 +168,7 @@ const InvoiceModal = ({ open, onClose, onSave, loading = false, mode = 'create',
 
         let submitData;
         if (mode === 'create') {
-            submitData = { 
+            submitData = {
                 invoiceName: invoiceName,
                 power: Number(power)
             };
@@ -160,7 +178,7 @@ const InvoiceModal = ({ open, onClose, onSave, loading = false, mode = 'create',
                 productName: form.product.name,
                 quantity: form.quantity,
                 price: form.price,
-                vat: form.vat,
+                vatTotal: form.vatTotal,
                 marginality: form.totalMarginality,
                 total: form.total
             };
@@ -222,7 +240,7 @@ const InvoiceModal = ({ open, onClose, onSave, loading = false, mode = 'create',
                                     />
                                 )}
                             />
-                            
+
                             <StyledInput
                                 label="Количество"
                                 type="number"
@@ -232,7 +250,7 @@ const InvoiceModal = ({ open, onClose, onSave, loading = false, mode = 'create',
                                 helperText={errors.quantity}
                                 required
                             />
-                            
+
                             <Box sx={{ display: 'flex', gap: 2 }}>
                                 <Box sx={{ flex: 1 }}>
                                     <StyledInput
@@ -245,12 +263,12 @@ const InvoiceModal = ({ open, onClose, onSave, loading = false, mode = 'create',
                                         fullWidth
                                     />
                                 </Box>
-                                
+
                                 <Box sx={{ flex: 1 }}>
                                     <StyledInput
-                                        label="НДС (%)"
+                                        label="НДС"
                                         type="number"
-                                        value={form.vat}
+                                        value={form.vatTotal}
                                         disabled
                                         InputProps={{ readOnly: true }}
                                         helperText="Автоматически из товара"
@@ -260,7 +278,7 @@ const InvoiceModal = ({ open, onClose, onSave, loading = false, mode = 'create',
                             </Box>
 
                             <Box sx={{ display: 'flex', gap: 2 }}>
-                                
+
                                 <Box sx={{ flex: 1 }}>
                                     <StyledInput
                                         label="Общая маржинальность"
@@ -273,9 +291,9 @@ const InvoiceModal = ({ open, onClose, onSave, loading = false, mode = 'create',
                                     />
                                 </Box>
                             </Box>
-                            
+
                             <StyledInput
-                                label="Общая сумма (с НДС)"
+                                label="Общая сумма"
                                 type="number"
                                 value={Math.round(form.total)}
                                 disabled
@@ -291,8 +309,8 @@ const InvoiceModal = ({ open, onClose, onSave, loading = false, mode = 'create',
                         Отмена
                     </StyledButton>
 
-                    <StyledButton 
-                        variant="contained" 
+                    <StyledButton
+                        variant="contained"
                         onClick={handleSubmit}
                         disabled={loading}
                     >

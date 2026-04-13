@@ -46,30 +46,34 @@ export const useInvoices = () => {
         }
     }, []);
 
-    const fetchItems = useCallback(async (invoiceId) => {
-        try {
-            setLoading(true);
-            const response = await invoiceApi.getItems(invoiceId);
-            
-            let itemsData = [];
-            if (Array.isArray(response.data)) {
-                itemsData = response.data;
-            } else if (response.data?.items && Array.isArray(response.data.items)) {
-                itemsData = response.data.items;
-            } else if (response.data?.content && Array.isArray(response.data.content)) {
-                itemsData = response.data.content;
-            }
-            
-            setItems(itemsData);
-            return itemsData;
-        } catch (err) {
-            console.error(`Ошибка загрузки позиций для сметы ${invoiceId}:`, err);
-            setError(err);
-            return [];
-        } finally {
-            setLoading(false);
+const fetchItems = useCallback(async (invoiceId) => {
+    try {
+        setLoading(true);
+        const response = await invoiceApi.getItems(invoiceId);
+        
+        console.log('Ответ от API /items:', response.data);
+        
+        let itemsData = [];
+        if (Array.isArray(response.data)) {
+            itemsData = response.data;
+        } else if (response.data?.items && Array.isArray(response.data.items)) {
+            itemsData = response.data.items;
+        } else if (response.data?.content && Array.isArray(response.data.content)) {
+            itemsData = response.data.content;
         }
-    }, []);
+        
+        console.log('Извлечённые itemsData:', itemsData);
+        
+        setItems(itemsData);
+        return itemsData;
+    } catch (err) {
+        console.error(`Ошибка загрузки позиций для сметы ${invoiceId}:`, err);
+        setError(err);
+        return [];
+    } finally {
+        setLoading(false);
+    }
+}, []);
 
     const selectInvoice = async (invoice) => {
         setSelectedInvoice(invoice);

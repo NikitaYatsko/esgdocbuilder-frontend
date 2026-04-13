@@ -65,30 +65,47 @@ const ProductModal = ({ open, onClose, product, onSave, loading = false }) => {
 
     const [errors, setErrors] = useState({});
 
-     const calculateMarginality = (costPrice, sellPrice) => {
+    const calculateMarginality = (costPrice, sellPrice) => {
         if (!costPrice || !sellPrice) return "";
-        
+
         const cost = Number(costPrice);
         const sell = Number(sellPrice);
-        
+
         if (isNaN(cost) || isNaN(sell)) return "";
-        
+
         const marginality = sell - cost;
-        return marginality;
+        return marginality.toFixed(2);
+    };
+
+    const calculateVat = (sellPrice) => {
+        if (!sellPrice) return "";
+
+        const sell = Number(sellPrice);
+        if (isNaN(sell)) return "";
+
+        const vat = sell * (20 / 120);
+        return vat.toFixed(2);
     };
 
     const handleChange = (field) => (e) => {
         const value = e.target.value;
-        
+
         setForm(prev => {
             const newForm = { ...prev, [field]: value };
-            
+
             if (field === 'costPrice' || field === 'sellPrice') {
                 const costPrice = field === 'costPrice' ? value : prev.costPrice;
                 const sellPrice = field === 'sellPrice' ? value : prev.sellPrice;
                 newForm.marginality = calculateMarginality(costPrice, sellPrice);
+                newForm.vat = calculateVat(sellPrice);
             }
-            
+            if (field === 'costPrice') {
+                const costPrice = value;
+                const sellPrice = prev.sellPrice;
+                newForm.marginality = calculateMarginality(costPrice, sellPrice);
+
+            }
+
             return newForm;
         });
 
@@ -106,7 +123,7 @@ const ProductModal = ({ open, onClose, product, onSave, loading = false }) => {
                 costPrice: product.costPrice || product.purchasePrice || "",
                 sellPrice: product.sellPrice || product.salePrice || "",
                 marginality: product.marginality || product.margin || "",
-                vat: product.vat || ""
+                vat: product.vat || (product.sellPrice ? calculateVat(product.sellPrice) : "")
             });
         } else {
             setForm({
@@ -130,7 +147,7 @@ const ProductModal = ({ open, onClose, product, onSave, loading = false }) => {
         if (form.costPrice && isNaN(form.costPrice)) newErrors.costPrice = "Введите число";
         if (!form.sellPrice) newErrors.sellPrice = "Цена продажи обязательна";
         if (form.sellPrice && isNaN(form.sellPrice)) newErrors.sellPrice = "Введите число";
-        
+
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -240,7 +257,7 @@ const ProductModal = ({ open, onClose, product, onSave, loading = false }) => {
                     />
 
                     <StyledInput
-                        label="НДС (%)"
+                        label="НДС"
                         value={form.vat}
                         onChange={handleChange("vat")}
                         type="number"
@@ -253,8 +270,8 @@ const ProductModal = ({ open, onClose, product, onSave, loading = false }) => {
                         Отмена
                     </StyledButton>
 
-                    <StyledButton 
-                        variant="contained" 
+                    <StyledButton
+                        variant="contained"
                         onClick={handleSubmit}
                         disabled={loading}
                     >
