@@ -1,4 +1,4 @@
-import { Box, Snackbar, Alert, Typography } from "@mui/material";
+import {Box, Snackbar, Alert, Typography} from "@mui/material";
 import TableComponent from "@features/auth/components/TableComponent.jsx";
 import InvoiceSearchBar from "@features/invoices/components/InvoiceSearchBar";
 import InvoiceSelector from "@features/invoices/components/InvoiceSelector";
@@ -6,17 +6,17 @@ import InvoiceActions from "@features/invoices/components/InvoiceActions";
 import InvoiceEmptyState from "@features/invoices/components/InvoiceEmptyState";
 import InvoiceModal from "@features/invoices/components/InvoiceModal.jsx";
 import AddInvoiceButton from "@features/invoices/components/AddInvoiceButton";
-import { useState } from "react";
-import { useInvoices } from "@features/invoices/hooks/useInvoices.js";
-import { useInvoiceTable } from "@features/invoices/hooks/useInvoiceTable";
-import { StyledBox, StyledPaper } from "@features/invoices/components/styled/StyledComponents";
-
+import {useState} from "react";
+import {useInvoices} from "@features/invoices/hooks/useInvoices.js";
+import {useInvoiceTable} from "@features/invoices/hooks/useInvoiceTable";
+import {StyledBox, StyledPaper} from "@features/invoices/components/styled/StyledComponents";
+import {CenteredContainer} from "@/layouts/CenteredContainer.jsx";
 
 const CreateInvoicePage = () => {
 
     const [openModal, setOpenModal] = useState(false);
     const [modalMode, setModalMode] = useState('create');
-    const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
+    const [snackbar, setSnackbar] = useState({open: false, message: "", severity: "success"});
     const [modalLoading, setModalLoading] = useState(false);
     const [editingItem, setEditingItem] = useState(null);
 
@@ -32,7 +32,7 @@ const CreateInvoicePage = () => {
         deleteItem,
     } = useInvoices();
 
-    const { columns, rows } = useInvoiceTable(items);
+    const {columns, rows} = useInvoiceTable(items);
 
     const handleDeleteInvoice = async () => {
         if (!selectedInvoice) return;
@@ -163,80 +163,84 @@ const CreateInvoicePage = () => {
     };
 
     const handleCloseSnackbar = () => {
-        setSnackbar(prev => ({ ...prev, open: false }));
+        setSnackbar(prev => ({...prev, open: false}));
     };
 
     return (
-            <StyledBox>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                    <Typography variant="h4" component="h1">
-                        Сметы
-                    </Typography>
-                    <AddInvoiceButton onClick={handleAddInvoice}>
-                        Создать смету
-                    </AddInvoiceButton>
+
+        <CenteredContainer width={1200}><StyledBox>
+            <Box sx={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3}}>
+                <Typography variant="h4" component="h1">
+                    Сметы
+                </Typography>
+                <AddInvoiceButton onClick={handleAddInvoice}>
+                    Создать смету
+                </AddInvoiceButton>
+            </Box>
+
+            <InvoiceSearchBar onSearch={handleSearch} onFilter={handleFilter}/>
+
+            <StyledPaper>
+                <Box sx={{mb: 3, display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap'}}>
+                    <InvoiceSelector
+                        invoices={invoices}
+                        selectedInvoice={selectedInvoice}
+                        onSelectInvoice={selectInvoice}
+                    />
+
+                    {selectedInvoice && (
+                        <InvoiceActions
+                            onAddItem={handleAddItem}
+                            onDeleteInvoice={handleDeleteInvoice}
+                        />
+                    )}
                 </Box>
 
-                <InvoiceSearchBar onSearch={handleSearch} onFilter={handleFilter} />
-
-                <StyledPaper>
-                    <Box sx={{ mb: 3, display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
-                        <InvoiceSelector
-                            invoices={invoices}
-                            selectedInvoice={selectedInvoice}
-                            onSelectInvoice={selectInvoice}
-                        />
-
-                        {selectedInvoice && (
-                            <InvoiceActions
-                                onAddItem={handleAddItem}
-                                onDeleteInvoice={handleDeleteInvoice}
+                <Box>
+                    {selectedInvoice ? (
+                        rows.length > 0 ? (
+                            <TableComponent
+                                columns={columns}
+                                rows={rows}
+                                onRowClick={() => {
+                                }}
+                                showActions={true}
+                                onEdit={handleEditItem}
+                                onDelete={handleDeleteItem}
+                                tableWidth="100%"
+                                tableMinWidth="600px"
                             />
-                        )}
-                    </Box>
-
-                    <Box>
-                        {selectedInvoice ? (
-                            rows.length > 0 ? (
-                                <TableComponent
-                                    columns={columns}
-                                    rows={rows}
-                                    onRowClick={() => { }}
-                                    showActions={true}
-                                    onEdit={handleEditItem} 
-                                    onDelete={handleDeleteItem}
-                                    tableWidth="1200px"
-                                    tableMinWidth="600px"
-                                />
-                            ) : (
-                                <InvoiceEmptyState hasSelectedInvoice={true} />
-                            )
                         ) : (
-                            <InvoiceEmptyState hasSelectedInvoice={false} />
-                        )}
-                    </Box>
-                </StyledPaper>
+                            <InvoiceEmptyState hasSelectedInvoice={true}/>
+                        )
+                    ) : (
+                        <InvoiceEmptyState hasSelectedInvoice={false}/>
+                    )}
+                </Box>
+            </StyledPaper>
 
-                <InvoiceModal
-                    open={openModal}
-                    onClose={handleCloseModal}
-                    onSave={handleSave}
-                    loading={modalLoading}
-                    mode={modalMode}
-                    initialData={editingItem}
-                />
+            <InvoiceModal
+                open={openModal}
+                onClose={handleCloseModal}
+                onSave={handleSave}
+                loading={modalLoading}
+                mode={modalMode}
+                initialData={editingItem}
+            />
 
-                <Snackbar
-                    open={snackbar.open}
-                    autoHideDuration={6000}
-                    onClose={handleCloseSnackbar}
-                    anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-                >
-                    <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ borderRadius: '8px' }}>
-                        {snackbar.message}
-                    </Alert>
-                </Snackbar>
-            </StyledBox>
+            <Snackbar
+                open={snackbar.open}
+                autoHideDuration={6000}
+                onClose={handleCloseSnackbar}
+                anchorOrigin={{vertical: "bottom", horizontal: "right"}}
+            >
+                <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{borderRadius: '8px'}}>
+                    {snackbar.message}
+                </Alert>
+            </Snackbar>
+        </StyledBox>
+        </CenteredContainer>
+
     );
 };
 
