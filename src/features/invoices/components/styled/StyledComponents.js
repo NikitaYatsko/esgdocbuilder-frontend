@@ -5,9 +5,6 @@ export const StyledBox = styled(Box)(({ theme }) => ({
     backgroundColor: theme.palette.background.default,
     width: '100%',
     height: '100%',
-    display: 'block',
-    marginLeft: '50px',
-    padding: '24px',
 }));
 
 export const StyledButton = styled(Button)(({ theme, color = 'primary' }) => ({

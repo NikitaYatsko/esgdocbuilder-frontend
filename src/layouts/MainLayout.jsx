@@ -15,10 +15,15 @@ export const MainLayout = ({children}) => {
                 gridTemplateColumns: "70px 1fr",
                 gridTemplateRows: "70px 1fr",
                 height: "100vh",
-                overflow: "auto",
+                overflow: "hidden",
             }}
         >
-            <Box sx={{gridArea: "sidebar"}}>
+            <Box sx={{
+                gridArea: "sidebar",
+                position: "sticky",
+                top: 0,
+                height: "100vh"
+            }}>
                 <Sidebar/>
             </Box>
 
@@ -30,6 +35,8 @@ export const MainLayout = ({children}) => {
                 component="main"
                 sx={{
                     gridArea: "content",
+                    overflow: "auto",
+                    height: "100%"
                 }}
             >
                 {children}
