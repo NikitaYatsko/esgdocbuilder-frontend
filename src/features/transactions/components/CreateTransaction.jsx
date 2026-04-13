@@ -12,7 +12,6 @@ import {
     Alert
 } from "@mui/material";
 import AddButton from '../../products/components/AddButton.jsx';
-import {useBank} from "@features/transactions/hooks/useBank";
 
 const TransactionCard = styled(Paper)(({theme}) => ({
     padding: 24,
@@ -55,27 +54,15 @@ const CreateTransaction = ({accounts = [], onCreate}) => {
         type: '',
         account: '',
         amount: '',
-        comment: '',
-        data: ''
+        comment: ''
     });
     const [error, setError] = useState('');
 
     const handleChange = (e) => {
         const {name, value} = e.target;
 
-        if (name === 'type' || name === 'amount') {
+        if (name === 'type') {
             setError('');
-        }
-
-        if (name === 'type' && formData.amount) {
-            const amountValue = parseFloat(formData.amount);
-            if (value === 'Доход' && amountValue < 0) {
-                setError('Сумма дохода не может быть отрицательной');
-            } else if (value === 'Расход' && amountValue > 0) {
-                setError('Для расхода укажите положительную сумму (знак будет учтен автоматически)');
-            } else {
-                setError('');
-            }
         }
 
         setFormData(prev => ({...prev, [name]: value}));
@@ -83,33 +70,39 @@ const CreateTransaction = ({accounts = [], onCreate}) => {
 
     const handleAmountChange = (e) => {
         const {value} = e.target;
-        const amountValue = parseFloat(value);
+        let cleanedValue = value.replace(/[^0-9.]/g, '');
 
-        if (formData.type === 'Доход' && amountValue < 0) {
-            setError('Сумма дохода не может быть отрицательной');
-        } else if (formData.type === 'Расход' && amountValue < 0) {
-            setError('');
-        } else if (formData.type === 'Расход' && amountValue > 0) {
-            setError('Для расхода используйте отрицательное число или оставьте сумму положительной (знак будет применен автоматически)');
-        } else {
-            setError('');
+        
+        const parts = cleanedValue.split('.');
+        if (parts.length > 2) {
+            cleanedValue = parts[0] + '.' + parts.slice(1).join('');
         }
 
-        setFormData(prev => ({...prev, amount: value}));
+        
+        if (parts.length === 2 && parts[1].length > 2) {
+            cleanedValue = parts[0] + '.' + parts[1].substring(0, 2);
+        }
+
+        
+        if (cleanedValue.startsWith('.')) {
+            cleanedValue = '0' + cleanedValue;
+        }
+
+       
+        if (cleanedValue === '.') {
+            cleanedValue = '0.';
+        }
+
+        setError('');
+        setFormData(prev => ({...prev, amount: cleanedValue}));
     };
 
     const handleSubmit = async () => {
         if (!formData.type || !formData.account || !formData.amount || !formData.comment) return;
 
         const amountValue = parseFloat(formData.amount);
-
-        if (formData.type === 'Доход' && amountValue <= 0) {
-            setError('Сумма дохода должна быть положительной');
-            return;
-        }
-
-        if (formData.type === 'Расход' && amountValue >= 0) {
-            setError('Сумма расхода должна быть отрицательной');
+        if (!(amountValue > 0)) {
+            setError('Сумма должна быть больше нуля');
             return;
         }
 
@@ -124,14 +117,13 @@ const CreateTransaction = ({accounts = [], onCreate}) => {
     };
 
     const isFormValid = () => {
-        if (!formData.type || !formData.account || !formData.amount || !formData.comment) return false;
-
-        const amountValue = parseFloat(formData.amount);
-
-        if (formData.type === 'Доход' && amountValue <= 0) return false;
-        if (formData.type === 'Расход' && amountValue >= 0) return false;
-
-        return true;
+        return (
+            formData.type &&
+            formData.account &&
+            formData.amount &&
+            formData.comment &&
+            parseFloat(formData.amount) > 0
+        );
     };
 
     return (
@@ -160,13 +152,21 @@ const CreateTransaction = ({accounts = [], onCreate}) => {
             <AmountTextField
                 name="amount"
                 label="Сумма"
-                type="number"
+                type="text"
                 value={formData.amount}
                 onChange={handleAmountChange}
                 fullWidth
                 error={!!error}
                 InputProps={{
+                    startAdornment: (
+                        <InputAdornment position="start">
+                            {formData.type === 'Доход' ? '+' : formData.type === 'Расход' ? '-' : ''}
+                        </InputAdornment>
+                    ),
                     endAdornment: <InputAdornment position="end">MDL</InputAdornment>,
+                }}
+                inputProps={{
+                    inputMode: 'decimal',
                 }}
             />
 
