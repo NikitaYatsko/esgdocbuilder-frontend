@@ -3,14 +3,14 @@ import {ThemeProviderWrapper} from './providers/ThemeProviderWrapper';
 import {ThemeProvider, useThemeContext} from './contexts/ThemeContext';
 import {LoginPage} from '@pages/LoginPage/LoginPage.jsx';
 import {useAuth} from '@contexts/AuthContext';
-import {Box} from '@mui/material';
+
 import {ProfilePage} from '@pages/ProfilePage/ProfilePage.jsx';
 import {AuthProvider} from '@contexts/AuthContext.jsx';
 import {lazy, Suspense} from 'react';
 import {FullScreenLoader} from '@features/main/FullScreenLoader.jsx';
-import {Sidebar} from "@features/main/Sidebar.jsx";
-import {TopBar} from "@features/main/TopBar.jsx";
+
 import {MainLayout} from "@/layouts/MainLayout.jsx";
+import UserList from "@pages/UserList/UserList.jsx";
 
 const BankPage = lazy(() => import("@pages/Bank/BankPage.jsx"));
 const CreateInvoicePage = lazy(() => import("@pages/CreateInvoicePage/CreateInvoicePage.jsx"));
@@ -83,7 +83,7 @@ const AppContent = () => {
                     path="/users"
                     element={
                         <PrivateRoute>
-                            <UserListPage />
+                            <UserList/>
 
                         </PrivateRoute>
                     }
