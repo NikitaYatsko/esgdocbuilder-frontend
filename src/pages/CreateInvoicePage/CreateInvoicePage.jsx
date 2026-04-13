@@ -12,6 +12,7 @@ import { useInvoices } from "@features/invoices/hooks/useInvoices.js";
 import { useInvoiceTable } from "@features/invoices/hooks/useInvoiceTable";
 import { StyledBox, StyledPaper } from "@features/invoices/components/styled/StyledComponents";
 
+
 const CreateInvoicePage = () => {
 
     const [openModal, setOpenModal] = useState(false);

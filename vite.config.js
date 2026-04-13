@@ -22,7 +22,7 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/api': {
-        target: 'http://26.251.69.210:8089',
+        target: 'https://docbuilder-application.up.railway.app',
         changeOrigin: true,
         secure: false, 
         rewrite: (path) => path.replace(/^\/api/, ''),

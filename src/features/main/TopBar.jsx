@@ -2,10 +2,9 @@ import {AppBar, Toolbar, Typography, styled} from "@mui/material";
 
 const TopBarContainer = styled(AppBar)(({theme}) => ({
     height: 70,
+    width: 'calc(100% - 70px)',
     backgroundColor: theme.palette.background.paper,
     boxShadow: 'none',
-    left: 70,
-    width: 'calc(100% - 70px)',
 }));
 
 const LogoText = styled(Typography)(({theme}) => ({
@@ -15,14 +14,14 @@ const LogoText = styled(Typography)(({theme}) => ({
 }));
 
 const StyledToolbar = styled(Toolbar)({
-    height: 70,
-    minHeight: '70px !important',
+
+
 });
 
 
-export const TopBar = ({title = "ESG DocBuilder"}) => {
+export const TopBar = ({title = "DocBuilder"}) => {
     return (
-        <TopBarContainer position="fixed">
+        <TopBarContainer>
             <StyledToolbar>
                 <LogoText>
                     {title}

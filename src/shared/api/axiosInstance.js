@@ -12,7 +12,11 @@ export const getAccessToken = () => {
   return accessToken;
 };
 
-const baseURL = import.meta.env.DEV ? '/api' : 'http://26.251.69.210:8089'; 
+
+const baseURL = import.meta.env.DEV
+  ? '/api'
+  : 'https://docbuilder-application.up.railway.app';
+
 
 const axiosInstance = axios.create({
   baseURL: baseURL,
@@ -49,7 +53,7 @@ axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-    
+
     if (
       originalRequest?.url?.includes('/auth/refresh') ||
       originalRequest?.url?.includes('/auth/logout')
@@ -60,7 +64,7 @@ axiosInstance.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest?._retry) {
       if (!isRefreshing) {
         isRefreshing = true;
-        
+
         refreshPromise = refreshClient.post('/auth/refresh')
           .then(res => {
             const newToken = res.data.accessToken || res.data.token;

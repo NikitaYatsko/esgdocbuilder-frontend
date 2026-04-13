@@ -1,9 +1,9 @@
-import {Box, styled, Drawer, Divider, useTheme} from "@mui/material";
+import {Box, styled, Drawer, Divider, useTheme, Typography} from "@mui/material";
 import {useState} from "react";
 import {useAuth} from "@contexts/AuthContext";
 import {useNavigate} from "react-router-dom";
 import {useThemeContext} from "@contexts/ThemeContext";
-
+import LogoutIcon from '@mui/icons-material/Logout';
 import {BurgerButton} from './componentsSidebar/BurgerButton';
 import {UserInfo} from './componentsSidebar/UserInfo';
 import {MenuButton} from './componentsSidebar/MenuButton';
@@ -22,15 +22,14 @@ import PeopleIcon from '@mui/icons-material/People';
 const SidebarContainer = styled(Box)(({theme}) => ({
     width: 70,
     height: '100vh',
-    position: 'fixed',
-    left: 0,
-    top: 0,
+    zIndex: 1200, // важно
     display: 'flex',
+    gap: "20px",
     flexDirection: 'column',
+    padding: "10px 0 30px 0",
     alignItems: 'center',
-    paddingTop: 16,
-    zIndex: 1200,
-    backgroundColor: theme.palette.background.paper
+
+    backgroundColor: theme.palette.background.paper,
 }));
 
 const MenuContent = styled(Box)(({theme}) => ({
@@ -44,7 +43,7 @@ const MenuContent = styled(Box)(({theme}) => ({
 const StyledDivider = styled(Divider)(({theme}) => ({
     borderColor: theme.palette.divider,
     width: '100%'
-    
+
 }));
 
 
@@ -72,7 +71,7 @@ export const Sidebar = ({onMenuClick}) => {
     const menuItems = [
         {
             label: "Мой профиль",
-            icon: <ProfileIcon />,
+            icon: <ProfileIcon/>,
             action: () => navigate('/profile')
         },
         {
@@ -95,7 +94,7 @@ export const Sidebar = ({onMenuClick}) => {
     if (isAdmin) {
         menuItems.push({
             label: "Список сотрудников",
-            icon: <PeopleIcon/>, 
+            icon: <PeopleIcon/>,
             action: () => navigate('/users')
         });
     }
@@ -110,6 +109,7 @@ export const Sidebar = ({onMenuClick}) => {
         <>
             <SidebarContainer>
                 <BurgerButton onClick={handleBurgerClick}/>
+                <LogoutIcon sx={{cursor: "pointer"}}></LogoutIcon>
             </SidebarContainer>
 
             <Drawer
@@ -118,7 +118,7 @@ export const Sidebar = ({onMenuClick}) => {
                 onClose={handleCloseMenu}
                 PaperProps={{
                     sx: {
-                        width: 345,
+                        width: 300,
                         overflowX: 'hidden'
                     }
                 }}

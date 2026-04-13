@@ -6,7 +6,7 @@ const ThemeSwitchContainer = styled(Box)(({ theme }) => ({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: '16px 16px',
+    padding: '16px 12px',
     marginTop: 0,
     transition: theme.transitions.create('border-color', {
         duration: theme.transitions.duration.standard,
@@ -21,13 +21,13 @@ const ThemeIcon = styled(Box)(({ theme }) => ({
         duration: theme.transitions.duration.standard,
     }),
     '& svg': {
-        fontSize: '1.8rem',
+        fontSize: '1.4rem',
     },
 }));
 
 const ThemeSwitch = styled(Switch)(({ theme }) => ({
     width: 58,
-    height: 32,
+    height: 30,
     padding: 0,
     overflow: 'hidden',
     '& .MuiSwitch-switchBase': {
