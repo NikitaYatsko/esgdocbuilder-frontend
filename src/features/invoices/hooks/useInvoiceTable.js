@@ -11,16 +11,21 @@ export const useInvoiceTable = (items) => {
         { id: "actions", label: "Действия", align: 'right', }
     ];
 
-    const rows = useMemo(() => items.map((item) => ({
-        id: item.id,
-        name: item.nameProduct,
-        quantity: item.quantity,
-        price: item.unitPrice || item.price || 0,
-        marginality: Math.round(item.marginality || 0),
-        vat: Math.round(item.vatMultiplier || item.vat || 0),
-        total: Math.round(item.totalPrice || item.total || 0),
-        actions: "",
-    })), [items]);
+    const rows = useMemo(() => items.map((item) => {
+        const vatPerUnit = item.vatMultiplier || item.vat || 0;
+        const totalVat = vatPerUnit * (item.quantity || 0);
+        
+        return {
+            id: item.id || item.tempId,
+            name: item.nameProduct,
+            quantity: item.quantity,
+            price: item.unitPrice || item.price || 0,
+            marginality: Math.round(item.marginality || 0),
+            vat: Math.round(totalVat), 
+            total: Math.round(item.totalPrice || item.total || 0),
+            actions: "",
+        };
+    }), [items]);
 
 
     return { columns, rows };
