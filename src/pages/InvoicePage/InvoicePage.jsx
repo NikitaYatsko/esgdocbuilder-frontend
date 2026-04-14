@@ -10,7 +10,7 @@ import InvoiceModal from "@features/invoices/components/InvoiceModal.jsx";
 const InvoicePage = () => {
     const { id } = useParams();
 
-    const { fetchInvoiceById, addItem } = useInvoices();
+    const { fetchInvoiceById, addItem, deleteItem } = useInvoices();
 
     const [invoice, setInvoice] = useState(null);
     const [items, setItems] = useState([]);
@@ -66,6 +66,18 @@ const InvoicePage = () => {
         }
     };
 
+    const handleDeleteItem = async (row) => {
+    if (!invoice) return;
+
+    const result = await deleteItem(invoice.id, row.id);
+
+    if (result.success) {
+        setItems(prev => prev.filter(item => item.id !== row.id));
+    } else {
+        console.error(result.error);
+    }
+};
+
     return (
         <Box sx={{ p: 3 }}>
             <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
@@ -98,7 +110,7 @@ const InvoicePage = () => {
                 showActions={true}
                 actionsColumn="actions"
                 onEdit={handleEditItem}
-                onDelete={(row) => console.log("delete item", row)}
+                onDelete={handleDeleteItem}
                 tableWidth="100%"
                 tableMinWidth="600px"
             />

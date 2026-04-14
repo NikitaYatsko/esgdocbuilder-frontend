@@ -1,15 +1,15 @@
-import {BrowserRouter, Routes, Route, Navigate} from 'react-router-dom';
-import {ThemeProviderWrapper} from './providers/ThemeProviderWrapper';
-import {ThemeProvider, useThemeContext} from './contexts/ThemeContext';
-import {LoginPage} from '@pages/LoginPage/LoginPage.jsx';
-import {useAuth} from '@contexts/AuthContext';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { ThemeProviderWrapper } from './providers/ThemeProviderWrapper';
+import { ThemeProvider, useThemeContext } from './contexts/ThemeContext';
+import { LoginPage } from '@pages/LoginPage/LoginPage.jsx';
+import { useAuth } from '@contexts/AuthContext';
 
-import {ProfilePage} from '@pages/ProfilePage/ProfilePage.jsx';
-import {AuthProvider} from '@contexts/AuthContext.jsx';
-import {lazy, Suspense} from 'react';
-import {FullScreenLoader} from '@features/main/FullScreenLoader.jsx';
+import { ProfilePage } from '@pages/ProfilePage/ProfilePage.jsx';
+import { AuthProvider } from '@contexts/AuthContext.jsx';
+import { lazy, Suspense } from 'react';
+import { FullScreenLoader } from '@features/main/FullScreenLoader.jsx';
 
-import {MainLayout} from "@/layouts/MainLayout.jsx";
+import { MainLayout } from "@/layouts/MainLayout.jsx";
 import UserList from "@pages/UserList/UserList.jsx";
 
 const BankPage = lazy(() => import("@pages/Bank/BankPage.jsx"));
@@ -17,23 +17,24 @@ const CreateInvoicePage = lazy(() => import("@pages/CreateInvoicePage/CreateInvo
 const ProductsPage = lazy(() => import("@pages/ProductsPage/ProductsPage.jsx"));
 const UserListPage = lazy(() => import("@pages/UserListPage/UserListPage.jsx"));
 const InvoicePage = lazy(() => import("@pages/InvoicePage/InvoicePage.jsx"));
+const SettingsPage = lazy(() => import("@pages/SettingsPage/SettingsPage.jsx"));
 
 
-const PrivateRoute = ({children}) => {
-    const {isAuthenticated, loading} = useAuth();
+const PrivateRoute = ({ children }) => {
+    const { isAuthenticated, loading } = useAuth();
 
     if (loading) {
-        return <FullScreenLoader/>;
+        return <FullScreenLoader />;
     }
 
     if (!isAuthenticated) {
-        return <Navigate to="/login" replace/>;
+        return <Navigate to="/login" replace />;
     }
 
     return (
 
         <MainLayout>
-            <Suspense fallback={<FullScreenLoader/>}>
+            <Suspense fallback={<FullScreenLoader />}>
                 {children}
             </Suspense>
         </MainLayout>
@@ -42,17 +43,17 @@ const PrivateRoute = ({children}) => {
 };
 
 const AppContent = () => {
-    const {mode} = useThemeContext();
+    const { mode } = useThemeContext();
 
     return (
         <ThemeProviderWrapper mode={mode}>
             <Routes>
-                <Route path="/login" element={<LoginPage/>}/>
+                <Route path="/login" element={<LoginPage />} />
                 <Route
                     path="/profile"
                     element={
                         <PrivateRoute>
-                            <ProfilePage/>
+                            <ProfilePage />
                         </PrivateRoute>
                     }
                 />
@@ -60,7 +61,7 @@ const AppContent = () => {
                     path="/bank"
                     element={
                         <PrivateRoute>
-                            <BankPage/>
+                            <BankPage />
                         </PrivateRoute>
                     }
                 />
@@ -68,7 +69,7 @@ const AppContent = () => {
                     path="/products"
                     element={
                         <PrivateRoute>
-                            <ProductsPage/>
+                            <ProductsPage />
                         </PrivateRoute>
                     }
                 />
@@ -76,7 +77,7 @@ const AppContent = () => {
                     path="/invoice"
                     element={
                         <PrivateRoute>
-                            <CreateInvoicePage/>
+                            <CreateInvoicePage />
                         </PrivateRoute>
                     }
                 />
@@ -84,7 +85,7 @@ const AppContent = () => {
                     path="/users"
                     element={
                         <PrivateRoute>
-                            <UserList/>
+                            <UserList />
 
                         </PrivateRoute>
                     }
@@ -93,11 +94,19 @@ const AppContent = () => {
                     path="/invoices/:id"
                     element={
                         <PrivateRoute>
-                            <InvoicePage/>
+                            <InvoicePage />
                         </PrivateRoute>
                     }
                 />
-                <Route path="/" element={<Navigate to="/profile"/>}/>
+                <Route
+                    path="/settings"
+                    element={
+                        <PrivateRoute>
+                            <SettingsPage />
+                        </PrivateRoute>
+                    }
+                />
+                <Route path="/" element={<Navigate to="/profile" />} />
             </Routes>
         </ThemeProviderWrapper>
     );
@@ -107,7 +116,7 @@ const App = () => (
     <BrowserRouter>
         <ThemeProvider>
             <AuthProvider>
-                <AppContent/>
+                <AppContent />
             </AuthProvider>
         </ThemeProvider>
     </BrowserRouter>

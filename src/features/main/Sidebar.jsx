@@ -1,13 +1,14 @@
-import {Box, styled, Drawer, Divider, useTheme, Typography} from "@mui/material";
-import {useState} from "react";
-import {useAuth} from "@contexts/AuthContext";
-import {useNavigate} from "react-router-dom";
-import {useThemeContext} from "@contexts/ThemeContext";
+import { Box, styled, Drawer, Divider, useTheme, Typography } from "@mui/material";
+import { useState } from "react";
+import { useAuth } from "@contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
+import { useThemeContext } from "@contexts/ThemeContext";
 import LogoutIcon from '@mui/icons-material/Logout';
-import {BurgerButton} from './componentsSidebar/BurgerButton';
-import {UserInfo} from './componentsSidebar/UserInfo';
-import {MenuButton} from './componentsSidebar/MenuButton';
-import {ThemeToggle} from './componentsSidebar/ThemeToggle';
+import { BurgerButton } from './componentsSidebar/BurgerButton';
+import { UserInfo } from './componentsSidebar/UserInfo';
+import { MenuButton } from './componentsSidebar/MenuButton';
+import { ThemeToggle } from './componentsSidebar/ThemeToggle';
+import SettingsIcon from '@mui/icons-material/Settings';
 
 import {
     ProfileIcon,
@@ -19,7 +20,7 @@ import {
 import PeopleIcon from '@mui/icons-material/People';
 
 
-const SidebarContainer = styled(Box)(({theme}) => ({
+const SidebarContainer = styled(Box)(({ theme }) => ({
     width: 70,
     height: '100vh',
     zIndex: 1200, // важно
@@ -32,7 +33,7 @@ const SidebarContainer = styled(Box)(({theme}) => ({
     backgroundColor: theme.palette.background.paper,
 }));
 
-const MenuContent = styled(Box)(({theme}) => ({
+const MenuContent = styled(Box)(({ theme }) => ({
     width: '100%',
     height: '100%',
     backgroundColor: theme.palette.background.paper,
@@ -40,19 +41,19 @@ const MenuContent = styled(Box)(({theme}) => ({
     flexDirection: 'column'
 }));
 
-const StyledDivider = styled(Divider)(({theme}) => ({
+const StyledDivider = styled(Divider)(({ theme }) => ({
     borderColor: theme.palette.divider,
     width: '100%'
 
 }));
 
 
-export const Sidebar = ({onMenuClick}) => {
+export const Sidebar = ({ onMenuClick }) => {
 
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const {user} = useAuth();
+    const { user } = useAuth();
     const navigate = useNavigate();
-    const {mode, togle} = useThemeContext();
+    const { mode, togle } = useThemeContext();
     const theme = useTheme();
 
     const isAdmin = user?.roles?.some(role => role.name === 'ADMIN') || false;
@@ -71,22 +72,22 @@ export const Sidebar = ({onMenuClick}) => {
     const menuItems = [
         {
             label: "Мой профиль",
-            icon: <ProfileIcon/>,
+            icon: <ProfileIcon />,
             action: () => navigate('/profile')
         },
         {
             label: "Товар",
-            icon: <ProductIcon/>,
+            icon: <ProductIcon />,
             action: () => navigate("/products")
         },
         {
             label: "Создание фактуры",
-            icon: <InvoiceIcon/>,
+            icon: <InvoiceIcon />,
             action: () => navigate("/invoice")
         },
         {
             label: "Банк",
-            icon: <BankIcon/>,
+            icon: <BankIcon />,
             action: () => navigate('/bank')
         }
     ];
@@ -94,8 +95,14 @@ export const Sidebar = ({onMenuClick}) => {
     if (isAdmin) {
         menuItems.push({
             label: "Список сотрудников",
-            icon: <PeopleIcon/>,
+            icon: <PeopleIcon />,
             action: () => navigate('/users')
+        });
+
+        menuItems.push({
+            label: "Настройки",
+            icon: <SettingsIcon />,
+            action: () => navigate('/settings')
         });
     }
 
@@ -108,8 +115,8 @@ export const Sidebar = ({onMenuClick}) => {
     return (
         <>
             <SidebarContainer>
-                <BurgerButton onClick={handleBurgerClick}/>
-                <LogoutIcon sx={{cursor: "pointer"}}></LogoutIcon>
+                <BurgerButton onClick={handleBurgerClick} />
+                <LogoutIcon sx={{ cursor: "pointer" }}></LogoutIcon>
             </SidebarContainer>
 
             <Drawer
@@ -122,17 +129,17 @@ export const Sidebar = ({onMenuClick}) => {
                         overflowX: 'hidden'
                     }
                 }}
-                SlideProps={{timeout: 300}}
+                SlideProps={{ timeout: 300 }}
                 BackdropProps={{
-                    sx: {backgroundColor: 'rgba(0,0,0,0.5)'}
+                    sx: { backgroundColor: 'rgba(0,0,0,0.5)' }
                 }}
             >
                 <MenuContent>
                     {user && (
                         <>
-                            <UserInfo user={user}/>
+                            <UserInfo user={user} />
 
-                            <StyledDivider/>
+                            <StyledDivider />
 
                             {menuItems.map((item, index) => (
                                 <MenuButton
@@ -144,7 +151,7 @@ export const Sidebar = ({onMenuClick}) => {
                                 </MenuButton>
                             ))}
 
-                            <StyledDivider/>
+                            <StyledDivider />
 
                             <ThemeToggle
                                 mode={mode}

@@ -77,13 +77,20 @@ const ProductModal = ({ open, onClose, product, onSave, loading = false }) => {
         return marginality.toFixed(2);
     };
 
+    const getVatSettings = () => {
+        const saved = localStorage.getItem("vat_settings");
+        if (saved) {
+            return JSON.parse(saved);
+        }
+        return { vatPercent: 20, vatDivisor: 120 };
+    };
+
     const calculateVat = (sellPrice) => {
         if (!sellPrice) return "";
-
         const sell = Number(sellPrice);
         if (isNaN(sell)) return "";
-
-        const vat = sell * (20 / 120);
+        const { vatPercent, vatDivisor } = getVatSettings();
+        const vat = sell * (vatPercent / vatDivisor);
         return vat.toFixed(2);
     };
 
