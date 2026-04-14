@@ -12,6 +12,7 @@ export const authApi = {
     getBalance: () => axiosInstance.get('/bank/accounts'),
     getOperations: (params) => axiosInstance.get('/bank/operations', params),
     postOperation: (operationData) => axiosInstance.post('/bank/operations', operationData),
+    getAllRoles: () => axiosInstance.get('/roles'),
 
     uploadAvatar: (file) => {
         const formData = new FormData();

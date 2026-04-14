@@ -1,92 +1,132 @@
-import {Box, Typography, Paper, Avatar} from "@mui/material";
-import {styled} from "@mui/material/styles";
+import {
+    Box,
+    Typography,
+    Button,
+    CircularProgress,
+    Alert,
+    Snackbar
+} from "@mui/material";
 import {useAuth} from "@contexts/AuthContext";
-import {useState, useEffect} from "react";
-import {authApi} from "@features/auth/api/authApi";
+import {useState, useEffect, useCallback} from "react";
 import TableComponent from "@features/auth/components/TableComponent";
 import {CenteredContainer} from "@/layouts/CenteredContainer.jsx";
-
-
-// ✅ Замените на простой Box
-const PageContainer = styled(Box)(({theme}) => ({
-    display: 'flex',
-    flexDirection: 'column',
-    width: '100%',
-    height: '100%', // Теперь будет занимать 100% родителя (MainLayout)
-    backgroundColor: theme.palette.background.default,
-}));
-
-
-// Остальные стили оставляем без изменений
-const UserPaper = styled(Paper)(({theme}) => ({
-    padding: theme.spacing(4),
-    borderRadius: 8,
-    border: '1px solid',
-    borderColor: theme.palette.divider,
-    backgroundColor: theme.palette.background.paper,
-    width: '100%',
-}));
-
-const RowStyled = styled(Box, {
-    shouldForwardProp: (prop) => prop !== 'role'
-})(({theme, role}) => ({
-    display: 'inline-block',
-    padding: '4px 12px',
-    borderRadius: '12px',
-    fontSize: '0.875rem',
-    fontWeight: 500,
-    backgroundColor: role === 'ADMIN'
-        ? theme.palette.error.light
-        : theme.palette.info.light,
-    color: role === 'ADMIN'
-        ? theme.palette.error.contrastText
-        : theme.palette.info.contrastText,
-}));
+import AddIcon from '@mui/icons-material/Add';
+import {usersApi} from "@features/users/users.api.js";
+import {HeaderWrapper, RowStyled, UserPaper} from "@features/users/styled.js";
+import CreateUserModal from "@features/users/CreateUserModal.jsx";
+import {getUserColumns} from "@features/users/UserColumns.jsx";
 
 const UserList = () => {
     const {user} = useAuth();
     const [users, setUsers] = useState([]);
-    const [usersLoading, setUsersLoading] = useState(false);
+    const [roles, setRoles] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [modalOpen, setModalOpen] = useState(false);
+    const [snackbar, setSnackbar] = useState({open: false, message: '', severity: 'success'});
+
+    const [formData, setFormData] = useState({
+        email: '',
+        firstName: '',
+        lastName: '',
+        password: '',
+        confirmPassword: '',
+        phone: '',
+        role: ''
+    });
 
     const isAdmin = user?.roles?.some(role => role.name === 'ADMIN') || false;
 
-    const userColumns = [
-        {
-            id: 'imageUrl',
-            label: ' ',
-            align: 'left',
-            render: (value) => (
-                <Avatar
-                    src={value}
-                    alt="user"
-                    sx={{width: 40, height: 40, margin: '0 auto'}}
-                />
-            ),
-        },
-        {id: 'id', label: 'ID', align: 'left'},
-        {id: 'fullName', label: 'Имя', align: 'left'},
-        {id: 'email', label: 'Email', align: 'left'},
-        {id: 'phone', label: 'Телефон', align: 'left'},
-        {id: 'role', label: 'Роль', align: 'left'},
-    ];
+
+    const fetchUsers = useCallback(async () => {
+        try {
+            setLoading(true);
+            const response = await usersApi.getAllUsers();
+            setUsers(response.data);
+        } catch (error) {
+            showMessage('Ошибка загрузки пользователей', 'error');
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    const fetchRoles = useCallback(async () => {
+        try {
+            const response = await usersApi.getAllRoles();
+            setRoles(response.data);
+        } catch (error) {
+            console.error(error);
+        }
+    }, []);
 
     useEffect(() => {
         if (isAdmin) {
             fetchUsers();
+            fetchRoles();
         }
-    }, [isAdmin]);
+    }, [isAdmin, fetchUsers, fetchRoles]);
 
-    const fetchUsers = async () => {
-        try {
-            setUsersLoading(true);
-            const response = await authApi.getAllUsers();
-            setUsers(response.data);
-        } catch (error) {
-            console.error("Ошибка загрузки пользователей:", error);
-        } finally {
-            setUsersLoading(false);
+    const showMessage = (message, severity = 'success') => {
+        setSnackbar({open: true, message, severity});
+    };
+
+    const handleCloseSnackbar = () => {
+        setSnackbar({...snackbar, open: false});
+    };
+
+
+    const handleDelete = async (email) => {
+        if (window.confirm(`Удалить пользователя ${email}?`)) {
+            try {
+                await usersApi.deleteUser(email);
+                await fetchUsers();
+                showMessage('Пользователь успешно удалён', 'success');
+            } catch (error) {
+                showMessage('Ошибка при удалении', 'error');
+            }
         }
     };
+
+    const handleCreate = async () => {
+
+        if (formData.password !== formData.confirmPassword) {
+            showMessage('Пароли не совпадают', 'error');
+            return;
+        }
+        try {
+            await usersApi.createUser({
+                email: formData.email,
+                firstName: formData.firstName,
+                lastName: formData.lastName,
+                password: formData.password,
+                confirmPassword: formData.confirmPassword,
+                phone: formData.phone || null,
+                role: formData.role,
+            });
+
+            setModalOpen(false);
+            resetForm();
+            await fetchUsers();
+            showMessage('Пользователь успешно создан', 'success');
+        } catch (error) {
+            showMessage(error.response?.data?.message || 'Ошибка при создании', 'error');
+        }
+    };
+
+    const resetForm = () => {
+        setFormData({
+            email: '',
+            firstName: '',
+            lastName: '',
+            password: '',
+            confirmPassword: '',
+            phone: '',
+            role: ''
+        });
+    };
+    const handleChange = (field) => (event) => {
+        setFormData(prev => ({...prev, [field]: event.target.value}));
+    };
+    const userColumns = getUserColumns(handleDelete);
 
     const userRows = users.map((userItem) => ({
         imageUrl: userItem.imageUrl || undefined,
@@ -99,47 +139,76 @@ const UserList = () => {
                 {userItem.roles?.[0]?.name || 'USER'}
             </RowStyled>
         ),
+        email_raw: userItem.email
     }));
 
     if (!isAdmin) {
         return (
-            <PageContainer>
-                <CenteredContainer maxWidth="lg">
-                    <UserPaper elevation={0}>
-                        <Typography color="error" align="center">
-                            Доступ запрещён. Только для администраторов.
-                        </Typography>
-                    </UserPaper>
-                </CenteredContainer>
-            </PageContainer>
+            <CenteredContainer width={1200}>
+                <UserPaper elevation={0}>
+                    <Alert severity="error" sx={{justifyContent: 'center'}}>
+                        Доступ запрещён. Только для администраторов.
+                    </Alert>
+                </UserPaper>
+            </CenteredContainer>
         );
     }
 
-    return (<CenteredContainer width={1200}>
-            <PageContainer>
-                <UserPaper elevation={0}>
-                    <Typography variant="h6" gutterBottom sx={{mb: 2}}>
-                        Управление пользователями
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary" sx={{mb: 3}}>
-                        Всего пользователей: {users.length}
-                    </Typography>
+    return (
+        <CenteredContainer width={1200}>
+            <UserPaper elevation={0}>
+                <HeaderWrapper>
+                    <Box>
+                        <Typography variant="h5" fontWeight={600}>
+                            Управление пользователями
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" mt={0.5}>
+                            Всего пользователей: {users.length}
+                        </Typography>
+                    </Box>
+                    <Button
+                        variant="contained"
+                        startIcon={<AddIcon/>}
+                        onClick={() => setModalOpen(true)}
+                        sx={{borderRadius: 2, textTransform: 'none', px: 3}}
+                    >
+                        Создать пользователя
+                    </Button>
+                </HeaderWrapper>
 
-                    {usersLoading ? (
-                        <Box sx={{display: 'flex', justifyContent: 'center', py: 4}}>
-                            <Typography>Загрузка...</Typography>
-                        </Box>
-                    ) : (
-                        <TableComponent
-                            columns={userColumns}
-                            rows={userRows}
-                            tableWidth="100%"
-                            tableMinWidth="600px"
-                            tableHeight="400px"
-                        />
-                    )}
-                </UserPaper>
-            </PageContainer>
+                {loading ? (
+                    <Box sx={{display: 'flex', justifyContent: 'center', py: 8}}>
+                        <CircularProgress/>
+                    </Box>
+                ) : (
+                    <TableComponent
+                        columns={userColumns}
+                        rows={userRows}
+                        tableWidth="100%"
+                        tableMinWidth="600px"
+                        tableHeight="600px"
+                    />
+                )}
+                <CreateUserModal
+                    open={modalOpen}
+                    onClose={() => setModalOpen(false)}
+                    onSubmit={handleCreate}
+                    formData={formData}
+                    onChange={handleChange}
+                    roles={roles}
+                />
+
+                <Snackbar
+                    open={snackbar.open}
+                    autoHideDuration={6000}
+                    onClose={handleCloseSnackbar}
+                    anchorOrigin={{vertical: 'bottom', horizontal: 'right'}}
+                >
+                    <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{width: '100%'}}>
+                        {snackbar.message}
+                    </Alert>
+                </Snackbar>
+            </UserPaper>
         </CenteredContainer>
     );
 };
