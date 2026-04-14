@@ -9,12 +9,22 @@ export const useInvoices = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
+    const fetchInvoiceById = useCallback(async (id) => {
+    try {
+        const response = await invoiceApi.getById(id);
+        return response.data;
+    } catch (err) {
+        console.error("Ошибка загрузки сметы:", err);
+        return null;
+    }
+}, []);
+
     const fetchInvoices = useCallback(async () => {
         try {
             setLoading(true);
             setError(null);
             
-            const response = await invoiceApi.getAll();
+            const response = await invoiceApi.getAllInvoices();
             const data = response.data;
             
             if (Array.isArray(data)) {
@@ -204,6 +214,7 @@ const createInvoice = async (invoiceData) => {
         selectInvoice,
         fetchInvoices,
         createInvoice,
+        fetchInvoiceById,
         updateInvoice,
         deleteInvoice,
         addItem,

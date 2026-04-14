@@ -8,16 +8,18 @@ export const useInvoiceTable = (items) => {
         { id: 'marginality', label: 'Маржинальность', align: 'right' },
         { id: 'vat', label: 'НДС', align: 'center' },
         { id: 'total', label: 'Сумма', align: 'right' },
+        { id: "actions", label: "Действия", align: 'right', }
     ];
 
     const rows = useMemo(() => items.map((item) => ({
         id: item.id,
-        name: item.nameProduct || item.productName || item.product?.name || "Товар",
+        name: item.nameProduct,
         quantity: item.quantity,
-        price: `${item.unitPrice || item.price}`,
-        marginality: `${Math.round(item.marginality || 0)}`,
-        vat: `${Math.round(item.vatTotal || item.vat || 0)}`,
-        total: `${Math.round(item.totalPrice || item.total)}`,
+        price: item.unitPrice || item.price || 0,
+        marginality: Math.round(item.marginality || 0),
+        vat: Math.round(item.vatMultiplier || item.vat || 0),
+        total: Math.round(item.totalPrice || item.total || 0),
+        actions: "",
     })), [items]);
 
 
