@@ -24,9 +24,9 @@ export const useInvoiceTable = (items) => {
             vat: Math.round(totalVat), 
             total: Math.round(item.totalPrice || item.total || 0),
             actions: "",
+            originalItem: item 
         };
     }), [items]);
-
 
     return { columns, rows };
 };

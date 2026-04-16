@@ -22,6 +22,24 @@ import { StyledInput } from "@features/modal/StyledInput";
 import { StyledButton } from "@features/modal/StyledButton";
 import { useProducts } from "@features/products/hooks/useProducts";
 
+const CATEGORIES = [
+    { id: 1, name: "Панели" },
+    { id: 2, name: "Инверторы" },
+    { id: 3, name: "Система крепления" },
+    { id: 4, name: "Солнечный кабель" },
+    { id: 5, name: "Кабель-каналы" },
+    { id: 6, name: "Щитовая IP65 DC" },
+    { id: 7, name: "Щитовая IP65 AC" },
+    { id: 8, name: "Кабеля и провода" },
+    { id: 9, name: "Учет и измерение" },
+    { id: 10, name: "Монтаж / Пусконаладка / Доставка" },
+    { id: 11, name: "Пакеты документов" },
+    { id: 12, name: "Спецтехника" },
+    { id: 13, name: "Подстанционные работы" },
+    { id: 14, name: "Трасса / Опоры / Земляные работы" },
+    { id: 15, name: "Щитовые работы и замена" }
+];
+
 const InvoiceModal = ({ open, onClose, onSave, loading = false, mode = 'create', initialData = null }) => {
 
     const { products, loading: productsLoading } = useProducts();
@@ -29,9 +47,46 @@ const InvoiceModal = ({ open, onClose, onSave, loading = false, mode = 'create',
     const [invoiceName, setInvoiceName] = useState("");
     const [power, setPower] = useState("");
 
-    const [form, setForm] = useState({
-        product: null,
-        quantity: 1,
+    const [selectedCategory, setSelectedCategory] = useState(null);
+    const [selectedProduct, setSelectedProduct] = useState(null);
+    const [quantity, setQuantity] = useState(1);
+
+    const [errors, setErrors] = useState({});
+
+const filteredProducts = selectedCategory
+    ? products.filter(p => p.category === selectedCategory.name)
+    : [];
+
+    const calculateValues = (product, qty) => {
+        if (!product) {
+            return {
+                price: 0,
+                vatPerUnit: 0,
+                vatTotal: 0,
+                unitMarginality: 0,
+                totalMarginality: 0,
+                total: 0
+            };
+        }
+
+        const price = product.sellPrice || 0;
+        const vatPerUnit = product.vat || 0;
+        const unitMarginality = product.marginality || 0;
+        const vatTotal = vatPerUnit * qty;
+        const totalMarginality = unitMarginality * qty;
+        const total = price * qty;
+
+        return {
+            price,
+            vatPerUnit,
+            vatTotal,
+            unitMarginality,
+            totalMarginality,
+            total
+        };
+    };
+
+    const [calculatedValues, setCalculatedValues] = useState({
         price: 0,
         vatPerUnit: 0,
         vatTotal: 0,
@@ -40,35 +95,18 @@ const InvoiceModal = ({ open, onClose, onSave, loading = false, mode = 'create',
         total: 0
     });
 
-    const [errors, setErrors] = useState({});
+    useEffect(() => {
+        const values = calculateValues(selectedProduct, quantity);
+        setCalculatedValues(values);
+    }, [selectedProduct, quantity]);
 
-    const calculateTotal = (price, quantity) => {
-        const subtotal = price * quantity;
-        return subtotal;
-    };
-
-    const calculateTotalMarginality = (unitMarginality, quantity) => {
-        return unitMarginality * quantity;
+    const handleCategoryChange = (_, value) => {
+        setSelectedCategory(value);
+        setSelectedProduct(null); 
     };
 
     const handleProductChange = (_, value) => {
-        const product = value;
-        const price = product?.sellPrice || 0;
-        const vatPerUnit = product?.vat || 0;
-        const unitMarginality = product?.marginality || 0;
-        const quantity = form.quantity;
-
-        setForm(prev => ({
-            product,
-            quantity,
-            price,
-            vatPerUnit,
-            unitMarginality,
-            vatTotal: vatPerUnit * quantity,
-            totalMarginality: calculateTotalMarginality(unitMarginality, quantity),
-            total: calculateTotal(price, quantity)
-        }));
-
+        setSelectedProduct(value);
         if (errors.product) {
             setErrors(prev => ({ ...prev, product: "" }));
         }
@@ -76,80 +114,44 @@ const InvoiceModal = ({ open, onClose, onSave, loading = false, mode = 'create',
 
     const handleQuantityChange = (e) => {
         const value = e.target.value;
-
         if (value === "") {
-            setForm(prev => ({
-                ...prev,
-                quantity: "",
-            }));
+            setQuantity("");
             return;
         }
-
-        const quantity = Number(value);
-
-        if (isNaN(quantity)) return;
-
-        setForm(prev => ({
-            ...prev,
-            quantity,
-            vatTotal: prev.vatPerUnit * quantity,
-            totalMarginality: calculateTotalMarginality(prev.unitMarginality, quantity),
-            total: calculateTotal(prev.price, quantity)
-        }));
-    };
-    useEffect(() => {
-        if (open) {
-            if (mode === 'create') {
-                setInvoiceName("");
-                setPower("");
-                setForm({
-                    product: null,
-                    quantity: 1,
-                    price: 0,
-                    vatPerUnit: 0,
-                    vatTotal: 0,
-                    unitMarginality: 0,
-                    totalMarginality: 0,
-                    total: 0
-                });
-            } else if (mode === 'editItem' && initialData) {
-
-                const productFromList = products.find(
-                    p => p.name === initialData.nameProduct
-                );
-
-                const quantity = initialData.quantity || 1;
-                const price = initialData.unitPrice || initialData.price || 0;
-                const vatPerUnit = (initialData.vatTotal || initialData.vatAmount || 0) / quantity;
-                const unitMarginality = (initialData.marginality || 0) / quantity;
-
-                setForm({
-                    product: productFromList  || null,
-                    quantity: quantity,
-                    price: price,
-                    vatPerUnit: vatPerUnit,
-                    vatTotal: initialData.vatTotal || initialData.vatAmount || 0,
-                    unitMarginality: unitMarginality,
-                    totalMarginality: initialData.marginality || 0,
-                    total: initialData.totalPrice || initialData.total || 0
-                });
-                setInvoiceName("");
-                setPower("");
-            } else {
-                setForm({
-                    product: null,
-                    quantity: 1,
-                    price: 0,
-                    vatPerUnit: 0,
-                    vatTotal: 0,
-                    unitMarginality: 0,
-                    totalMarginality: 0,
-                    total: 0
-                });
-            }
-            setErrors({});
+        const qty = Number(value);
+        if (isNaN(qty)) return;
+        setQuantity(qty);
+        if (errors.quantity) {
+            setErrors(prev => ({ ...prev, quantity: "" }));
         }
-    }, [open, mode, initialData]);
+    };
+
+useEffect(() => {
+    if (!open) return;
+
+    if (mode === 'editItem' && initialData) {
+        const product = products.find(p => p.id === initialData.productId);
+
+        if (product) {
+            const category = CATEGORIES.find(c => c.name === product.category);
+
+            setSelectedCategory(category || null);
+            setSelectedProduct(product);
+        }
+
+        setQuantity(initialData.quantity || 1);
+    }
+
+    if (mode === 'create') {
+        setInvoiceName("");
+        setPower("");
+        setSelectedCategory(null);
+        setSelectedProduct(null);
+        setQuantity(1);
+    }
+
+    setErrors({});
+}, [open, mode, initialData, products]);
 
     const validate = () => {
         const newErrors = {};
@@ -158,9 +160,10 @@ const InvoiceModal = ({ open, onClose, onSave, loading = false, mode = 'create',
             if (!invoiceName.trim()) newErrors.invoiceName = "Введите название сметы";
             if (!power.trim()) newErrors.power = "Введите мощность";
             if (power && isNaN(Number(power))) newErrors.power = "Введите корректное число";
-        } else {
-            if (!form.product) newErrors.product = "Выберите товар";
-            if (!form.quantity || form.quantity <= 0) newErrors.quantity = "Введите корректное количество";
+        } else if (mode === 'editItem') {
+            if (!selectedCategory) newErrors.category = "Выберите категорию";
+            if (!selectedProduct) newErrors.product = "Выберите товар";
+            if (!quantity || quantity <= 0) newErrors.quantity = "Введите корректное количество";
         }
 
         setErrors(newErrors);
@@ -178,17 +181,33 @@ const InvoiceModal = ({ open, onClose, onSave, loading = false, mode = 'create',
             };
         } else {
             submitData = {
-                productId: form.product.id,
-                productName: form.product.name,
-                quantity: form.quantity,
-                price: form.price,
-                vatTotal: form.vatTotal,
-                marginality: form.totalMarginality,
-                total: form.total
+                productId: selectedProduct.id,
+                productName: selectedProduct.name,
+                productCategory: selectedCategory.name,
+                quantity: quantity,
+                price: calculatedValues.price,
+                vatPerUnit: calculatedValues.vatPerUnit,
+                vatTotal: calculatedValues.vatTotal,
+                unitMarginality: calculatedValues.unitMarginality,
+                marginality: calculatedValues.totalMarginality,
+                total: calculatedValues.total,
+                itemId: initialData?.id || initialData?.itemId
             };
         }
 
         onSave(submitData);
+    };
+
+    const getModalTitle = () => {
+        if (mode === 'create') return "Создать смету";
+        if (mode === 'editItem') return "Редактировать товар";
+        return "Добавить товар";
+    };
+
+    const getButtonText = () => {
+        if (loading) return "Сохранение...";
+        if (mode === 'create') return "Создать";
+        return "Сохранить";
     };
 
     return (
@@ -197,7 +216,7 @@ const InvoiceModal = ({ open, onClose, onSave, loading = false, mode = 'create',
                 <ModalHeader>
                     <ModalTitle>
                         <Typography variant="h6">
-                            {mode === 'create' ? "Создать смету" : "Добавить товар в смету"}
+                            {getModalTitle()}
                         </Typography>
                         <IconButton onClick={onClose}>
                             <CloseIcon />
@@ -230,15 +249,31 @@ const InvoiceModal = ({ open, onClose, onSave, loading = false, mode = 'create',
                     ) : (
                         <Stack spacing={2}>
                             <Autocomplete
-                                options={products}
-                                loading={productsLoading}
-                                getOptionLabel={(option) => option?.name || ""}
-                                value={form.product}
-                                onChange={handleProductChange}
+                                options={CATEGORIES}
+                                getOptionLabel={(o) => o.name}
+                                value={selectedCategory}
+                                onChange={handleCategoryChange}
                                 renderInput={(params) => (
                                     <TextField
                                         {...params}
-                                        label="Выберите товар"
+                                        label="Категория"
+                                        error={!!errors.category}
+                                        helperText={errors.category}
+                                    />
+                                )}
+                            />
+
+                            <Autocomplete
+                                options={filteredProducts}
+                                loading={productsLoading}
+                                getOptionLabel={(option) => option?.name || ""}
+                                value={selectedProduct}
+                                onChange={handleProductChange}
+                                disabled={!selectedCategory}
+                                renderInput={(params) => (
+                                    <TextField
+                                        {...params}
+                                        label="Товар"
                                         error={!!errors.product}
                                         helperText={errors.product}
                                     />
@@ -248,7 +283,7 @@ const InvoiceModal = ({ open, onClose, onSave, loading = false, mode = 'create',
                             <StyledInput
                                 label="Количество"
                                 type="number"
-                                value={form.quantity}
+                                value={quantity}
                                 onChange={handleQuantityChange}
                                 error={!!errors.quantity}
                                 helperText={errors.quantity}
@@ -260,7 +295,7 @@ const InvoiceModal = ({ open, onClose, onSave, loading = false, mode = 'create',
                                     <StyledInput
                                         label="Цена за единицу"
                                         type="number"
-                                        value={form.price}
+                                        value={calculatedValues.price}
                                         disabled
                                         InputProps={{ readOnly: true }}
                                         helperText="Автоматически из товара"
@@ -270,9 +305,9 @@ const InvoiceModal = ({ open, onClose, onSave, loading = false, mode = 'create',
 
                                 <Box sx={{ flex: 1 }}>
                                     <StyledInput
-                                        label="НДС"
+                                        label="НДС за единицу"
                                         type="number"
-                                        value={form.vatTotal}
+                                        value={calculatedValues.vatPerUnit}
                                         disabled
                                         InputProps={{ readOnly: true }}
                                         helperText="Автоматически из товара"
@@ -282,28 +317,56 @@ const InvoiceModal = ({ open, onClose, onSave, loading = false, mode = 'create',
                             </Box>
 
                             <Box sx={{ display: 'flex', gap: 2 }}>
+                                <Box sx={{ flex: 1 }}>
+                                    <StyledInput
+                                        label="НДС (всего)"
+                                        type="number"
+                                        value={Math.round(calculatedValues.vatTotal)}
+                                        disabled
+                                        InputProps={{ readOnly: true }}
+                                        helperText="НДС × Количество"
+                                        fullWidth
+                                    />
+                                </Box>
 
                                 <Box sx={{ flex: 1 }}>
                                     <StyledInput
-                                        label="Общая маржинальность"
+                                        label="Маржинальность (ед.)"
                                         type="number"
-                                        value={Math.round(form.totalMarginality)}
+                                        value={Math.round(calculatedValues.unitMarginality)}
+                                        disabled
+                                        InputProps={{ readOnly: true }}
+                                        helperText="Из товара"
+                                        fullWidth
+                                    />
+                                </Box>
+                            </Box>
+
+                            <Box sx={{ display: 'flex', gap: 2 }}>
+                                <Box sx={{ flex: 1 }}>
+                                    <StyledInput
+                                        label="Маржинальность (общая)"
+                                        type="number"
+                                        value={Math.round(calculatedValues.totalMarginality)}
                                         disabled
                                         InputProps={{ readOnly: true }}
                                         helperText="Ед. маржинальность × Количество"
                                         fullWidth
                                     />
                                 </Box>
-                            </Box>
 
-                            <StyledInput
-                                label="Общая сумма"
-                                type="number"
-                                value={Math.round(form.total)}
-                                disabled
-                                InputProps={{ readOnly: true }}
-                                helperText="Рассчитывается автоматически"
-                            />
+                                <Box sx={{ flex: 1 }}>
+                                    <StyledInput
+                                        label="Общая сумма"
+                                        type="number"
+                                        value={Math.round(calculatedValues.total)}
+                                        disabled
+                                        InputProps={{ readOnly: true }}
+                                        helperText="Цена × Количество"
+                                        fullWidth
+                                    />
+                                </Box>
+                            </Box>
                         </Stack>
                     )}
                 </ModalBody>
@@ -318,7 +381,7 @@ const InvoiceModal = ({ open, onClose, onSave, loading = false, mode = 'create',
                         onClick={handleSubmit}
                         disabled={loading}
                     >
-                        {loading ? "Сохранение..." : (mode === 'create' ? "Создать" : "Добавить")}
+                        {getButtonText()}
                     </StyledButton>
                 </ModalFooter>
             </ModalContent>

@@ -38,8 +38,9 @@ export const useInvoicePage = () => {
     const [selectedCategory, setSelectedCategory] = useState(null);
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [quantity, setQuantity] = useState("1");
-    
 
+    const [editModalOpen, setEditModalOpen] = useState(false);
+    const [editingItem, setEditingItem] = useState(null);
 
     const [loading, setLoading] = useState(false);
     const [snackbar, setSnackbar] = useState({
@@ -49,7 +50,13 @@ export const useInvoicePage = () => {
     });
 
     const allItems = [...dbItems, ...draftItems];
-    const { columns, rows } = useInvoiceTable(allItems);
+
+    const handleEditItem = (item) => {
+        setEditingItem(item.originalItem );
+        setEditModalOpen(true);
+    };
+
+    const { columns, rows } = useInvoiceTable(allItems, handleEditItem);
 
     const filteredProducts = (products || []).filter(
         p => p.category === selectedCategory?.name
@@ -68,7 +75,13 @@ export const useInvoicePage = () => {
                     productId = found?.id || null;
                 }
 
-                return { ...i, productId };
+                const product = products.find(p => p.id === productId);
+
+                return {
+                    ...i,
+                    productId,
+                    productCategory: product?.category || null
+                };
             });
 
             setDbItems(normalized);
@@ -186,6 +199,52 @@ export const useInvoicePage = () => {
         0
     );
 
+
+    const handleUpdateItem = (updatedItemData) => {
+        const isDraft = draftItems.some(i => i.tempId === editingItem?.id);
+
+        if (isDraft) {
+            setDraftItems(prev => prev.map(i =>
+                (i.tempId === editingItem?.id)
+                    ? {
+                        ...i,
+                        productId: updatedItemData.productId,
+                        nameProduct: updatedItemData.productName,
+                        quantity: updatedItemData.quantity,
+                        unitPrice: updatedItemData.price,
+                        vatMultiplier: updatedItemData.vatPerUnit,
+                        marginality: updatedItemData.marginality,
+                        totalPrice: updatedItemData.total
+                    }
+                    : i
+            ));
+        } else {
+            setDbItems(prev => prev.map(i =>
+                i.id === editingItem?.id
+                    ? {
+                        ...i,
+                        productId: updatedItemData.productId,
+                        nameProduct: updatedItemData.productName,
+                        quantity: updatedItemData.quantity,
+                        unitPrice: updatedItemData.price,
+                        vatMultiplier: updatedItemData.vatPerUnit,
+                        marginality: updatedItemData.marginality,
+                        totalPrice: updatedItemData.total
+                    }
+                    : i
+            ));
+        }
+
+        setEditModalOpen(false);
+        setEditingItem(null);
+
+        setSnackbar({
+            open: true,
+            message: "Товар обновлен",
+            severity: "success"
+        });
+    };
+
     return {
         invoice,
         columns,
@@ -207,6 +266,12 @@ export const useInvoicePage = () => {
         setSelectedProduct,
         setQuantity,
         setSnackbar,
+
+        editModalOpen,
+        editingItem,
+        handleEditItem,
+        handleUpdateItem,
+        setEditModalOpen,
 
         handleAddItem,
         handleDeleteItem,

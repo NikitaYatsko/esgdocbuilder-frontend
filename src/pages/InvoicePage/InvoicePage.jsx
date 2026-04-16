@@ -10,6 +10,7 @@ import {
 
 import TableComponent from "@features/auth/components/TableComponent.jsx";
 import AddInvoiceButton from "@features/invoices/components/AddInvoiceButton";
+import InvoiceModal from "@features/invoices/components/InvoiceModal.jsx";
 import { useInvoicePage } from "@features/invoices/hooks/useInvoicePage.js";
 
 const InvoicePage = () => {
@@ -37,7 +38,13 @@ const InvoicePage = () => {
         handleSaveAll,
         totalSum,
         totalVat,
-        handlePrint
+        handlePrint,
+
+        editModalOpen,
+        editingItem,
+        handleEditItem,
+        handleUpdateItem,
+        setEditModalOpen
     } = useInvoicePage();
 
     return (
@@ -51,6 +58,15 @@ const InvoicePage = () => {
                     {snackbar.message}
                 </Alert>
             </Snackbar>
+
+            <InvoiceModal
+                open={editModalOpen}
+                onClose={() => setEditModalOpen(false)}
+                onSave={handleUpdateItem}
+                loading={loading}
+                mode="editItem"
+                initialData={editingItem}
+            />
 
             <Box sx={{ display: "flex", justifyContent: "space-between" }}>
                 <Typography variant="h4">
@@ -116,6 +132,7 @@ const InvoicePage = () => {
                     rows={rows}
                     showActions={true}
                     actionsColumn="actions"
+                    onEdit={handleEditItem}
                     onDelete={handleDeleteItem}
                     tableWidth="100%"
                     tableMinWidth="600px"

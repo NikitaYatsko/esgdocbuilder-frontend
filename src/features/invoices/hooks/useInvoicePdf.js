@@ -34,14 +34,12 @@ export const useInvoicePdf = () => {
         } catch (err) {
             console.error('Ошибка при скачивании PDF:', err);
             
-            // Пытаемся прочитать ошибку из response
             let errorMessage = 'Ошибка при скачивании PDF';
             
             if (err.response) {
                 console.error('Статус:', err.response.status);
                 console.error('Заголовки:', err.response.headers);
                 
-                // Пытаемся прочитать JSON ошибку из Blob
                 if (err.response.data instanceof Blob && err.response.data.type === 'application/json') {
                     try {
                         const text = await err.response.data.text();
@@ -78,7 +76,6 @@ export const useInvoicePdf = () => {
             const url = window.URL.createObjectURL(blob);
             window.open(url, '_blank');
             
-            // Очищаем URL через секунду
             setTimeout(() => window.URL.revokeObjectURL(url), 1000);
             
             return { success: true };
