@@ -1,225 +1,44 @@
-import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
 import {
     Box,
     Typography,
     TextField,
     Autocomplete,
     Alert,
-    Snackbar
+    Snackbar,
+    CircularProgress
 } from "@mui/material";
 
 import TableComponent from "@features/auth/components/TableComponent.jsx";
 import AddInvoiceButton from "@features/invoices/components/AddInvoiceButton";
-import { useInvoiceTable } from "@features/invoices/hooks/useInvoiceTable";
-import { useInvoices } from "@features/invoices/hooks/useInvoices";
-import { useProducts } from "@features/products/hooks/useProducts";
-
-const CATEGORIES = [
-    { id: 1, name: "Панели" },
-    { id: 2, name: "Инверторы" },
-    { id: 3, name: "Система крепления" },
-    { id: 4, name: "Солнечный кабель" },
-    { id: 5, name: "Кабель-каналы" },
-    { id: 6, name: "Щитовая IP65 DC" },
-    { id: 7, name: "Щитовая IP65 AC" },
-    { id: 8, name: "Кабеля и провода" },
-    { id: 9, name: "Учет и измерение" },
-    { id: 10, name: "Монтаж / Пусконаладка / Доставка" },
-    { id: 11, name: "Пакеты документов" },
-    { id: 12, name: "Спецтехника" },
-    { id: 13, name: "Подстанционные работы" },
-    { id: 14, name: "Трасса / Опоры / Земляные работы" },
-    { id: 15, name: "Щитовые работы и замена" }
-];
+import { useInvoicePage } from "@features/invoices/hooks/useInvoicePage.js";
 
 const InvoicePage = () => {
-    const { id } = useParams();
+    const {
+        invoice,
+        columns,
+        rows,
+        CATEGORIES,
+        filteredProducts,
 
-    const { fetchInvoiceById, updateInvoice } = useInvoices();
-    const { products } = useProducts();
+        selectedCategory,
+        selectedProduct,
+        quantity,
+        loading,
+        pdfLoading,
+        snackbar,
 
-    const [invoice, setInvoice] = useState(null);
-    const [dbItems, setDbItems] = useState([]);
-    const [draftItems, setDraftItems] = useState([]);
+        setSelectedCategory,
+        setSelectedProduct,
+        setQuantity,
+        setSnackbar,
 
-    const [selectedCategory, setSelectedCategory] = useState(null);
-    const [selectedProduct, setSelectedProduct] = useState(null);
-
-    const [quantity, setQuantity] = useState("1");
-
-    const [loading, setLoading] = useState(false);
-    const [snackbar, setSnackbar] = useState({
-        open: false,
-        message: "",
-        severity: "success"
-    });
-
-    const allItems = [...dbItems, ...draftItems];
-    const { columns, rows } = useInvoiceTable(allItems);
-
-    const filteredProducts = (products || []).filter(
-        p => p.category === selectedCategory?.name
-    );
-
-    useEffect(() => {
-        const load = async () => {
-            const data = await fetchInvoiceById(id);
-            setInvoice(data);
-
-            const normalized = (data?.items || []).map(i => {
-                let productId = i.productId || i.product?.id;
-
-                if (!productId && i.nameProduct) {
-                    const found = products.find(p => p.name === i.nameProduct);
-                    productId = found?.id || null;
-                }
-
-                return {
-                    ...i,
-                    productId
-                };
-            });
-
-            setDbItems(normalized);
-            setDraftItems([]);
-        };
-
-        if (products.length) {
-            load();
-        }
-    }, [id, fetchInvoiceById, products]);
-
-    const handleAddItem = () => {
-        const qty = Number(quantity);
-
-        if (!selectedProduct) {
-            return setSnackbar({
-                open: true,
-                message: "Выберите товар",
-                severity: "warning"
-            });
-        }
-
-        if (!qty || qty <= 0) {
-            return setSnackbar({
-                open: true,
-                message: "Некорректное количество",
-                severity: "warning"
-            });
-        }
-
-        if (!selectedProduct.id) {
-            return setSnackbar({
-                open: true,
-                message: "Ошибка: у товара нет ID",
-                severity: "error"
-            });
-        }
-
-        const item = {
-            tempId: Date.now(),
-            productId: selectedProduct.id,
-            nameProduct: selectedProduct.name,
-            quantity: qty,
-            unitPrice: selectedProduct.sellPrice || 0,
-            vatMultiplier: selectedProduct.vat || 0,
-            marginality: (selectedProduct.marginality || 0) * qty,
-            totalPrice: (selectedProduct.sellPrice || 0) * qty,
-            isNew: true
-        };
-
-        setDraftItems(prev => [...prev, item]);
-        setSelectedProduct(null);
-        setQuantity("1");
-    };
-
-    const handleDeleteItem = (row) => {
-        const isDraft = draftItems.some(
-            i => i.tempId === row.id || i.tempId === row.tempId
-        );
-
-        if (isDraft) {
-            setDraftItems(prev =>
-                prev.filter(i => i.tempId !== row.id && i.tempId !== row.tempId)
-            );
-        } else {
-            setDbItems(prev => prev.filter(i => i.id !== row.id));
-        }
-    };
-
-    const handleSaveAll = async () => {
-        if (!invoice) return;
-
-        setLoading(true);
-
-        const items = [...dbItems, ...draftItems];
-
-        const invalid = items.find(i => !i.productId);
-
-        if (invalid) {
-            setSnackbar({
-                open: true,
-                message: "Ошибка: товар без идентификатора",
-                severity: "error"
-            });
-            setLoading(false);
-            return;
-        }
-
-        const totalSum = items.reduce((s, i) => s + (i.totalPrice || 0), 0);
-        const totalMarginality = items.reduce((s, i) => s + (i.marginality || 0), 0);
-        const vatAmount = items.reduce((s, i) => s + ((i.vatMultiplier || 0) * (i.quantity || 0)), 0);
-
-        const payload = {
-            invoiceName: invoice.invoiceName,
-            power: invoice.power,
-            vat_amount: vatAmount,
-            sumMarginality: totalMarginality,
-            sum: totalSum,
-            items: items.map(i => ({
-                productId: i.productId,
-                quantity: i.quantity,
-                unitPrice: i.unitPrice,
-                vatMultiplier: i.vatMultiplier,
-                marginality: i.marginality,
-                totalPrice: i.totalPrice
-            }))
-        };
-
-        const result = await updateInvoice(invoice.id, payload);
-
-        setLoading(false);
-
-        if (result.success) {
-            const updated = await fetchInvoiceById(invoice.id);
-
-            const normalized = (updated?.items || []).map(i => {
-                let productId = i.productId || i.product?.id;
-                if (!productId && i.nameProduct) {
-                    const found = products.find(p => p.name === i.nameProduct);
-                    productId = found?.id || null;
-                }
-                return { ...i, productId };
-            });
-
-            setInvoice(updated);
-            setDbItems(normalized);
-            setDraftItems([]);
-
-            setSnackbar({
-                open: true,
-                message: "Смета сохранена",
-                severity: "success"
-            });
-        } else {
-            setSnackbar({
-                open: true,
-                message: result.error || "Ошибка сохранения",
-                severity: "error"
-            });
-        }
-    };
+        handleAddItem,
+        handleDeleteItem,
+        handleSaveAll,
+        totalSum,
+        totalVat,
+        handlePrint
+    } = useInvoicePage();
 
     return (
         <Box sx={{ p: 3 }}>
@@ -242,8 +61,12 @@ const InvoicePage = () => {
                     <AddInvoiceButton onClick={handleSaveAll} disabled={loading}>
                         {loading ? "Сохранение..." : "Сохранить"}
                     </AddInvoiceButton>
-                    <AddInvoiceButton onClick={() => {}} disabled={loading}>
-                        Печать
+
+                    <AddInvoiceButton
+                        onClick={handlePrint}
+                        disabled={loading || pdfLoading}
+                    >
+                        {pdfLoading ? <CircularProgress size={24} /> : "Печать"}
                     </AddInvoiceButton>
                 </Box>
             </Box>
@@ -278,21 +101,7 @@ const InvoicePage = () => {
                 <TextField
                     label="Количество"
                     value={quantity}
-                    onChange={(e) => {
-                        const val = e.target.value;
-                        if (val === "") {
-                            setQuantity("");
-                            return;
-                        }
-                        if (/^\d*\.?\d*$/.test(val)) {
-                            setQuantity(val);
-                        }
-                    }}
-                    onBlur={() => {
-                        if (!quantity || Number(quantity) <= 0) {
-                            setQuantity("1");
-                        }
-                    }}
+                    onChange={(e) => setQuantity(e.target.value)}
                     sx={{ width: 120 }}
                 />
 
@@ -311,6 +120,23 @@ const InvoicePage = () => {
                     tableWidth="100%"
                     tableMinWidth="600px"
                 />
+            </Box>
+            <Box sx={{ mt: 3, display: "flex", justifyContent: "flex-end" }}>
+                <Box sx={{ minWidth: 300 }}>
+                    <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
+                        <Typography variant="h6">Сумма НДС:</Typography>
+                        <Typography variant="h6" fontWeight="bold">
+                            {totalVat.toFixed(2)}
+                        </Typography>
+                    </Box>
+
+                    <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                        <Typography variant="h6">Общая сумма:</Typography>
+                        <Typography variant="h6" fontWeight="bold">
+                            {totalSum.toFixed(2)}
+                        </Typography>
+                    </Box>
+                </Box>
             </Box>
         </Box>
     );

@@ -14,4 +14,5 @@ export const invoiceApi = {
     deleteItem: (invoiceId, itemId) => axiosInstance.delete(`/api/invoices/${invoiceId}/items/${itemId}`),
 
     downloadPdf: (id) => axiosInstance.get(`/api/invoices/${id}/pdf`, { responseType: 'blob' }),
+    downloadPdfToMarg: (id) => axiosInstance.get(`/api/invoices/${id}/internal-pdf`, { responseType: 'blob' }),
 };
