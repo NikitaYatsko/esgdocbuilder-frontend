@@ -15,4 +15,6 @@ export const invoiceApi = {
 
     downloadPdf: (id) => axiosInstance.get(`/api/invoices/${id}/pdf`, { responseType: 'blob' }),
     downloadPdfToMarg: (id) => axiosInstance.get(`/api/invoices/${id}/internal-pdf`, { responseType: 'blob' }),
+
+    getCategories: () => axiosInstance.get("/products/category"),
 };

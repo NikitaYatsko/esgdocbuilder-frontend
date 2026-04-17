@@ -5,24 +5,7 @@ import { useInvoiceTable } from "@features/invoices/hooks/useInvoiceTable";
 import { useInvoices } from "@features/invoices/hooks/useInvoices";
 import { useProducts } from "@features/products/hooks/useProducts";
 import { useInvoicePdf } from "@features/invoices/hooks/useInvoicePdf";
-
-const CATEGORIES = [
-    { id: 1, name: "Панели" },
-    { id: 2, name: "Инверторы" },
-    { id: 3, name: "Система крепления" },
-    { id: 4, name: "Солнечный кабель" },
-    { id: 5, name: "Кабель-каналы" },
-    { id: 6, name: "Щитовая IP65 DC" },
-    { id: 7, name: "Щитовая IP65 AC" },
-    { id: 8, name: "Кабеля и провода" },
-    { id: 9, name: "Учет и измерение" },
-    { id: 10, name: "Монтаж / Пусконаладка / Доставка" },
-    { id: 11, name: "Пакеты документов" },
-    { id: 12, name: "Спецтехника" },
-    { id: 13, name: "Подстанционные работы" },
-    { id: 14, name: "Трасса / Опоры / Земляные работы" },
-    { id: 15, name: "Щитовые работы и замена" }
-];
+import { invoiceApi } from "@features/invoices/api/invoiceApi";
 
 export const useInvoicePage = () => {
     const { id } = useParams();
@@ -34,6 +17,9 @@ export const useInvoicePage = () => {
     const [invoice, setInvoice] = useState(null);
     const [dbItems, setDbItems] = useState([]);
     const [draftItems, setDraftItems] = useState([]);
+    
+    const [categories, setCategories] = useState([]); 
+    const [categoriesLoading, setCategoriesLoading] = useState(false);
 
     const [selectedCategory, setSelectedCategory] = useState(null);
     const [selectedProduct, setSelectedProduct] = useState(null);
@@ -51,8 +37,40 @@ export const useInvoicePage = () => {
 
     const allItems = [...dbItems, ...draftItems];
 
+    const fetchCategories = async () => {
+        try {
+            setCategoriesLoading(true);
+            const response = await invoiceApi.getCategories();
+            let categoriesData = [];
+            
+            if (Array.isArray(response.data)) {
+                categoriesData = response.data;
+            } else if (response.data?.content && Array.isArray(response.data.content)) {
+                categoriesData = response.data.content;
+            } else if (response.data?.data && Array.isArray(response.data.data)) {
+                categoriesData = response.data.data;
+            }
+            
+            const formattedCategories = categoriesData.map((cat, index) => ({
+                id: cat.id || index + 1,
+                name: cat.name || cat.categoryName || cat
+            }));
+            
+            setCategories(formattedCategories);
+        } catch (error) {
+            console.error("Ошибка загрузки категорий:", error);
+            setSnackbar({ 
+                open: true, 
+                message: "Ошибка загрузки категорий", 
+                severity: "error" 
+            });
+        } finally {
+            setCategoriesLoading(false);
+        }
+    };
+
     const handleEditItem = (item) => {
-        setEditingItem(item.originalItem );
+        setEditingItem(item.originalItem);
         setEditModalOpen(true);
     };
 
@@ -90,6 +108,10 @@ export const useInvoicePage = () => {
 
         if (products.length) load();
     }, [id, products]);
+
+    useEffect(() => {
+        fetchCategories();
+    }, []);
 
     const showError = (message, severity = "error") =>
         setSnackbar({ open: true, message, severity });
@@ -199,7 +221,6 @@ export const useInvoicePage = () => {
         0
     );
 
-
     const handleUpdateItem = (updatedItemData) => {
         const isDraft = draftItems.some(i => i.tempId === editingItem?.id);
 
@@ -249,7 +270,8 @@ export const useInvoicePage = () => {
         invoice,
         columns,
         rows,
-        CATEGORIES,
+        CATEGORIES: categories, 
+        categoriesLoading, 
         filteredProducts,
 
         totalSum,

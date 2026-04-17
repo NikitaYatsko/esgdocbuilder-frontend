@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import {
     Typography,
     IconButton,
@@ -22,42 +22,22 @@ import { StyledInput } from "@features/modal/StyledInput";
 import { StyledButton } from "@features/modal/StyledButton";
 import { useProducts } from "@features/products/hooks/useProducts";
 
-const CATEGORIES = [
-    { id: 1, name: "Панели" },
-    { id: 2, name: "Инверторы" },
-    { id: 3, name: "Система крепления" },
-    { id: 4, name: "Солнечный кабель" },
-    { id: 5, name: "Кабель-каналы" },
-    { id: 6, name: "Щитовая IP65 DC" },
-    { id: 7, name: "Щитовая IP65 AC" },
-    { id: 8, name: "Кабеля и провода" },
-    { id: 9, name: "Учет и измерение" },
-    { id: 10, name: "Монтаж / Пусконаладка / Доставка" },
-    { id: 11, name: "Пакеты документов" },
-    { id: 12, name: "Спецтехника" },
-    { id: 13, name: "Подстанционные работы" },
-    { id: 14, name: "Трасса / Опоры / Земляные работы" },
-    { id: 15, name: "Щитовые работы и замена" }
-];
-
-const InvoiceModal = ({ open, onClose, onSave, loading = false, mode = 'create', initialData = null }) => {
-
+const InvoiceModal = ({ open, onClose, onSave, loading = false, mode = 'create', initialData = null, categories = [] }) => {
     const { products, loading: productsLoading } = useProducts();
-
+    
     const [invoiceName, setInvoiceName] = useState("");
     const [power, setPower] = useState("");
-
     const [selectedCategory, setSelectedCategory] = useState(null);
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [quantity, setQuantity] = useState(1);
-
     const [errors, setErrors] = useState({});
 
-const filteredProducts = selectedCategory
-    ? products.filter(p => p.category === selectedCategory.name)
-    : [];
+    const filteredProducts = useMemo(() => {
+        if (!selectedCategory?.name) return [];
+        return products.filter(p => p.category === selectedCategory.name);
+    }, [products, selectedCategory]);
 
-    const calculateValues = (product, qty) => {
+    const calculateValues = useCallback((product, qty) => {
         if (!product) {
             return {
                 price: 0,
@@ -84,7 +64,7 @@ const filteredProducts = selectedCategory
             totalMarginality,
             total
         };
-    };
+    }, []);
 
     const [calculatedValues, setCalculatedValues] = useState({
         price: 0,
@@ -98,21 +78,21 @@ const filteredProducts = selectedCategory
     useEffect(() => {
         const values = calculateValues(selectedProduct, quantity);
         setCalculatedValues(values);
-    }, [selectedProduct, quantity]);
+    }, [selectedProduct, quantity, calculateValues]);
 
-    const handleCategoryChange = (_, value) => {
+    const handleCategoryChange = useCallback((_, value) => {
         setSelectedCategory(value);
-        setSelectedProduct(null); 
-    };
+        setSelectedProduct(null);
+    }, []);
 
-    const handleProductChange = (_, value) => {
+    const handleProductChange = useCallback((_, value) => {
         setSelectedProduct(value);
         if (errors.product) {
             setErrors(prev => ({ ...prev, product: "" }));
         }
-    };
+    }, [errors.product]);
 
-    const handleQuantityChange = (e) => {
+    const handleQuantityChange = useCallback((e) => {
         const value = e.target.value;
         if (value === "") {
             setQuantity("");
@@ -124,36 +104,35 @@ const filteredProducts = selectedCategory
         if (errors.quantity) {
             setErrors(prev => ({ ...prev, quantity: "" }));
         }
-    };
+    }, [errors.quantity]);
 
-useEffect(() => {
-    if (!open) return;
+    useEffect(() => {
+        if (!open) return;
 
-    if (mode === 'editItem' && initialData) {
-        const product = products.find(p => p.id === initialData.productId);
+        if (mode === 'editItem' && initialData) {
+            const product = products.find(p => p.id === initialData.productId);
 
-        if (product) {
-            const category = CATEGORIES.find(c => c.name === product.category);
+            if (product) {
+                const category = categories.find(c => c.name === product.category);
+                setSelectedCategory(category || null);
+                setSelectedProduct(product);
+            }
 
-            setSelectedCategory(category || null);
-            setSelectedProduct(product);
+            setQuantity(initialData.quantity || 1);
         }
 
-        setQuantity(initialData.quantity || 1);
-    }
+        if (mode === 'create') {
+            setInvoiceName("");
+            setPower("");
+            setSelectedCategory(null);
+            setSelectedProduct(null);
+            setQuantity(1);
+        }
 
-    if (mode === 'create') {
-        setInvoiceName("");
-        setPower("");
-        setSelectedCategory(null);
-        setSelectedProduct(null);
-        setQuantity(1);
-    }
+        setErrors({});
+    }, [open, mode, initialData, products, categories]);
 
-    setErrors({});
-}, [open, mode, initialData, products]);
-
-    const validate = () => {
+    const validate = useCallback(() => {
         const newErrors = {};
 
         if (mode === 'create') {
@@ -168,9 +147,9 @@ useEffect(() => {
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
-    };
+    }, [mode, invoiceName, power, selectedCategory, selectedProduct, quantity]);
 
-    const handleSubmit = async () => {
+    const handleSubmit = useCallback(async () => {
         if (!validate()) return;
 
         let submitData;
@@ -196,19 +175,19 @@ useEffect(() => {
         }
 
         onSave(submitData);
-    };
+    }, [validate, mode, invoiceName, power, selectedProduct, selectedCategory, quantity, calculatedValues, initialData, onSave]);
 
-    const getModalTitle = () => {
+    const getModalTitle = useCallback(() => {
         if (mode === 'create') return "Создать смету";
         if (mode === 'editItem') return "Редактировать товар";
         return "Добавить товар";
-    };
+    }, [mode]);
 
-    const getButtonText = () => {
+    const getButtonText = useCallback(() => {
         if (loading) return "Сохранение...";
         if (mode === 'create') return "Создать";
         return "Сохранить";
-    };
+    }, [loading, mode]);
 
     return (
         <StyledModal open={open} onClose={onClose}>
@@ -249,8 +228,8 @@ useEffect(() => {
                     ) : (
                         <Stack spacing={2}>
                             <Autocomplete
-                                options={CATEGORIES}
-                                getOptionLabel={(o) => o.name}
+                                options={categories}
+                                getOptionLabel={(o) => o?.name || ""}
                                 value={selectedCategory}
                                 onChange={handleCategoryChange}
                                 renderInput={(params) => (

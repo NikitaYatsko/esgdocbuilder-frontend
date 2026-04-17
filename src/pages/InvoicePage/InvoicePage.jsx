@@ -66,6 +66,7 @@ const InvoicePage = () => {
                 loading={loading}
                 mode="editItem"
                 initialData={editingItem}
+                categories={CATEGORIES}
             />
 
             <Box sx={{ display: "flex", justifyContent: "space-between" }}>
