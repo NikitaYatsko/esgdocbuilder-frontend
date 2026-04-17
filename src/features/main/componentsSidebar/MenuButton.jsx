@@ -1,6 +1,6 @@
 import { Button, styled } from "@mui/material";
 
-const StyledMenuButton = styled(Button)(({ theme }) => ({
+const   StyledMenuButton = styled(Button)(({ theme }) => ({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'flex-start',

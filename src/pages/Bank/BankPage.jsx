@@ -1,5 +1,5 @@
-import React, {useMemo, useCallback} from "react";
-import {Box, Typography, styled} from "@mui/material";
+import React, {useMemo, useCallback, useState} from "react";
+import {Box, Typography, styled, Alert, Snackbar} from "@mui/material";
 import {MoneyBlock, BlocksRow} from "@features/transactions/components/MoneyBlock.jsx";
 import {useBank} from "@features/transactions/hooks/useBank";
 import TableComponent from "@features/auth/components/TableComponent.jsx";
@@ -62,6 +62,7 @@ const BankPage = () => {
         accounts,
         operations,
         loading,
+        deleteOperation,
         createOperation,
         page,
         pagination,
@@ -101,56 +102,92 @@ const BankPage = () => {
             amount: (bank?.balance ?? 0) + (cashbox?.balance ?? 0),
         },
     ];
+    const handleCloseSnackbar = () => {
+        setSnackbar(prev => ({...prev, open: false}));
+    };
+    const [snackbar, setSnackbar] = useState({open: false, message: "", severity: "success"});
+
+    const handleRowDelete = async (row) => {
+        if (window.confirm("Удалить операцию?")) {
+            const result = await deleteOperation(row.id);
+
+            if (result.success) {
+                setSnackbar({
+                    open: true,
+                    message: "Операция успешно удалена",
+                    severity: "success"
+                });
+            } else {
+                setSnackbar({
+                    open: true,
+                    message: result.error || "Ошибка при удалении операции",
+                    severity: "error"
+                });
+            }
+        }
+    };
 
     return (
-            <CenteredContainer width={1200} fullHeight={true}>
-                <MainContainer>
-                    <LeftContent>
-                        <Box>
-                            <SectionTitle variant="h5">
-                                Финансовые счета
-                            </SectionTitle>
+        <CenteredContainer width={1400}>
+            <MainContainer>
+                <LeftContent>
+                    <Box>
+                        <SectionTitle variant="h5">
+                            Финансовые счета
+                        </SectionTitle>
 
-                            <BlocksRow>
-                                {moneyData.map((item) => (
-                                    <MoneyBlock
-                                        key={item.title}
-                                        title={item.title}
-                                        amount={item.amount}
-                                    />
-                                ))}
-                            </BlocksRow>
-                        </Box>
-                        <Box>
-                            <SectionTitle variant="h5">
-                                <HistoryIcon color="primary" sx={{fontSize: 28}}/>
-                                История операций
-                            </SectionTitle>
-                            <TableComponent
-                                columns={columns}
-                                rows={operations}
-                                showActions={false}
-                                tableMinWidth="600px"
-                                tableHeight={500}
-                            />
-
-                            <PaginationBox
-                                page={page}
-                                totalPages={pagination?.pages}
-                                onNext={nextPage}
-                                onPrev={prevPage}
-                            />
-                        </Box>
-                    </LeftContent>
-
-                    <RightContent>
-                        <CreateTransaction
-                            accounts={accounts}
-                            onCreate={handleCreate}
+                        <BlocksRow>
+                            {moneyData.map((item) => (
+                                <MoneyBlock
+                                    key={item.title}
+                                    title={item.title}
+                                    amount={item.amount}
+                                />
+                            ))}
+                        </BlocksRow>
+                    </Box>
+                    <Box>
+                        <SectionTitle variant="h5">
+                            <HistoryIcon color="primary" sx={{fontSize: 28}}/>
+                            История операций
+                        </SectionTitle>
+                        <TableComponent
+                            columns={columns}
+                            rows={operations}
+                            showActions={true}
+                            tableMinWidth="600px"
+                            tableHeight={500}
+                            isRowClickable={true}
+                            onRowClick={handleRowDelete}
                         />
-                    </RightContent>
-                </MainContainer>
-            </CenteredContainer>
+
+                        <PaginationBox
+                            page={page}
+                            totalPages={pagination?.pages}
+                            onNext={nextPage}
+                            onPrev={prevPage}
+                        />
+                    </Box>
+                </LeftContent>
+
+                <RightContent>
+                    <CreateTransaction
+                        accounts={accounts}
+                        onCreate={handleCreate}
+                    />
+                </RightContent>
+                <Snackbar
+                    open={snackbar.open}
+                    autoHideDuration={6000}
+                    onClose={handleCloseSnackbar}
+                    anchorOrigin={{vertical: "bottom", horizontal: "right"}}
+                >
+                    <Alert onClose={handleCloseSnackbar} severity={snackbar.severity}>
+                        {snackbar.message}
+                    </Alert>
+                </Snackbar>
+            </MainContainer>
+        </CenteredContainer>
     );
 };
 

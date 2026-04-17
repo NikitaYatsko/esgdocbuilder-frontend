@@ -66,6 +66,7 @@ const TableRowComponent = React.memo(function TableRowComponent({
                                                                     columns,
                                                                     showActions,
                                                                     onEdit,
+                                                                    isRowClickable,
                                                                     onDelete,
                                                                     actionsColumn,
                                                                     onRowClick
@@ -84,7 +85,8 @@ const TableRowComponent = React.memo(function TableRowComponent({
     return (
         <StyledTableRow
             rowtype={row.type}
-            onClick={() => onRowClick?.(row)}
+            onClick={() => isRowClickable && onRowClick?.(row)}
+            style={{cursor: isRowClickable ? 'pointer' : 'default'}}
         >
             {columns.map((column) => {
                 const value = row[column.id];
@@ -127,6 +129,7 @@ const TableComponent = ({
                             onRowClick,
                             showActions = false,
                             onEdit,
+                            isRowClickable,
                             onDelete,
                             actionsColumn = 'vat',
                             tableWidth,
@@ -165,6 +168,7 @@ const TableComponent = ({
                             onDelete={onDelete}
                             actionsColumn={actionsColumn}
                             onRowClick={onRowClick}
+                            isRowClickable={isRowClickable}
                         />
                     ))}
                 </TableBody>
