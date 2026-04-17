@@ -1,9 +1,9 @@
 
-import { Box, Snackbar, Alert } from "@mui/material";
+import { Box, Snackbar, Alert, Menu, MenuItem, Select, InputLabel, FormControl, Button, Typography, TextField } from "@mui/material";
 import TableComponent from "@features/auth/components/TableComponent.jsx";
 import PageHeader from "@features/auth/components/PageHeader.jsx";
 import SearchBar from "@features/products/components/SearchBar";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import ProductModal from "@features/products/components/ProductModal.jsx";
 import styled from "@emotion/styled";
 import { useProducts } from "@features/products/hooks/useProducts.js";
@@ -17,18 +17,40 @@ const StyledBox = styled(Box)(({ theme }) => ({
     display: 'block',
 }));
 
+const UNIT_TYPES = [
+    { value: 'PCS', label: 'Шт (PCS)' },
+    { value: 'M', label: 'Метр (M)' },
+    { value: 'M2', label: 'Метр² (M2)' },
+    { value: 'SET', label: 'Комплект (SET)' },
+    { value: 'JOB', label: 'Работа (JOB)' },
+];
+
 const ProductsPage = () => {
 
     const [openModal, setOpenModal] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
     const [modalLoading, setModalLoading] = useState(false);
+    const [filterAnchorEl, setFilterAnchorEl] = useState(null);
+    const [selectedCategory, setSelectedCategory] = useState('');
+    const [selectedUnit, setSelectedUnit] = useState('');
+    const [sortField, setSortField] = useState('');
+    const [sortOrder, setSortOrder] = useState('asc');
     
     const {
         products,
         loading,
-        page,
         pagination,
+        searchTerm,
+        rangeFilters,
+        categories,
+        searchProducts,
+        filterByCategory,
+        filterByTypeOfUnit,
+        setFilterRange,
+        clearFilters,
+        clearSearch,
+        page,
         nextPage,
         prevPage,
         deleteProduct,
@@ -56,10 +78,21 @@ const ProductsPage = () => {
         sellPrice: p.sellPrice,
         marginality: p.marginality,
         vat: p.vat,
-    }));
+    })).sort((a, b) => {
+        if (!sortField) return 0;
+        const aValue = a[sortField];
+        const bValue = b[sortField];
+        if (aValue == null && bValue == null) return 0;
+        if (aValue == null) return sortOrder === 'asc' ? -1 : 1;
+        if (bValue == null) return sortOrder === 'asc' ? 1 : -1;
+        if (typeof aValue === 'string') {
+            return sortOrder === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
+        }
+        return sortOrder === 'asc' ? aValue - bValue : bValue - aValue;
+    });
 
     const handleRowClick = (row) => {
-        console.log('Выбрана строка:', row);
+        // Логика обработки клика по строке (если нужна)
     };
 
     const handleEdit = (row) => {
@@ -119,12 +152,69 @@ const ProductsPage = () => {
         }
     };
 
-    const handleSearch = (searchTerm) => {
-        console.log('Поиск:', searchTerm);
+    const handleSearch = useCallback((value) => {
+        searchProducts(value);
+    }, [searchProducts]);
+
+    const handleClearSearch = useCallback(() => {
+        clearSearch();
+    }, [clearSearch]);
+
+    const handleNumericInput = (e, allowDecimal = false) => {
+        const value = e.target.value;
+        let regex = allowDecimal ? /^\d*\.?\d*$/ : /^\d*$/;
+        if (!regex.test(value)) {
+            e.target.value = value.replace(allowDecimal ? /[^\d.]/g : /\D/g, '');
+        }
+        if (Number(value) > 999999999) {
+            e.target.value = '999999999';
+        }
     };
 
-    const handleFilter = () => {
-        console.log('Открыть фильтр');
+    const handleFilter = (event) => {
+        setFilterAnchorEl(event.currentTarget);
+    };
+
+    const handleSort = (field) => {
+        if (sortField === field) {
+            if (sortOrder === 'asc') {
+                setSortOrder('desc');
+            } else {
+                // Третий клик - сброс сортировки
+                setSortField('');
+                setSortOrder('asc');
+            }
+        } else {
+            setSortField(field);
+            setSortOrder('asc');
+        }
+    };
+
+    const handleCloseFilter = () => {
+        setFilterAnchorEl(null);
+    };
+
+    const handleCategoryChange = async (event) => {
+        const categoryId = event.target.value;
+        setSelectedCategory(categoryId);
+        await filterByCategory(categoryId);
+    };
+
+    const handleUnitChange = async (event) => {
+        const unit = event.target.value;
+        setSelectedUnit(unit);
+        await filterByTypeOfUnit(unit);
+    };
+
+    const handleRangeChange = (field) => (event) => {
+        setFilterRange(field, event.target.value);
+    };
+
+    const handleClearFilters = () => {
+        setSelectedCategory('');
+        setSelectedUnit('');
+        clearFilters();
+        handleCloseFilter();
     };
 
     const handleCloseModal = () => {
@@ -140,7 +230,144 @@ const ProductsPage = () => {
             <CenteredContainer width="1200">
                 <StyledBox>
                     <PageHeader title="Товары" onAdd={handleAddProduct} />
-                    <SearchBar onSearch={handleSearch} onFilter={handleFilter} />
+                    <SearchBar
+                        value={searchTerm}
+                        onSearch={handleSearch}
+                        onClear={handleClearSearch}
+                        onFilter={handleFilter}
+                    />
+
+                    <Menu
+                        anchorEl={filterAnchorEl}
+                        open={Boolean(filterAnchorEl)}
+                        onClose={handleCloseFilter}
+                        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+                        PaperProps={{ sx: { p: 2, minWidth: 280 } }}
+                    >
+                        <Typography sx={{ mb: 1, fontWeight: 600 }}>Фильтр продуктов</Typography>
+                        <FormControl fullWidth sx={{ mb: 2 }}>
+                            <InputLabel id="category-filter-label">Категория</InputLabel>
+                            <Select
+                                labelId="category-filter-label"
+                                value={selectedCategory}
+                                label="Категория"
+                                onChange={handleCategoryChange}
+                            >
+                                <MenuItem value="">Не выбрано</MenuItem>
+                                {categories.map((cat) => (
+                                    <MenuItem key={cat.id} value={cat.id}>
+                                        {cat.name}
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+
+                        <FormControl fullWidth sx={{ mb: 2 }}>
+                            <InputLabel id="unit-filter-label">Единица измерения</InputLabel>
+                            <Select
+                                labelId="unit-filter-label"
+                                value={selectedUnit}
+                                label="Единица измерения"
+                                onChange={handleUnitChange}
+                            >
+                                <MenuItem value="">Не выбрано</MenuItem>
+                                {UNIT_TYPES.map((item) => (
+                                    <MenuItem key={item.value} value={item.value}>
+                                        {item.label}
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+
+                        <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, mb: 2 }}>
+                            <TextField
+                                label="Цена продажи мин"
+                                type="number"
+                                size="small"
+                                value={rangeFilters.sellPriceMin}
+                                onChange={handleRangeChange('sellPriceMin')}
+                                onInput={(e) => handleNumericInput(e, false)}
+                                inputProps={{ max: 999999999, min: 0 }}
+                            />
+                            <TextField
+                                label="Цена продажи макс"
+                                type="number"
+                                size="small"
+                                value={rangeFilters.sellPriceMax}
+                                onChange={handleRangeChange('sellPriceMax')}
+                                onInput={(e) => handleNumericInput(e, false)}
+                                inputProps={{ max: 999999999, min: 0 }}
+                            />
+                        </Box>
+
+                        <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, mb: 2 }}>
+                            <TextField
+                                label="Цена закупки мин"
+                                type="number"
+                                size="small"
+                                value={rangeFilters.costPriceMin}
+                                onChange={handleRangeChange('costPriceMin')}
+                                onInput={(e) => handleNumericInput(e, false)}
+                                inputProps={{ max: 999999999, min: 0 }}
+                            />
+                            <TextField
+                                label="Цена закупки макс"
+                                type="number"
+                                size="small"
+                                value={rangeFilters.costPriceMax}
+                                onChange={handleRangeChange('costPriceMax')}
+                                onInput={(e) => handleNumericInput(e, false)}
+                                inputProps={{ max: 999999999, min: 0 }}
+                            />
+                        </Box>
+
+                        <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, mb: 2 }}>
+                            <TextField
+                                label="Маржинальность мин"
+                                type="number"
+                                size="small"
+                                value={rangeFilters.marginalityMin}
+                                onChange={handleRangeChange('marginalityMin')}
+                                onInput={(e) => handleNumericInput(e, true)}
+                                inputProps={{ max: 999999999, min: 0 }}
+                            />
+                            <TextField
+                                label="Маржинальность макс"
+                                type="number"
+                                size="small"
+                                value={rangeFilters.marginalityMax}
+                                onChange={handleRangeChange('marginalityMax')}
+                                onInput={(e) => handleNumericInput(e, true)}
+                                inputProps={{ max: 999999999, min: 0 }}
+                            />
+                        </Box>
+
+                        <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, mb: 2 }}>
+                            <TextField
+                                label="НДС мин"
+                                type="number"
+                                size="small"
+                                value={rangeFilters.vatMin}
+                                onChange={handleRangeChange('vatMin')}
+                                onInput={(e) => handleNumericInput(e, true)}
+                                inputProps={{ max: 999999999, min: 0 }}
+                            />
+                            <TextField
+                                label="НДС макс"
+                                type="number"
+                                size="small"
+                                value={rangeFilters.vatMax}
+                                onChange={handleRangeChange('vatMax')}
+                                onInput={(e) => handleNumericInput(e, true)}
+                                inputProps={{ max: 999999999, min: 0 }}
+                            />
+                        </Box>
+
+                        <Button fullWidth variant="outlined" onClick={handleClearFilters}>
+                            Сбросить фильтр
+                        </Button>
+                    </Menu>
 
                     <Box>
                         <TableComponent
@@ -152,6 +379,9 @@ const ProductsPage = () => {
                             onDelete={handleDelete}
                             tableWidth="100%"
                             tableMinWidth="600px"
+                            onSort={handleSort}
+                            sortField={sortField}
+                            sortOrder={sortOrder}
                         />
                         {pagination && (
                             <PaginationBox
@@ -168,6 +398,7 @@ const ProductsPage = () => {
                         product={selectedProduct}
                         onSave={handleSaveProduct}
                         loading={modalLoading}
+                        categories={categories}
                     />
 
                     <Snackbar
