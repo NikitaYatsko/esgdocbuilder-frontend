@@ -6,13 +6,9 @@ export const authApi = {
     refreshToken: () => axiosInstance.post('/auth/refresh'),
     getProfile: () => axiosInstance.get('/profile'),
     updateProfile: (data) => axiosInstance.put('/profile/data', data),
-    getAllUsers: () => axiosInstance.get('/users'),
-    createUser: (userData) => axiosInstance.post('/users/create', userData),
-    deleteUser: (email) => axiosInstance.delete(`/users/${email}`),
-    getBalance: () => axiosInstance.get('/bank/accounts'),
-    getOperations: (params) => axiosInstance.get('/bank/operations', params),
-    postOperation: (operationData) => axiosInstance.post('/bank/operations', operationData),
-    getAllRoles: () => axiosInstance.get('/roles'),
+
+
+
 
     uploadAvatar: (file) => {
         const formData = new FormData();
