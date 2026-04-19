@@ -1,6 +1,6 @@
 import { Box, TextField, InputAdornment, IconButton } from "@mui/material";
 import { styled } from '@mui/material/styles';
-import { Search, FilterList } from '@mui/icons-material';
+import { Search, FilterList, Close } from '@mui/icons-material';
 
 const SearchContainer = styled(Box)(({ theme }) => ({
     display: 'flex',
@@ -45,12 +45,13 @@ const FilterButton = styled(IconButton)(({ theme }) => ({
     },
 }));
 
-const SearchBar = ({ onSearch, onFilter, placeholder = "Поиск товаров..." }) => {
+const SearchBar = ({ value = '', onSearch, onClear, onFilter, placeholder = "Поиск товаров..." }) => {
     return (
         <SearchContainer>
             <SearchField
                 placeholder={placeholder}
                 size="small"
+                value={value}
                 onChange={(e) => onSearch(e.target.value)}
                 InputProps={{
                     startAdornment: (
@@ -58,6 +59,13 @@ const SearchBar = ({ onSearch, onFilter, placeholder = "Поиск товаро�
                             <Search sx={{ color: 'text.secondary', fontSize: 20 }} />
                         </InputAdornment>
                     ),
+                    endAdornment: value ? (
+                        <InputAdornment position="end">
+                            <IconButton size="small" onClick={onClear}>
+                                <Close sx={{ color: 'text.secondary', fontSize: 18 }} />
+                            </IconButton>
+                        </InputAdornment>
+                    ) : null,
                 }}
             />
             <FilterButton onClick={onFilter}>

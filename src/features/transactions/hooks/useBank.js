@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
-import { authApi } from "@features/auth/api/authApi";
+import {useEffect, useState} from "react";
+
+import {transactionsApi} from "@features/transactions/transactions.api.js";
 
 export const useBank = () => {
     const [accounts, setAccounts] = useState([]);
@@ -16,8 +17,8 @@ export const useBank = () => {
             setLoading(true);
 
             const [accountsRes, operationsRes] = await Promise.all([
-                authApi.getBalance(),
-                authApi.getOperations({
+                transactionsApi.getBalance(),
+                transactionsApi.getOperations({
                     params: {
                         page: currentPage - 1,
                         limit: limit
@@ -34,7 +35,7 @@ export const useBank = () => {
 
             const formattedOperations = data.content
                 .map((op, index) => ({
-                    id: op.id || index, 
+                    id: op.id || index,
                     type: op.type === "INCOME" ? "Доход" : "Расход",
                     amount: op.amount,
                     comment: op.comment,
@@ -64,11 +65,24 @@ export const useBank = () => {
                 comment: newOp.comment,
             };
 
-            await authApi.postOperation(payload);
+            await transactionsApi.postOperation(payload);
             await fetchBankData(page);
 
         } catch (e) {
             console.error("Ошибка создания операции:", e);
+        }
+    };
+
+    const deleteOperation = async (id) => {
+        try {
+            await transactionsApi.deleteOperation(id);
+
+            setOperations(prev => prev.filter(op => op.id !== id));
+
+            return { success: true };
+        } catch (error) {
+            console.error(error);
+            return { success: false, error: error.message };
         }
     };
 
@@ -89,7 +103,7 @@ export const useBank = () => {
             setPage(p);
         }
     };
-    
+
 
     return {
         accounts,
@@ -97,6 +111,7 @@ export const useBank = () => {
         pagination,
         loading,
         page,
+        deleteOperation,
         nextPage,
         prevPage,
         goToPage,

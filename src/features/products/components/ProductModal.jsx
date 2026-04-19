@@ -31,25 +31,7 @@ const UNIT_TYPES = [
     { value: "JOB", label: "Работа (JOB)" }
 ];
 
-const CATEGORIES = [
-    { id: 1, name: "Панели" },
-    { id: 2, name: "Инверторы" },
-    { id: 3, name: "Система крепления" },
-    { id: 4, name: "Солнечный кабель" },
-    { id: 5, name: "Кабель-каналы" },
-    { id: 6, name: "Щитовая IP65 DC" },
-    { id: 7, name: "Щитовая IP65 AC" },
-    { id: 8, name: "Кабеля и провода" },
-    { id: 9, name: "Учет и измерение" },
-    { id: 10, name: "Монтаж / Пусконаладка / Доставка" },
-    { id: 11, name: "Пакеты документов" },
-    { id: 12, name: "Спецтехника" },
-    { id: 13, name: "Подстанционные работы" },
-    { id: 14, name: "Трасса / Опоры / Земляные работы" },
-    { id: 15, name: "Щитовые работы и замена" }
-];
-
-const ProductModal = ({ open, onClose, product, onSave, loading = false }) => {
+const ProductModal = ({ open, onClose, product, onSave, loading = false, categories = [] }) => {
 
     const isEdit = Boolean(product);
 
@@ -111,6 +93,17 @@ const ProductModal = ({ open, onClose, product, onSave, loading = false }) => {
         
         const vat = basePrice * (vatPercent / vatDivisor);
         return vat.toFixed(2);
+    };
+
+    const handleNumericInput = (e, allowDecimal = false) => {
+        const value = e.target.value;
+        let regex = allowDecimal ? /^\d*\.?\d*$/ : /^\d*$/;
+        if (!regex.test(value)) {
+            e.target.value = value.replace(allowDecimal ? /[^\d.]/g : /\D/g, '');
+        }
+        if (Number(value) > 999999999) {
+            e.target.value = '999999999';
+        }
     };
 
     const handleChange = (field) => (e) => {
@@ -227,7 +220,7 @@ const ProductModal = ({ open, onClose, product, onSave, loading = false }) => {
                                 onChange={handleChange("categoryId")}
                                 label="Категория"
                             >
-                                {CATEGORIES.map((cat) => (
+                                {categories.map((cat) => (
                                     <MenuItem key={cat.id} value={cat.id}>
                                         {cat.name}
                                     </MenuItem>
@@ -258,36 +251,42 @@ const ProductModal = ({ open, onClose, product, onSave, loading = false }) => {
                         label="Цена закупки"
                         value={form.costPrice}
                         onChange={handleChange("costPrice")}
+                        onInput={(e) => handleNumericInput(e, false)}
                         error={!!errors.costPrice}
                         helperText={errors.costPrice}
                         required
                         type="number"
+                        inputProps={{ max: 999999999, min: 0 }}
                     />
 
                     <StyledInput
                         label="Цена продажи"
                         value={form.sellPrice}
                         onChange={handleChange("sellPrice")}
+                        onInput={(e) => handleNumericInput(e, false)}
                         error={!!errors.sellPrice}
                         helperText={errors.sellPrice}
                         required
                         type="number"
+                        inputProps={{ max: 999999999, min: 0 }}
                     />
 
                     <StyledInput
                         label="Маржинальность"
                         value={form.marginality}
                         onChange={handleChange("marginality")}
+                        onInput={(e) => handleNumericInput(e, true)}
                         type="number"
-                        InputProps={{ inputProps: { step: "0.01" } }}
+                        InputProps={{ inputProps: { step: "0.01", max: 999999999, min: 0 } }}
                     />
 
                     <StyledInput
                         label="НДС"
                         value={form.vat}
                         onChange={handleChange("vat")}
+                        onInput={(e) => handleNumericInput(e, true)}
                         type="number"
-                        InputProps={{ inputProps: { step: "0.01" } }}
+                        InputProps={{ inputProps: { step: "0.01", max: 999999999, min: 0 } }}
                     />
                 </ModalBody>
 

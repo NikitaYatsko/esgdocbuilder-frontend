@@ -7,11 +7,14 @@ import {
     TableHead,
     TableRow,
     Paper,
-    IconButton
+    IconButton,
+    Box
 } from '@mui/material';
 import {styled} from '@mui/material/styles';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 
 const StyledTableContainer = styled(TableContainer, {
     shouldForwardProp: (prop) => prop !== 'customWidth' && prop !== 'customHeight'
@@ -25,7 +28,9 @@ const StyledTableContainer = styled(TableContainer, {
 }));
 
 
-const StyledTable = styled(Table)(({customMinWidth}) => ({
+const StyledTable = styled(Table, {
+    shouldForwardProp: (prop) => prop !== 'customMinWidth'
+})(({customMinWidth}) => ({
     minWidth: customMinWidth || 1350,
     width: '100%',
 }));
@@ -37,9 +42,16 @@ const StyledTableHead = styled(TableHead)(({theme}) => ({
     zIndex: 2,
 }));
 
-const StyledHeaderCell = styled(TableCell)(({theme}) => ({
+const StyledHeaderCell = styled(TableCell, {
+    shouldForwardProp: (prop) => prop !== '$clickable'
+})(({theme, $clickable}) => ({
     color: theme.palette.text.white,
     fontWeight: 600,
+    cursor: $clickable ? 'pointer' : 'default',
+    userSelect: 'none',
+    '&:hover': $clickable ? {
+        backgroundColor: theme.palette.primary.dark,
+    } : {},
 }));
 
 const StyledBodyCell = styled(TableCell)(({theme}) => ({
@@ -66,6 +78,7 @@ const TableRowComponent = React.memo(function TableRowComponent({
                                                                     columns,
                                                                     showActions,
                                                                     onEdit,
+                                                                    isRowClickable,
                                                                     onDelete,
                                                                     actionsColumn,
                                                                     onRowClick
@@ -84,7 +97,8 @@ const TableRowComponent = React.memo(function TableRowComponent({
     return (
         <StyledTableRow
             rowtype={row.type}
-            onClick={() => onRowClick?.(row)}
+            onClick={() => isRowClickable && onRowClick?.(row)}
+            style={{cursor: isRowClickable ? 'pointer' : 'default'}}
         >
             {columns.map((column) => {
                 const value = row[column.id];
@@ -127,12 +141,22 @@ const TableComponent = ({
                             onRowClick,
                             showActions = false,
                             onEdit,
+                            isRowClickable,
                             onDelete,
                             actionsColumn = 'vat',
                             tableWidth,
                             tableMinWidth,
-                            tableHeight
+                            tableHeight,
+                            onSort,
+                            sortField,
+                            sortOrder
                         }) => {
+
+    const handleHeaderClick = (columnId) => {
+        if (onSort) {
+            onSort(columnId);
+        }
+    };
 
     return (
         <StyledTableContainer
@@ -147,8 +171,14 @@ const TableComponent = ({
                             <StyledHeaderCell
                                 key={column.id}
                                 align={column.align || 'left'}
+                                $clickable={onSort ? true : false}
+                                onClick={() => handleHeaderClick(column.id)}
                             >
-                                {column.label}
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                    {column.label}
+                                    {sortField === column.id && sortOrder === 'asc' && <ArrowUpwardIcon fontSize="small" />}
+                                    {sortField === column.id && sortOrder === 'desc' && <ArrowDownwardIcon fontSize="small" />}
+                                </Box>
                             </StyledHeaderCell>
                         ))}
                     </TableRow>
@@ -165,6 +195,7 @@ const TableComponent = ({
                             onDelete={onDelete}
                             actionsColumn={actionsColumn}
                             onRowClick={onRowClick}
+                            isRowClickable={isRowClickable}
                         />
                     ))}
                 </TableBody>
