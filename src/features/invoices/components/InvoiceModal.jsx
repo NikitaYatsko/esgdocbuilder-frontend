@@ -24,7 +24,7 @@ import { useProducts } from "@features/products/hooks/useProducts";
 
 const InvoiceModal = ({ open, onClose, onSave, loading = false, mode = 'create', initialData = null, categories = [] }) => {
     const { products, loading: productsLoading } = useProducts();
-    
+
     const [invoiceName, setInvoiceName] = useState("");
     const [power, setPower] = useState("");
     const [selectedCategory, setSelectedCategory] = useState(null);
@@ -111,13 +111,11 @@ const InvoiceModal = ({ open, onClose, onSave, loading = false, mode = 'create',
 
         if (mode === 'editItem' && initialData) {
             const product = products.find(p => p.id === initialData.productId);
-
             if (product) {
                 const category = categories.find(c => c.name === product.category);
                 setSelectedCategory(category || null);
                 setSelectedProduct(product);
             }
-
             setQuantity(initialData.quantity || 1);
         }
 
@@ -130,7 +128,19 @@ const InvoiceModal = ({ open, onClose, onSave, loading = false, mode = 'create',
         }
 
         setErrors({});
-    }, [open, mode, initialData, products, categories]);
+    }, [open]);
+
+    useEffect(() => {
+        if (!open || mode !== 'editItem') return;
+
+        const product = products.find(p => p.id === initialData?.productId);
+        if (product) {
+            const category = categories.find(c => c.name === product.category);
+            setSelectedCategory(category || null);
+            setSelectedProduct(product);
+        }
+        setQuantity(initialData?.quantity || 1);
+    }, [initialData, products, categories, open, mode]);
 
     const validate = useCallback(() => {
         const newErrors = {};
