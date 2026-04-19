@@ -49,7 +49,7 @@ export const useInvoicePage = () => {
                     const res = await invoiceApi.getCategories();
                     return res.data;
                 },
-                10 * 60 * 1000 // 10 минут
+                10 * 60 * 1000 
             );
 
             let categoriesData = [];
@@ -131,7 +131,8 @@ export const useInvoicePage = () => {
 
         const item = {
             tempId: Date.now(),
-            productId: selectedProduct.id,
+            productId: selectedProduct.id,  
+            productName: selectedProduct.name,
             nameProduct: selectedProduct.name,
             quantity: qty,
             unitPrice: selectedProduct.sellPrice || 0,
@@ -166,10 +167,12 @@ export const useInvoicePage = () => {
         setLoading(true);
 
         const items = [...dbItems, ...draftItems];
+        
         const invalid = items.find(i => !i.productId);
 
         if (invalid) {
-            showError("Ошибка: товар без идентификатора");
+            console.error("Товар без productId:", invalid);
+            showError(`Ошибка: товар "${invalid.nameProduct || invalid.productName}" без идентификатора`);
             setLoading(false);
             return;
         }
@@ -204,12 +207,36 @@ export const useInvoicePage = () => {
         }
     };
 
+    const normalizeItemsForPrint = (items) => {
+        return items.map(item => {
+            if (item.productId) return item;
+            
+            if (item.id && !item.productId) {
+                return { ...item, productId: item.id };
+            }
+            
+            if (item.originalItem?.productId) {
+                return { ...item, productId: item.originalItem.productId };
+            }
+            
+            if (item.product?.id) {
+                return { ...item, productId: item.product.id };
+            }
+            
+            return item;
+        });
+    };
+
     const handlePrint = async () => {
         if (!invoice?.id) return showError("ID сметы не найден");
 
-        const items = [...dbItems, ...draftItems];
-        if (items.find(i => !i.productId)) {
-            return showError("Есть товар без productId");
+        const itemsToPrint = normalizeItemsForPrint([...dbItems, ...draftItems]);
+        
+        const missingProductId = itemsToPrint.find(i => !i.productId);
+        
+        if (missingProductId) {
+            console.error("Товар без productId для печати:", missingProductId);
+            return showError(`Товар "${missingProductId.nameProduct || missingProductId.productName || 'без названия'}" не имеет ID товара. Сохраните смету перед печатью.`);
         }
 
         const result = await downloadPdf(invoice.id, invoice.invoiceName);
@@ -224,9 +251,13 @@ export const useInvoicePage = () => {
     const handlePrintWithMargin = async () => {
         if (!invoice?.id) return showError("ID сметы не найден");
 
-        const items = [...dbItems, ...draftItems];
-        if (items.find(i => !i.productId)) {
-            return showError("Есть товар без productId");
+        const itemsToPrint = normalizeItemsForPrint([...dbItems, ...draftItems]);
+        
+        const missingProductId = itemsToPrint.find(i => !i.productId);
+        
+        if (missingProductId) {
+            console.error("Товар без productId для печати с маржой:", missingProductId);
+            return showError(`Товар "${missingProductId.nameProduct || missingProductId.productName || 'без названия'}" не имеет ID товара. Сохраните смету перед печатью.`);
         }
 
         const result = await downloadPdfWithMargin(invoice.id, invoice.invoiceName);
@@ -254,6 +285,7 @@ export const useInvoicePage = () => {
                     ? {
                         ...i,
                         productId: updatedItemData.productId,
+                        productName: updatedItemData.productName,
                         nameProduct: updatedItemData.productName,
                         quantity: updatedItemData.quantity,
                         unitPrice: updatedItemData.price,
@@ -269,6 +301,7 @@ export const useInvoicePage = () => {
                     ? {
                         ...i,
                         productId: updatedItemData.productId,
+                        productName: updatedItemData.productName,
                         nameProduct: updatedItemData.productName,
                         quantity: updatedItemData.quantity,
                         unitPrice: updatedItemData.price,
