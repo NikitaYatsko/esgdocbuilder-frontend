@@ -1,8 +1,9 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 
 class CacheManager {
     constructor() {
         this.cache = new Map();
+        this.pendingRequests = new Map(); 
     }
 
     get(key, ttl = 5 * 60 * 1000) {
@@ -18,10 +19,11 @@ class CacheManager {
         return cached.data;
     }
 
-    set(key, data) {
+    set(key, data, tags = []) {
         this.cache.set(key, {
             data,
-            timestamp: Date.now()
+            timestamp: Date.now(),
+            tags 
         });
     }
 
@@ -33,8 +35,28 @@ class CacheManager {
         }
     }
 
+    clearByTag(tag) {
+        for (const [key, value] of this.cache.entries()) {
+            if (value.tags.includes(tag)) {
+                this.cache.delete(key);
+            }
+        }
+    }
+
     has(key) {
         return this.cache.has(key);
+    }
+
+    addPendingRequest(key, promise) {
+        this.pendingRequests.set(key, promise);
+        promise.finally(() => {
+            this.pendingRequests.delete(key);
+        });
+        return promise;
+    }
+
+    getPendingRequest(key) {
+        return this.pendingRequests.get(key);
     }
 }
 
@@ -45,17 +67,41 @@ export const useCache = () => {
         return globalCache.get(key, ttl);
     }, []);
 
-    const setCached = useCallback((key, data) => {
-        globalCache.set(key, data);
+    const setCached = useCallback((key, data, tags = []) => {
+        globalCache.set(key, data, tags);
     }, []);
 
     const clearCache = useCallback((key) => {
         globalCache.clear(key);
     }, []);
 
+    const clearCacheByTag = useCallback((tag) => {
+        globalCache.clearByTag(tag);
+    }, []);
+
     const hasCache = useCallback((key) => {
         return globalCache.has(key);
     }, []);
 
-    return { getCached, setCached, clearCache, hasCache };
+    const fetchWithCache = useCallback(async (key, fetchFn, ttl = 5 * 60 * 1000, tags = []) => {
+        const cached = globalCache.get(key, ttl);
+        if (cached !== null) {
+            return cached;
+        }
+
+        const pending = globalCache.getPendingRequest(key);
+        if (pending) {
+            return pending;
+        }
+
+
+        const promise = fetchFn().then(data => {
+            globalCache.set(key, data, tags);
+            return data;
+        });
+
+        return globalCache.addPendingRequest(key, promise);
+    }, []);
+
+    return { getCached, setCached, clearCache, clearCacheByTag, hasCache, fetchWithCache };
 };

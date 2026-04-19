@@ -10,15 +10,7 @@ export const useInvoicePdf = () => {
         setError(null);
         
         try {
-            console.log('Запрос PDF для сметы ID:', invoiceId);
-            
-            const response = await invoiceApi.downloadPdfToMarg(invoiceId);
-            
-            console.log('Ответ получен:', {
-                status: response.status,
-                headers: response.headers,
-                dataSize: response.data?.length
-            });
+            const response = await invoiceApi.downloadPdf(invoiceId);
             
             const blob = new Blob([response.data], { type: 'application/pdf' });
             const url = window.URL.createObjectURL(blob);
@@ -37,17 +29,12 @@ export const useInvoicePdf = () => {
             let errorMessage = 'Ошибка при скачивании PDF';
             
             if (err.response) {
-                console.error('Статус:', err.response.status);
-                console.error('Заголовки:', err.response.headers);
-                
                 if (err.response.data instanceof Blob && err.response.data.type === 'application/json') {
                     try {
                         const text = await err.response.data.text();
                         const errorData = JSON.parse(text);
-                        console.error('Распарсенная ошибка:', errorData);
                         errorMessage = errorData.message || errorData.error || errorData.title || 'Ошибка сервера при генерации PDF';
                     } catch (e) {
-                        console.error('Не удалось распарсить ошибку:', e);
                         errorMessage = 'Ошибка сервера при генерации PDF';
                     }
                 } else if (err.response.data && typeof err.response.data === 'object') {
@@ -66,30 +53,45 @@ export const useInvoicePdf = () => {
         }
     }, []);
 
-    const openPdfInNewTab = useCallback(async (invoiceId) => {
+    const downloadPdfWithMargin = useCallback(async (invoiceId, invoiceName = 'invoice') => {
         setLoading(true);
         setError(null);
         
         try {
-            const response = await invoiceApi.downloadPdf(invoiceId);
+            const response = await invoiceApi.downloadPdfToMarg(invoiceId);
+            
             const blob = new Blob([response.data], { type: 'application/pdf' });
             const url = window.URL.createObjectURL(blob);
-            window.open(url, '_blank');
-            
-            setTimeout(() => window.URL.revokeObjectURL(url), 1000);
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `${invoiceName}_${invoiceId}_with_margin.pdf`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(url);
             
             return { success: true };
         } catch (err) {
-            let errorMessage = 'Ошибка при открытии PDF';
+            console.error('Ошибка при скачивании PDF с маржой:', err);
             
-            if (err.response?.data instanceof Blob && err.response.data.type === 'application/json') {
-                try {
-                    const text = await err.response.data.text();
-                    const errorData = JSON.parse(text);
-                    errorMessage = errorData.message || errorData.error || 'Ошибка сервера';
-                } catch (e) {
-                    errorMessage = 'Ошибка сервера при генерации PDF';
+            let errorMessage = 'Ошибка при скачивании PDF с маржой';
+            
+            if (err.response) {
+                if (err.response.data instanceof Blob && err.response.data.type === 'application/json') {
+                    try {
+                        const text = await err.response.data.text();
+                        const errorData = JSON.parse(text);
+                        errorMessage = errorData.message || errorData.error || errorData.title || 'Ошибка сервера при генерации PDF';
+                    } catch (e) {
+                        errorMessage = 'Ошибка сервера при генерации PDF';
+                    }
+                } else if (err.response.data && typeof err.response.data === 'object') {
+                    errorMessage = err.response.data.message || err.response.data.error || 'Ошибка сервера';
+                } else if (typeof err.response.data === 'string') {
+                    errorMessage = err.response.data;
                 }
+            } else if (err.message) {
+                errorMessage = err.message;
             }
             
             setError(errorMessage);
@@ -99,5 +101,5 @@ export const useInvoicePdf = () => {
         }
     }, []);
 
-    return { downloadPdf, openPdfInNewTab, loading, error };
+    return { downloadPdf, downloadPdfWithMargin, loading, error };
 };

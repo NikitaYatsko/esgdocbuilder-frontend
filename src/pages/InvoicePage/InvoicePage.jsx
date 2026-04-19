@@ -39,6 +39,7 @@ const InvoicePage = () => {
         totalSum,
         totalVat,
         handlePrint,
+        handlePrintWithMargin,
 
         editModalOpen,
         editingItem,
@@ -84,6 +85,13 @@ const InvoicePage = () => {
                         disabled={loading || pdfLoading}
                     >
                         {pdfLoading ? <CircularProgress size={24} /> : "Печать"}
+                    </AddInvoiceButton>
+
+                    <AddInvoiceButton
+                        onClick={handlePrintWithMargin}
+                        disabled={loading || pdfLoading}
+                    >
+                        {pdfLoading ? <CircularProgress size={24} /> : "Печать с маржой"}
                     </AddInvoiceButton>
                 </Box>
             </Box>

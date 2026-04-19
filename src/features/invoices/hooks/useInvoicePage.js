@@ -6,19 +6,21 @@ import { useInvoices } from "@features/invoices/hooks/useInvoices";
 import { useProducts } from "@features/products/hooks/useProducts";
 import { useInvoicePdf } from "@features/invoices/hooks/useInvoicePdf";
 import { invoiceApi } from "@features/invoices/api/invoiceApi";
+import { useCache } from "@features/invoices/hooks/useCache";
 
 export const useInvoicePage = () => {
     const { id } = useParams();
+    const { fetchWithCache } = useCache();
 
     const { fetchInvoiceById, updateInvoice } = useInvoices();
     const { products } = useProducts();
-    const { downloadPdf, loading: pdfLoading } = useInvoicePdf();
+    const { downloadPdf, downloadPdfWithMargin, loading: pdfLoading } = useInvoicePdf();
 
     const [invoice, setInvoice] = useState(null);
     const [dbItems, setDbItems] = useState([]);
     const [draftItems, setDraftItems] = useState([]);
-    
-    const [categories, setCategories] = useState([]); 
+
+    const [categories, setCategories] = useState([]);
     const [categoriesLoading, setCategoriesLoading] = useState(false);
 
     const [selectedCategory, setSelectedCategory] = useState(null);
@@ -40,30 +42,35 @@ export const useInvoicePage = () => {
     const fetchCategories = async () => {
         try {
             setCategoriesLoading(true);
-            const response = await invoiceApi.getCategories();
+
+            const responseData = await fetchWithCache(
+                "categories",
+                async () => {
+                    const res = await invoiceApi.getCategories();
+                    return res.data;
+                },
+                10 * 60 * 1000 // 10 минут
+            );
+
             let categoriesData = [];
-            
-            if (Array.isArray(response.data)) {
-                categoriesData = response.data;
-            } else if (response.data?.content && Array.isArray(response.data.content)) {
-                categoriesData = response.data.content;
-            } else if (response.data?.data && Array.isArray(response.data.data)) {
-                categoriesData = response.data.data;
+
+            if (Array.isArray(responseData)) {
+                categoriesData = responseData;
+            } else if (responseData?.content) {
+                categoriesData = responseData.content;
+            } else if (responseData?.data) {
+                categoriesData = responseData.data;
             }
-            
+
             const formattedCategories = categoriesData.map((cat, index) => ({
                 id: cat.id || index + 1,
                 name: cat.name || cat.categoryName || cat
             }));
-            
+
             setCategories(formattedCategories);
+
         } catch (error) {
             console.error("Ошибка загрузки категорий:", error);
-            setSnackbar({ 
-                open: true, 
-                message: "Ошибка загрузки категорий", 
-                severity: "error" 
-            });
         } finally {
             setCategoriesLoading(false);
         }
@@ -214,6 +221,23 @@ export const useInvoicePage = () => {
         }
     };
 
+    const handlePrintWithMargin = async () => {
+        if (!invoice?.id) return showError("ID сметы не найден");
+
+        const items = [...dbItems, ...draftItems];
+        if (items.find(i => !i.productId)) {
+            return showError("Есть товар без productId");
+        }
+
+        const result = await downloadPdfWithMargin(invoice.id, invoice.invoiceName);
+
+        if (!result.success) {
+            showError(result.error);
+        } else {
+            setSnackbar({ open: true, message: "PDF с маржой сформирован", severity: "success" });
+        }
+    };
+
     const totalSum = allItems.reduce((s, i) => s + (i.totalPrice || 0), 0);
 
     const totalVat = allItems.reduce(
@@ -270,8 +294,8 @@ export const useInvoicePage = () => {
         invoice,
         columns,
         rows,
-        CATEGORIES: categories, 
-        categoriesLoading, 
+        CATEGORIES: categories,
+        categoriesLoading,
         filteredProducts,
 
         totalSum,
@@ -298,6 +322,7 @@ export const useInvoicePage = () => {
         handleAddItem,
         handleDeleteItem,
         handleSaveAll,
-        handlePrint
+        handlePrint,
+        handlePrintWithMargin
     };
 };

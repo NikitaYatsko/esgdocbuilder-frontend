@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { productApi } from "@features/products/api/productApi";
+import { useCache } from "@features/invoices/hooks/useCache";
 
 export const useProducts = () => {
     const [products, setProducts] = useState([]);
@@ -11,31 +12,44 @@ export const useProducts = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    const fetchProducts = useCallback(async (currentPage = page) => {
-        try {
-            setLoading(true);
+    const { fetchWithCache, clearCacheByTag } = useCache();
 
-            const response = await productApi.getAll({
-                page: currentPage - 1,
-                limit
-            });
+const fetchProducts = useCallback(async (currentPage = page) => {
+    try {
+        setLoading(true);
 
-            const data = response.data;
+        const data = await fetchWithCache(
+            `products_${currentPage}_${limit}`,
+            async () => {
+                const response = await productApi.getAll({
+                    page: currentPage - 1,
+                    limit
+                });
+                return response.data;
+            },
+            5 * 60 * 1000,
+            ["products"]
+        );
 
-            setProducts(data.content || data.items || []);
-            setPagination(data.pagination);
+        setProducts(data.content || data.items || []);
+        setPagination(data.pagination);
 
-        } catch (err) {
-            console.error("Ошибка загрузки продуктов:", err);
-            setError(err);
-        } finally {
-            setLoading(false);
-        }
-    }, [page, limit]);
+    } catch (err) {
+        console.error("Ошибка загрузки продуктов:", err);
+        setError(err);
+    } finally {
+        setLoading(false);
+    }
+}, [page, limit, fetchWithCache]);
 
-    useEffect(() => {
-        fetchProducts(page);
-    }, [page, fetchProducts]);
+let productsLoaded = false;
+
+useEffect(() => {
+    if (productsLoaded) return;
+
+    productsLoaded = true;
+    fetchProducts(page);
+}, [page, fetchProducts]);
 
     const nextPage = () => {
         if (pagination && page < pagination.pages) {
@@ -58,6 +72,7 @@ export const useProducts = () => {
     const deleteProduct = async (id) => {
         try {
             await productApi.delete(id);
+            clearCacheByTag("products");
             if (products.length === 1 && page > 1) {
                 setPage(prev => prev - 1);
             } else {
@@ -76,6 +91,7 @@ export const useProducts = () => {
     const createProduct = async (productData) => {
         try {
             const response = await productApi.create(productData);
+            clearCacheByTag("products");
             setPage(1);
             await fetchProducts(1);
             return { success: true, data: response.data };
@@ -91,6 +107,7 @@ export const useProducts = () => {
     const updateProduct = async (id, productData) => {
         try {
             const response = await productApi.update(id, productData);
+            clearCacheByTag("products");
             fetchProducts(page);
             return { success: true, data: response.data };
         } catch (err) {
