@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { productApi } from "@features/products/api/productApi";
+import { useCache } from "@features/invoices/hooks/useCache";
 
 export const useProducts = () => {
     const [products, setProducts] = useState([]);

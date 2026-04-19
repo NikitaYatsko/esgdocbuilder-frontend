@@ -67,12 +67,31 @@ const ProductModal = ({ open, onClose, product, onSave, loading = false, categor
         return { vatPercent: 20, vatDivisor: 120 };
     };
 
-    const calculateVat = (sellPrice) => {
-        if (!sellPrice) return "";
+    const calculateVat = (costPrice, sellPrice) => {
+        if (!costPrice && !sellPrice) return "";
+        
+        const cost = Number(costPrice);
         const sell = Number(sellPrice);
-        if (isNaN(sell)) return "";
+        
+        if ((costPrice && isNaN(cost)) || (sellPrice && isNaN(sell))) return "";
+        
         const { vatPercent, vatDivisor } = getVatSettings();
-        const vat = (sell * vatPercent) / vatDivisor;
+        
+        let basePrice;
+        if (sellPrice && costPrice && sell < cost) {
+            basePrice = cost;
+        } 
+        else if (sellPrice) {
+            basePrice = sell;
+        }
+        else if (costPrice) {
+            basePrice = cost;
+        }
+        else {
+            return "";
+        }
+        
+        const vat = basePrice * (vatPercent / vatDivisor);
         return vat.toFixed(2);
     };
 
@@ -97,7 +116,7 @@ const ProductModal = ({ open, onClose, product, onSave, loading = false, categor
                 const costPrice = field === 'costPrice' ? value : prev.costPrice;
                 const sellPrice = field === 'sellPrice' ? value : prev.sellPrice;
                 newForm.marginality = calculateMarginality(costPrice, sellPrice);
-                newForm.vat = calculateVat(sellPrice);
+                newForm.vat = calculateVat(costPrice, sellPrice);
             }
             if (field === 'costPrice') {
                 const costPrice = value;

@@ -1,127 +1,169 @@
-import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import { useInvoices } from "@features/invoices/hooks/useInvoices";
+import {
+    Box,
+    Typography,
+    TextField,
+    Autocomplete,
+    Alert,
+    Snackbar,
+    CircularProgress
+} from "@mui/material";
+
 import TableComponent from "@features/auth/components/TableComponent.jsx";
-import { Box, Typography, Stack, Button } from "@mui/material";
-import { useInvoiceTable } from "@features/invoices/hooks/useInvoiceTable";
 import AddInvoiceButton from "@features/invoices/components/AddInvoiceButton";
 import InvoiceModal from "@features/invoices/components/InvoiceModal.jsx";
+import { useInvoicePage } from "@features/invoices/hooks/useInvoicePage.js";
 
 const InvoicePage = () => {
-    const { id } = useParams();
+    const {
+        invoice,
+        columns,
+        rows,
+        CATEGORIES,
+        filteredProducts,
 
-    const { fetchInvoiceById, addItem, deleteItem } = useInvoices();
+        selectedCategory,
+        selectedProduct,
+        quantity,
+        loading,
+        pdfLoading,
+        snackbar,
 
-    const [invoice, setInvoice] = useState(null);
-    const [items, setItems] = useState([]);
-    const [openModal, setOpenModal] = useState(false);
-    const [editingItem, setEditingItem] = useState(null);
-    const [modalLoading, setModalLoading] = useState(false);
-    const { columns, rows } = useInvoiceTable(items);
+        setSelectedCategory,
+        setSelectedProduct,
+        setQuantity,
+        setSnackbar,
 
-    useEffect(() => {
-        const load = async () => {
-            const data = await fetchInvoiceById(id);
-            setInvoice(data);
-            setItems(data?.items || []);
-        };
+        handleAddItem,
+        handleDeleteItem,
+        handleSaveAll,
+        totalSum,
+        totalVat,
+        handlePrint,
+        handlePrintWithMargin,
 
-        load();
-    }, [id]);
-
-    const handleEditItem = (row) => {
-    const fullItem = items.find(item => item.id === row.id);
-
-    setEditingItem(fullItem);
-    setModalMode("editItem");
-    setOpenModal(true);
-};
-
-    const handleSave = async (data) => {
-        if (!invoice) return;
-
-        setModalLoading(true);
-
-        const payload = {
-            productId: data.productId,
-            quantity: data.quantity,
-            unitPrice: data.price,
-            vatMultiplier: data.vatTotal,
-            marginality: data.marginality,
-            totalPrice: data.total
-        };
-
-        const result = await addItem(invoice.id, payload);
-
-        setModalLoading(false);
-
-        if (result.success) {
-            setOpenModal(false);
-
-            const updated = await fetchInvoiceById(invoice.id);
-            setInvoice(updated);
-            setItems(updated?.items || []);
-        } else {
-            console.error(result.error);
-        }
-    };
-
-    const handleDeleteItem = async (row) => {
-    if (!invoice) return;
-
-    const result = await deleteItem(invoice.id, row.id);
-
-    if (result.success) {
-        setItems(prev => prev.filter(item => item.id !== row.id));
-    } else {
-        console.error(result.error);
-    }
-};
+        editModalOpen,
+        editingItem,
+        handleEditItem,
+        handleUpdateItem,
+        setEditModalOpen
+    } = useInvoicePage();
 
     return (
         <Box sx={{ p: 3 }}>
-            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+            <Snackbar
+                open={snackbar.open}
+                autoHideDuration={4000}
+                onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
+            >
+                <Alert severity={snackbar.severity}>
+                    {snackbar.message}
+                </Alert>
+            </Snackbar>
 
+            <InvoiceModal
+                open={editModalOpen}
+                onClose={() => setEditModalOpen(false)}
+                onSave={handleUpdateItem}
+                loading={loading}
+                mode="editItem"
+                initialData={editingItem}
+                categories={CATEGORIES}
+            />
+
+            <Box sx={{ display: "flex", justifyContent: "space-between" }}>
                 <Typography variant="h4">
                     Смета #{invoice?.id}
                 </Typography>
 
-                <Stack direction="row" spacing={2}>
-
-                    <AddInvoiceButton onClick={() => setOpenModal(true)}>
-                        Добавить товар
+                <Box sx={{ display: "flex", gap: 2, mt: 3 }}>
+                    <AddInvoiceButton onClick={handleSaveAll} disabled={loading}>
+                        {loading ? "Сохранение..." : "Сохранить"}
                     </AddInvoiceButton>
 
-                    <AddInvoiceButton onClick={() => console.log("print")}>
-                        Печать
+                    <AddInvoiceButton
+                        onClick={handlePrint}
+                        disabled={loading || pdfLoading}
+                    >
+                        {pdfLoading ? <CircularProgress size={24} /> : "Печать"}
                     </AddInvoiceButton>
 
-                </Stack>
-
+                    <AddInvoiceButton
+                        onClick={handlePrintWithMargin}
+                        disabled={loading || pdfLoading}
+                    >
+                        {pdfLoading ? <CircularProgress size={24} /> : "Печать с маржой"}
+                    </AddInvoiceButton>
+                </Box>
             </Box>
 
-            <Typography sx={{ mb: 3 }}>
-                Название: {invoice?.invoiceName}
-            </Typography>
+            <Box sx={{ display: "flex", gap: 2, mt: 3 }}>
+                <Autocomplete
+                    options={CATEGORIES}
+                    getOptionLabel={(o) => o.name}
+                    value={selectedCategory}
+                    onChange={(_, v) => {
+                        setSelectedCategory(v);
+                        setSelectedProduct(null);
+                    }}
+                    renderInput={(params) => (
+                        <TextField {...params} label="Категория" />
+                    )}
+                    sx={{ width: 250 }}
+                />
 
-            <TableComponent
-                columns={columns}
-                rows={rows}
-                showActions={true}
-                actionsColumn="actions"
-                onEdit={handleEditItem}
-                onDelete={handleDeleteItem}
-                tableWidth="100%"
-                tableMinWidth="600px"
-            />
-            <InvoiceModal
-                open={openModal}
-                onClose={() => setOpenModal(false)}
-                onSave={handleSave}
-                loading={modalLoading}
-                mode="addItem"
-            />
+                <Autocomplete
+                    options={filteredProducts}
+                    getOptionLabel={(o) => o.name}
+                    value={selectedProduct}
+                    onChange={(_, v) => setSelectedProduct(v)}
+                    disabled={!selectedCategory}
+                    renderInput={(params) => (
+                        <TextField {...params} label="Товар" />
+                    )}
+                    sx={{ width: 300 }}
+                />
 
+                <TextField
+                    label="Количество"
+                    value={quantity}
+                    onChange={(e) => setQuantity(e.target.value)}
+                    sx={{ width: 120 }}
+                />
+
+                <AddInvoiceButton onClick={handleAddItem}>
+                    Добавить
+                </AddInvoiceButton>
+            </Box>
+
+            <Box sx={{ mt: 3 }}>
+                <TableComponent
+                    columns={columns}
+                    rows={rows}
+                    showActions={true}
+                    actionsColumn="actions"
+                    onEdit={handleEditItem}
+                    onDelete={handleDeleteItem}
+                    tableWidth="100%"
+                    tableMinWidth="600px"
+                />
+            </Box>
+            <Box sx={{ mt: 3, display: "flex", justifyContent: "flex-end" }}>
+                <Box sx={{ minWidth: 300 }}>
+                    <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
+                        <Typography variant="h6">Сумма НДС:</Typography>
+                        <Typography variant="h6" fontWeight="bold">
+                            {totalVat.toFixed(2)}
+                        </Typography>
+                    </Box>
+
+                    <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                        <Typography variant="h6">Общая сумма:</Typography>
+                        <Typography variant="h6" fontWeight="bold">
+                            {totalSum.toFixed(2)}
+                        </Typography>
+                    </Box>
+                </Box>
+            </Box>
         </Box>
     );
 };
