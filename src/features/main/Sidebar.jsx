@@ -1,4 +1,4 @@
-import {Box, styled, Drawer, Divider, useTheme, Typography} from "@mui/material";
+import {Box, styled, Drawer, Divider, useTheme, Typography, Link, Stack} from "@mui/material";
 import {useState} from "react";
 import {useAuth} from "@contexts/AuthContext";
 import {useNavigate} from "react-router-dom";
@@ -47,6 +47,12 @@ const StyledDivider = styled(Divider)(({theme}) => ({
 
 }));
 
+const ContactInformation = styled(Box)(() => ({
+    padding: "20px 40px",
+    textAlign: "center",
+
+
+}))
 
 export const Sidebar = ({onMenuClick}) => {
 
@@ -76,20 +82,11 @@ export const Sidebar = ({onMenuClick}) => {
             action: () => navigate('/profile')
         },
         {
-            label: "Товар",
-            icon: <ProductIcon/>,
-            action: () => navigate("/products")
-        },
-        {
             label: "Создание фактуры",
             icon: <InvoiceIcon/>,
             action: () => navigate("/invoice")
         },
-        {
-            label: "Банк",
-            icon: <BankIcon/>,
-            action: () => navigate('/bank')
-        }
+
     ];
 
     if (isAdmin) {
@@ -104,6 +101,17 @@ export const Sidebar = ({onMenuClick}) => {
             icon: <SettingsIcon/>,
             action: () => navigate('/settings')
         });
+
+        menuItems.push({
+            label: "Банк",
+            icon: <BankIcon/>,
+            action: () => navigate('/bank')
+        })
+        menuItems.push({
+            label: "Товар",
+            icon: <ProductIcon/>,
+            action: () => navigate("/products")
+        },)
     }
 
     const handleMenuClick = (action) => {
@@ -157,10 +165,29 @@ export const Sidebar = ({onMenuClick}) => {
 
                             <StyledDivider/>
 
-                            <ThemeToggle
-                                mode={mode}
-                                onToggle={togle}
-                            />
+                            <Stack flexDirection="column" justifyContent="space-between" height={"100%"}>
+                                <ThemeToggle
+                                    mode={mode}
+                                    onToggle={togle}
+                                />
+                                <ContactInformation>
+                                    <Box>
+                                        <Typography variant="subtitle2" sx={{fontSize: '12px'}}>
+                                            Проблемы с работой приложения?
+                                        </Typography>
+
+
+                                        <Link
+                                            href="https://t.me/outlinedinguilt"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        >
+                                            @outlinedinguilt
+                                        </Link>
+                                    </Box>
+
+                                </ContactInformation>
+                            </Stack>
                         </>
                     )}
                 </MenuContent>

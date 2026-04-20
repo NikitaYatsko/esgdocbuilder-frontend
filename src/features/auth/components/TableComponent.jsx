@@ -183,7 +183,6 @@ const TableComponent = ({
                         ))}
                     </TableRow>
                 </StyledTableHead>
-
                 <TableBody>
                     {rows.map((row, index) => (
                         <TableRowComponent
