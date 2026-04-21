@@ -4,6 +4,7 @@ import InvoiceSearchBar from "@features/invoices/components/InvoiceSearchBar";
 import InvoiceModal from "@features/invoices/components/InvoiceModal.jsx";
 import AddInvoiceButton from "@features/invoices/components/AddInvoiceButton";
 import { useState } from "react";
+import { useProducts } from "@features/products/hooks/useProducts";
 import { useInvoices } from "@features/invoices/hooks/useInvoices.js";
 import { StyledBox, StyledPaper } from "@features/invoices/components/styled/StyledComponents";
 import { CenteredContainer } from "@/layouts/CenteredContainer.jsx";
@@ -22,6 +23,8 @@ const CreateInvoicePage = () => {
         deleteInvoice,
         createInvoice,
     } = useInvoices();
+
+    const { categories } = useProducts();
 
     const handleAddInvoice = () => {
         setModalMode('create');
@@ -78,11 +81,11 @@ const CreateInvoicePage = () => {
     };
 
     const handleSearch = (searchTerm) => {
-        console.log('Поиск смет:', searchTerm);
+        // Логика поиска смет (если нужна)
     };
 
     const handleFilter = () => {
-        console.log('Открыть фильтр смет');
+        // Логика открытия фильтра смет (если нужна)
     };
 
     const handleCloseModal = () => {
@@ -142,6 +145,7 @@ const CreateInvoicePage = () => {
                 onSave={handleSave}
                 loading={modalLoading}
                 mode={modalMode}
+                categories={categories}
             />
 
             <Snackbar

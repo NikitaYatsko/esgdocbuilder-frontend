@@ -15,6 +15,7 @@ export const useProducts = () => {
     const [categoryFilter, setCategoryFilter] = useState(null);
     const [unitFilter, setUnitFilter] = useState('');
     const [categories, setCategories] = useState([]);
+    const [allProducts, setAllProducts] = useState([]);
     const [rangeFilters, setRangeFilters] = useState({
         sellPriceMin: '',
         sellPriceMax: '',
@@ -112,15 +113,34 @@ export const useProducts = () => {
         }
     };
 
-    const getAllProductsCached = async () => {
+    const fetchSearchProducts = async (term) => {
+        try {
+            return await productApi.search(term);
+        } catch (err) {
+            const status = err.response?.status;
+            if (status === 500 || status === 404) {
+                const fallback = await getAllProductsCached();
+                const filtered = normalizeResponse(fallback).products.filter((product) => {
+                    const name = String(product.name || product.title || "").toLowerCase();
+                    return name.includes(term.toLowerCase());
+                });
+                return { data: filtered };
+            }
+            throw err;
+        }
+    };
+
+    const getAllProductsCached = useCallback(async () => {
         if (allProductsCache.current) {
             return allProductsCache.current;
         }
 
         const response = await productApi.getAllProducts();
         allProductsCache.current = response.data;
+        const { products: normalizedProducts } = normalizeResponse(response.data);
+        setAllProducts(normalizedProducts);
         return response.data;
-    };
+    }, []);
 
     const fetchProducts = async (currentPage = 1, term = debouncedSearchTerm) => {
         const trimmedTerm = term?.trim();
@@ -324,6 +344,7 @@ export const useProducts = () => {
 
     return {
         products,
+        allProducts,
         pagination,
         loading,
         searchTerm,
@@ -338,6 +359,7 @@ export const useProducts = () => {
         goToPage,
 
         refetch: fetchProducts,
+        getAllProductsCached,
         searchProducts,
         filterByCategory,
         filterByTypeOfUnit,

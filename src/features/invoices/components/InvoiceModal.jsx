@@ -23,7 +23,7 @@ import { StyledButton } from "@features/modal/StyledButton";
 import { useProducts } from "@features/products/hooks/useProducts";
 
 const InvoiceModal = ({ open, onClose, onSave, loading = false, mode = 'create', initialData = null, categories = [] }) => {
-    const { products, loading: productsLoading } = useProducts();
+    const { products, allProducts, loading: productsLoading } = useProducts();
 
     const [invoiceName, setInvoiceName] = useState("");
     const [power, setPower] = useState("");
@@ -33,9 +33,13 @@ const InvoiceModal = ({ open, onClose, onSave, loading = false, mode = 'create',
     const [errors, setErrors] = useState({});
 
     const filteredProducts = useMemo(() => {
-        if (!selectedCategory?.name) return [];
-        return products.filter(p => p.category === selectedCategory.name);
-    }, [products, selectedCategory]);
+        if (!selectedCategory?.id) return [];
+        const productSource = allProducts.length ? allProducts : products;
+        return productSource.filter(p => {
+            const productCategoryId = p.categoryId ?? p.category?.id ?? null;
+            return productCategoryId === selectedCategory.id;
+        });
+    }, [products, allProducts, selectedCategory]);
 
     const calculateValues = useCallback((product, qty) => {
         if (!product) {
@@ -110,9 +114,10 @@ const InvoiceModal = ({ open, onClose, onSave, loading = false, mode = 'create',
         if (!open) return;
 
         if (mode === 'editItem' && initialData) {
-            const product = products.find(p => p.id === initialData.productId);
+            const productSource = allProducts.length ? allProducts : products;
+            const product = productSource.find(p => p.id === initialData.productId);
             if (product) {
-                const category = categories.find(c => c.name === product.category);
+                const category = categories.find(c => c.id === (product.categoryId ?? product.category?.id));
                 setSelectedCategory(category || null);
                 setSelectedProduct(product);
             }
@@ -128,19 +133,7 @@ const InvoiceModal = ({ open, onClose, onSave, loading = false, mode = 'create',
         }
 
         setErrors({});
-    }, [open]);
-
-    useEffect(() => {
-        if (!open || mode !== 'editItem') return;
-
-        const product = products.find(p => p.id === initialData?.productId);
-        if (product) {
-            const category = categories.find(c => c.name === product.category);
-            setSelectedCategory(category || null);
-            setSelectedProduct(product);
-        }
-        setQuantity(initialData?.quantity || 1);
-    }, [initialData, products, categories, open, mode]);
+    }, [open, allProducts, products, categories, mode, initialData]);
 
     const validate = useCallback(() => {
         const newErrors = {};
