@@ -251,7 +251,7 @@ const ProductModal = ({ open, onClose, product, onSave, loading = false, categor
                         label="Цена закупки"
                         value={form.costPrice}
                         onChange={handleChange("costPrice")}
-                        onInput={(e) => handleNumericInput(e, false)}
+                        onInput={(e) => handleNumericInput(e, true)}
                         error={!!errors.costPrice}
                         helperText={errors.costPrice}
                         required
@@ -263,7 +263,7 @@ const ProductModal = ({ open, onClose, product, onSave, loading = false, categor
                         label="Цена продажи"
                         value={form.sellPrice}
                         onChange={handleChange("sellPrice")}
-                        onInput={(e) => handleNumericInput(e, false)}
+                        onInput={(e) => handleNumericInput(e, true)}
                         error={!!errors.sellPrice}
                         helperText={errors.sellPrice}
                         required
