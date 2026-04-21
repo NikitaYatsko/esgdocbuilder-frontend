@@ -14,7 +14,7 @@ export const useInvoicePage = () => {
 
     const { fetchInvoiceById, updateInvoice } = useInvoices();
     const { products } = useProducts();
-    const { downloadPdf, downloadPdfWithMargin, loading: pdfLoading } = useInvoicePdf();
+    const { downloadPdf, downloadPdfWithMargin, pdfLoadingNormal, pdfLoadingMargin } = useInvoicePdf();
 
     const [invoice, setInvoice] = useState(null);
     const [dbItems, setDbItems] = useState([]);
@@ -338,7 +338,8 @@ export const useInvoicePage = () => {
         selectedProduct,
         quantity,
         loading,
-        pdfLoading,
+        pdfLoadingNormal,
+        pdfLoadingMargin,
         snackbar,
 
         setSelectedCategory,

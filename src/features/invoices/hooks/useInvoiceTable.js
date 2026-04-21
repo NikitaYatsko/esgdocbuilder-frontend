@@ -3,12 +3,12 @@ import { useMemo } from "react";
 export const useInvoiceTable = (items) => {
     const columns = [
         { id: 'name', label: 'Наименование', align: 'left' },
-        { id: 'quantity', label: 'Количество', align: 'center' },
-        { id: 'price', label: 'Цена', align: 'right' },
-        { id: 'marginality', label: 'Маржинальность', align: 'right' },
-        { id: 'vat', label: 'НДС', align: 'center' },
-        { id: 'total', label: 'Сумма', align: 'right' },
-        { id: "actions", label: "Действия", align: 'right', }
+        { id: 'quantity', label: 'Количество', align: 'left' },
+        { id: 'price', label: 'Цена', align: 'left' },
+        { id: 'marginality', label: 'Маржинальность', align: 'left' },
+        { id: 'vat', label: 'НДС', align: 'left' },
+        { id: 'total', label: 'Сумма', align: 'left' },
+        { id: "actions", label: "Действия", align: 'center', }
     ];
 
     const rows = useMemo(() => items.map((item) => {

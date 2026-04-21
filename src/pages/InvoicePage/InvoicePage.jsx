@@ -25,7 +25,9 @@ const InvoicePage = () => {
         selectedProduct,
         quantity,
         loading,
-        pdfLoading,
+        pdfLoadingNormal,
+        pdfLoadingMargin,
+
         snackbar,
 
         setSelectedCategory,
@@ -82,16 +84,16 @@ const InvoicePage = () => {
 
                     <AddInvoiceButton
                         onClick={handlePrint}
-                        disabled={loading || pdfLoading}
+                        disabled={loading || pdfLoadingNormal}
                     >
-                        {pdfLoading ? <CircularProgress size={24} /> : "Печать"}
+                        {pdfLoadingNormal ? <CircularProgress size={24} /> : "Печать"}
                     </AddInvoiceButton>
 
                     <AddInvoiceButton
                         onClick={handlePrintWithMargin}
-                        disabled={loading || pdfLoading}
+                        disabled={loading || pdfLoadingMargin}
                     >
-                        {pdfLoading ? <CircularProgress size={24} /> : "Печать с маржой"}
+                        {pdfLoadingMargin ? <CircularProgress size={24} /> : "Печать с маржой"}
                     </AddInvoiceButton>
                 </Box>
             </Box>

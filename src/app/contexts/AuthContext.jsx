@@ -2,41 +2,54 @@ import { createContext, useContext, useState, useEffect } from "react";
 import { authApi } from "@features/auth/api/authApi";
 import { setAccessToken } from "@/shared/api/axiosInstance";
 
+
 const AuthContext = createContext();
+
+
 
 export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const initAuth = async () => {
-      setLoading(true);
-      
-      try {
-        const refreshResponse = await authApi.refreshToken();
-        const newToken = refreshResponse.data.accessToken || refreshResponse.data.token;
-        
-        if (newToken) {
-          setAccessToken(newToken);
-          const profileResponse = await authApi.getProfile();
-          setUser(profileResponse.data);
-          setIsAuthenticated(true);
-        }
-      } catch (error) {
-        if (error.response?.status !== 401) {
-          console.error("Init auth error:", error);
-        }
+useEffect(() => {
+  const initAuth = async () => {
+    try {
+      const refreshResponse = await authApi.refreshToken();
+      const newToken =
+        refreshResponse.data.accessToken || refreshResponse.data.token;
+
+      if (newToken) {
+        setAccessToken(newToken);
+        setIsAuthenticated(true);
+
+        authApi
+          .getProfile()
+          .then((profileResponse) => {
+            setUser(profileResponse.data);
+          })
+          .catch((err) => {
+            console.error("Profile load error:", err);
+          });
+      } else {
         setIsAuthenticated(false);
         setUser(null);
-        setAccessToken(null);
-      } finally {
-        setLoading(false);
       }
-    };
+    } catch (error) {
+      if (error.response?.status !== 401) {
+        console.error("Init auth error:", error);
+      }
 
-    initAuth();
-  }, []);
+      setIsAuthenticated(false);
+      setUser(null);
+      setAccessToken(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  initAuth();
+}, []);
 
   const login = async (email, password) => {
     try {
