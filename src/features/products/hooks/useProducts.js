@@ -15,6 +15,7 @@ export const useProducts = () => {
     const [categoryFilter, setCategoryFilter] = useState(null);
     const [unitFilter, setUnitFilter] = useState('');
     const [categories, setCategories] = useState([]);
+    const [allProducts, setAllProducts] = useState([]);
     const [rangeFilters, setRangeFilters] = useState({
         sellPriceMin: '',
         sellPriceMax: '',
@@ -129,15 +130,17 @@ export const useProducts = () => {
         }
     };
 
-    const getAllProductsCached = async () => {
+    const getAllProductsCached = useCallback(async () => {
         if (allProductsCache.current) {
             return allProductsCache.current;
         }
 
         const response = await productApi.getAllProducts();
         allProductsCache.current = response.data;
+        const { products: normalizedProducts } = normalizeResponse(response.data);
+        setAllProducts(normalizedProducts);
         return response.data;
-    };
+    }, []);
 
     const fetchProductsByCategory = async (categoryId) => {
         try {
@@ -377,6 +380,7 @@ export const useProducts = () => {
 
     return {
         products,
+        allProducts,
         pagination,
         loading,
         searchTerm,
@@ -391,6 +395,7 @@ export const useProducts = () => {
         goToPage,
 
         refetch: fetchProducts,
+        getAllProductsCached,
         searchProducts,
         filterByCategory,
         filterByTypeOfUnit,

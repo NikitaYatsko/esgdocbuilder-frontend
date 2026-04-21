@@ -13,7 +13,7 @@ export const useInvoicePage = () => {
     const { fetchWithCache } = useCache();
 
     const { fetchInvoiceById, updateInvoice } = useInvoices();
-    const { products } = useProducts();
+    const { products, allProducts, getAllProductsCached } = useProducts();
     const { downloadPdf, downloadPdfWithMargin, loading: pdfLoading } = useInvoicePdf();
 
     const [invoice, setInvoice] = useState(null);
@@ -83,12 +83,61 @@ export const useInvoicePage = () => {
 
     const { columns, rows } = useInvoiceTable(allItems, handleEditItem);
 
-    const filteredProducts = (products || []).filter(
-        p => p.category === selectedCategory?.name
-    );
+    const getCategoryId = (category) => {
+        if (category === null || category === undefined) return null;
+        if (typeof category === 'number') return category;
+        if (typeof category === 'string' && category.trim() !== '') return null;
+        const value = category.id ?? category._id ?? category.categoryId ?? category.value;
+        const parsed = Number(value);
+        return Number.isFinite(parsed) ? parsed : null;
+    };
+
+    const getCategoryName = (category) => {
+        if (!category) return "";
+        if (typeof category === 'string') return category.trim();
+        return String(category.name ?? category.categoryName ?? "").trim();
+    };
+
+    const getProductCategoryId = (product) => {
+        if (!product) return null;
+        const value = product.categoryId ?? product.category?.id ?? product.category?._id ?? null;
+        const parsed = Number(value);
+        return Number.isFinite(parsed) ? parsed : null;
+    };
+
+    const getProductCategoryName = (product) => {
+        if (!product) return "";
+        if (typeof product.category === 'string') return product.category.trim();
+        return String(product.category?.name ?? product.category?.categoryName ?? "").trim();
+    };
+
+    const productSource = allProducts.length ? allProducts : products || [];
+
+    const filteredProducts = productSource.filter((product) => {
+        if (!selectedCategory) return false;
+
+        const selectedCategoryId = getCategoryId(selectedCategory);
+        const selectedCategoryName = getCategoryName(selectedCategory);
+        const productCategoryId = getProductCategoryId(product);
+        const productCategoryName = getProductCategoryName(product);
+
+        if (selectedCategoryId !== null && productCategoryId !== null) {
+            return selectedCategoryId === productCategoryId;
+        }
+
+        if (selectedCategoryName && productCategoryName) {
+            return selectedCategoryName.toLowerCase() === productCategoryName.toLowerCase();
+        }
+
+        return false;
+    });
 
     useEffect(() => {
         const load = async () => {
+            if (!allProducts.length) {
+                await getAllProductsCached();
+            }
+
             const data = await fetchInvoiceById(id);
             setInvoice(data);
 
@@ -96,11 +145,11 @@ export const useInvoicePage = () => {
                 let productId = i.productId || i.product?.id;
 
                 if (!productId && i.nameProduct) {
-                    const found = products.find(p => p.name === i.nameProduct);
+                    const found = allProducts.find(p => p.name === i.nameProduct) || products.find(p => p.name === i.nameProduct);
                     productId = found?.id || null;
                 }
 
-                const product = products.find(p => p.id === productId);
+                const product = allProducts.find(p => p.id === productId) || products.find(p => p.id === productId);
 
                 return {
                     ...i,
@@ -113,8 +162,8 @@ export const useInvoicePage = () => {
             setDraftItems([]);
         };
 
-        if (products.length) load();
-    }, [id, products]);
+        if (products.length || allProducts.length) load();
+    }, [id, products, allProducts.length, getAllProductsCached]);
 
     useEffect(() => {
         fetchCategories();
