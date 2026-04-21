@@ -112,23 +112,6 @@ export const useProducts = () => {
         }
     };
 
-    const fetchSearchProducts = async (term) => {
-        try {
-            return await productApi.search(term);
-        } catch (err) {
-            const status = err.response?.status;
-            if (status === 500 || status === 404) {
-                const fallback = await getAllProductsCached();
-                const filtered = normalizeResponse(fallback).products.filter((product) => {
-                    const name = String(product.name || product.title || "").toLowerCase();
-                    return name.includes(term.toLowerCase());
-                });
-                return { data: filtered };
-            }
-            throw err;
-        }
-    };
-
     const getAllProductsCached = async () => {
         if (allProductsCache.current) {
             return allProductsCache.current;
@@ -137,42 +120,6 @@ export const useProducts = () => {
         const response = await productApi.getAllProducts();
         allProductsCache.current = response.data;
         return response.data;
-    };
-
-    const fetchProductsByCategory = async (categoryId) => {
-        try {
-            return await productApi.getByCategory(categoryId);
-        } catch (err) {
-            const status = err.response?.status;
-            if (status === 500 || status === 404) {
-                const fallback = await getAllProductsCached();
-                const normalizedCategoryId = Number(categoryId);
-                const filtered = normalizeResponse(fallback).products.filter((product) => {
-                    const productCategoryId = product.categoryId ?? product.category?.id ?? null;
-                    return Number(productCategoryId) === normalizedCategoryId;
-                });
-                return { data: filtered };
-            }
-            throw err;
-        }
-    };
-
-    const fetchProductsByUnit = async (type) => {
-        try {
-            return await productApi.getByTypeOfUnit(type);
-        } catch (err) {
-            const status = err.response?.status;
-            if (status === 500 || status === 404) {
-                const fallback = await getAllProductsCached();
-                const normalizedType = String(type).toUpperCase().trim();
-                const filtered = normalizeResponse(fallback).products.filter((product) => {
-                    const unit = String(product.typeOfUnit?.name || product.typeOfUnit || "").toUpperCase();
-                    return unit === normalizedType;
-                });
-                return { data: filtered };
-            }
-            throw err;
-        }
     };
 
     const fetchProducts = async (currentPage = 1, term = debouncedSearchTerm) => {
