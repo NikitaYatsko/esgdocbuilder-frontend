@@ -326,11 +326,12 @@ export const useInvoicePage = () => {
     );
 
     const handleUpdateItem = (updatedItemData) => {
-        const isDraft = draftItems.some(i => i.tempId === editingItem?.id);
+        const editingTempId = editingItem?.tempId ?? editingItem?.id;
+        const isDraft = draftItems.some(i => String(i.tempId) === String(editingTempId));
 
         if (isDraft) {
             setDraftItems(prev => prev.map(i =>
-                (i.tempId === editingItem?.id)
+                String(i.tempId) === String(editingTempId)
                     ? {
                         ...i,
                         productId: updatedItemData.productId,
@@ -345,8 +346,9 @@ export const useInvoicePage = () => {
                     : i
             ));
         } else {
+            const editingId = editingItem?.id ?? editingItem?.productId;
             setDbItems(prev => prev.map(i =>
-                i.id === editingItem?.id
+                String(i.id) === String(editingId)
                     ? {
                         ...i,
                         productId: updatedItemData.productId,

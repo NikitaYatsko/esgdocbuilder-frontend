@@ -23,7 +23,7 @@ import { StyledButton } from "@features/modal/StyledButton";
 import { useProducts } from "@features/products/hooks/useProducts";
 
 const InvoiceModal = ({ open, onClose, onSave, loading = false, mode = 'create', initialData = null, categories = [] }) => {
-    const { products, allProducts, loading: productsLoading } = useProducts();
+    const { products, allProducts, getAllProductsCached, loading: productsLoading } = useProducts();
 
     const [invoiceName, setInvoiceName] = useState("");
     const [power, setPower] = useState("");
@@ -37,7 +37,7 @@ const InvoiceModal = ({ open, onClose, onSave, loading = false, mode = 'create',
         const productSource = allProducts.length ? allProducts : products;
         return productSource.filter(p => {
             const productCategoryId = p.categoryId ?? p.category?.id ?? null;
-            return productCategoryId === selectedCategory.id;
+            return String(productCategoryId) === String(selectedCategory.id);
         });
     }, [products, allProducts, selectedCategory]);
 
@@ -115,9 +115,10 @@ const InvoiceModal = ({ open, onClose, onSave, loading = false, mode = 'create',
 
         if (mode === 'editItem' && initialData) {
             const productSource = allProducts.length ? allProducts : products;
-            const product = productSource.find(p => p.id === initialData.productId);
+            const product = productSource.find(p => String(p.id) === String(initialData.productId));
             if (product) {
-                const category = categories.find(c => c.id === (product.categoryId ?? product.category?.id));
+                const productCategoryId = product.categoryId ?? product.category?.id ?? product.category?._id ?? null;
+                const category = categories.find(c => String(c.id) === String(productCategoryId));
                 setSelectedCategory(category || null);
                 setSelectedProduct(product);
             }
@@ -134,6 +135,12 @@ const InvoiceModal = ({ open, onClose, onSave, loading = false, mode = 'create',
 
         setErrors({});
     }, [open, allProducts, products, categories, mode, initialData]);
+
+    useEffect(() => {
+        if (open && mode === 'editItem' && !allProducts.length) {
+            getAllProductsCached().catch(() => {});
+        }
+    }, [open, mode, allProducts.length, getAllProductsCached]);
 
     const validate = useCallback(() => {
         const newErrors = {};
