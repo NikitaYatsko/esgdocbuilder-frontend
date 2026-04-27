@@ -121,8 +121,7 @@ export const useProducts = () => {
             if (status === 500 || status === 404) {
                 const fallback = await getAllProductsCached();
                 const filtered = normalizeResponse(fallback).products.filter((product) => {
-                    const name = String(product.name || product.title || "").toLowerCase();
-                    return name.includes(term.toLowerCase());
+                    return !product.deleted && (product.name || product.title || "").toLowerCase().includes(term.toLowerCase());
                 });
                 return { data: filtered };
             }
@@ -138,7 +137,8 @@ export const useProducts = () => {
         const response = await productApi.getAllProducts();
         allProductsCache.current = response.data;
         const { products: normalizedProducts } = normalizeResponse(response.data);
-        setAllProducts(normalizedProducts);
+        const activeProducts = normalizedProducts.filter(p => !p.deleted);
+        setAllProducts(activeProducts);
         return response.data;
     }, []);
 
@@ -158,16 +158,20 @@ export const useProducts = () => {
 
             if (hasAnyFilter) {
                 // Используем кэш для локальной фильтрации
-                const allData = await getAllProductsCached();
-                let filteredProducts = normalizeResponse(allData).products;
+                let filteredProducts;
 
-                // Применяем фильтры в порядке: поиск -> категория -> единица -> диапазоны
                 if (isSearchActive) {
-                    filteredProducts = filteredProducts.filter((product) => {
-                        const name = String(product.name || product.title || "").toLowerCase();
-                        return name.includes(trimmedTerm.toLowerCase());
-                    });
+                    // Использовать API search
+                    const searchResponse = await fetchSearchProducts(trimmedTerm);
+                    const searchData = normalizeResponse(searchResponse.data);
+                    filteredProducts = searchData.products.filter(p => !p.deleted);
+                } else {
+                    // Получить все из кэша
+                    const allData = await getAllProductsCached();
+                    filteredProducts = normalizeResponse(allData).products.filter(p => !p.deleted);
                 }
+
+                // Применяем фильтры в порядке: категория -> единица -> диапазоны
 
                 if (activeCategory !== null) {
                     filteredProducts = filteredProducts.filter((product) => {
@@ -201,7 +205,8 @@ export const useProducts = () => {
                 // Нет фильтров - используем API пагинацию
                 const response = await productApi.getAll({ page: currentPage - 1, limit });
                 const { products: normalizedProducts, pagination: normalizedPagination } = normalizeResponse(response.data);
-                setProducts(normalizedProducts);
+                const activeProducts = normalizedProducts.filter(p => !p.deleted);
+                setProducts(activeProducts);
                 setPagination(normalizedPagination);
             }
 
@@ -215,6 +220,10 @@ export const useProducts = () => {
     };
 
     useEffect(() => {
+        if (searchTerm === '') {
+            setDebouncedSearchTerm('');
+            return;
+        }
         if (debounceTimeout.current) {
             clearTimeout(debounceTimeout.current);
         }
