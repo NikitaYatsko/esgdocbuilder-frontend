@@ -79,6 +79,9 @@ export const useBank = () => {
 
             setOperations(prev => prev.filter(op => op.id !== id));
 
+            const accountsRes = await transactionsApi.getBalance();
+            setAccounts(accountsRes.data);
+
             return { success: true };
         } catch (error) {
             console.error(error);
