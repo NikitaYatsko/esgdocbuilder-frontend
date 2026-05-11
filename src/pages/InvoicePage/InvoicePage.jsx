@@ -12,6 +12,7 @@ import TableComponent from "@features/auth/components/TableComponent.jsx";
 import AddInvoiceButton from "@features/invoices/components/AddInvoiceButton";
 import InvoiceModal from "@features/invoices/components/InvoiceModal.jsx";
 import { useInvoicePage } from "@features/invoices/hooks/useInvoicePage.js";
+import { useAuth } from "@contexts/AuthContext";
 
 const InvoicePage = () => {
     const {
@@ -47,6 +48,9 @@ const InvoicePage = () => {
         handleUpdateItem,
         setEditModalOpen
     } = useInvoicePage();
+
+    const { user } = useAuth();
+    const isAdmin = user?.roles?.some(role => role.name === 'ADMIN') || false;
 
     return (
         <Box sx={{ p: 3 }}>
@@ -87,12 +91,14 @@ const InvoicePage = () => {
                         {pdfLoading ? <CircularProgress size={24} /> : "Печать"}
                     </AddInvoiceButton>
 
-                    <AddInvoiceButton
-                        onClick={handlePrintWithMargin}
-                        disabled={loading || pdfLoading}
-                    >
-                        {pdfLoading ? <CircularProgress size={24} /> : "Печать с маржой"}
-                    </AddInvoiceButton>
+                    {isAdmin && (
+                        <AddInvoiceButton
+                            onClick={handlePrintWithMargin}
+                            disabled={loading || pdfLoading}
+                        >
+                            {pdfLoading ? <CircularProgress size={24} /> : "Печать с маржой"}
+                        </AddInvoiceButton>
+                    )}
                 </Box>
             </Box>
 
