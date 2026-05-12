@@ -1,6 +1,4 @@
 import { Box, Typography, useTheme } from '@mui/material';
-import logoUrl from '@styles/img/logo.svg';
-import { UI_CONSTANTS } from '@constants/ui.constants';
 
 export const LoginHeader = () => {
   const theme = useTheme();
@@ -8,16 +6,24 @@ export const LoginHeader = () => {
   return (
     <>
       <Box
-        component="img"
-        src={logoUrl}
-        alt="Logo"
         sx={{
-          width: UI_CONSTANTS.LOGO_WIDTH,
-          height: UI_CONSTANTS.LOGO_HEIGHT,
           mb: 2,
-          filter: theme.palette.mode === 'dark' ? 'brightness(0.8) invert(0.2)' : 'none'
         }}
-      />
+      >
+        <Typography
+          variant="h1"
+          sx={{
+            fontSize: 24,
+            fontFamily: 'Open Sans, sans-serif',
+            fontWeight: 700,
+            color: theme.palette.primary.main,
+            textAlign: 'center',
+            letterSpacing: 1,
+          }}
+        >
+          DocBuilder
+        </Typography>
+      </Box>
 
       <Typography
         variant="h1"
@@ -27,6 +33,7 @@ export const LoginHeader = () => {
           fontWeight: 500,
           mb: 4,
           color: theme.palette.text.primary,
+          textAlign: 'center',
         }}
       >
         Добро пожаловать!
