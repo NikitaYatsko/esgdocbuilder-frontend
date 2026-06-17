@@ -7,10 +7,9 @@ import { EmailField } from '../EmailField';
 import { PasswordField } from '../PasswordField';
 import { ForgotPasswordLink } from '../ForgotPasswordLink';
 import { SubmitButton } from '../SubmitButton';
-import { UI_CONSTANTS } from '@constants/ui.constants';
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
-  width: UI_CONSTANTS.FORM_WIDTH,
+  width: 450,
   backgroundColor: theme.palette.background.paper,
   borderRadius: '2rem',
   border: `1px solid ${theme.palette.divider}`,

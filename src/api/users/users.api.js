@@ -1,4 +1,4 @@
-import axiosInstance from "@/shared/api/axiosInstance";
+import axiosInstance from "@axios/axiosInstance";
 
 export const usersApi = {
     getAllUsers: () => axiosInstance.get('/users'),

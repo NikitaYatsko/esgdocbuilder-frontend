@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect } from "react";
-import { authApi } from "@features/auth/api/authApi";
-import { setAccessToken } from "@/shared/api/axiosInstance";
+import { authApi } from "@api/auth/authApi";
+import { setAccessToken } from "@axios/axiosInstance";
 
 const AuthContext = createContext();
 

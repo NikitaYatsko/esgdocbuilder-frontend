@@ -5,7 +5,7 @@ import { useInvoiceTable } from "@features/invoices/hooks/useInvoiceTable";
 import { useInvoices } from "@features/invoices/hooks/useInvoices";
 import { useProducts } from "@features/products/hooks/useProducts";
 import { useInvoicePdf } from "@features/invoices/hooks/useInvoicePdf";
-import { invoiceApi } from "@features/invoices/api/invoiceApi";
+import { invoiceApi } from "@api/invoices/invoiceApi";
 import { useCache } from "@features/invoices/hooks/useCache";
 
 export const useInvoicePage = () => {
@@ -38,6 +38,16 @@ export const useInvoicePage = () => {
     });
 
     const allItems = [...dbItems, ...draftItems];
+    const discountPercent = invoice?.discountPercent || 0;
+    const discountMultiplier = (100 - discountPercent) / 100;
+
+    const baseSum = allItems.reduce((s, i) => s + (i.totalPrice || 0), 0);
+    const totalSum = baseSum * discountMultiplier;
+
+    const totalVat = allItems.reduce(
+        (s, i) => s + ((i.vatMultiplier || 0) * (i.quantity || 0)),
+        0
+    );
 
     const fetchCategories = async () => {
         try {
@@ -226,12 +236,20 @@ export const useInvoicePage = () => {
             return;
         }
 
+        const payloadBaseSum = items.reduce((s, i) => s + (i.totalPrice || 0), 0);
+        const payloadBaseMarginality = items.reduce((s, i) => s + (i.marginality || 0), 0);
+        const costSum =  payloadBaseSum - payloadBaseMarginality;
+
+        const sum = payloadBaseSum * discountMultiplier;
+        const sumMarginality = sum - costSum;
+
         const payload = {
             invoiceName: invoice.invoiceName,
             power: invoice.power,
+            discountPercent: invoice.discountPercent || 0,
             vat_amount: items.reduce((s, i) => s + ((i.vatMultiplier || 0) * (i.quantity || 0)), 0),
-            sumMarginality: items.reduce((s, i) => s + (i.marginality || 0), 0),
-            sum: items.reduce((s, i) => s + (i.totalPrice || 0), 0),
+            sumMarginality: sumMarginality,
+            sum: sum,
             items: items.map(i => ({
                 productId: i.productId,
                 quantity: i.quantity,
@@ -317,13 +335,6 @@ export const useInvoicePage = () => {
             setSnackbar({ open: true, message: "PDF с маржой сформирован", severity: "success" });
         }
     };
-
-    const totalSum = allItems.reduce((s, i) => s + (i.totalPrice || 0), 0);
-
-    const totalVat = allItems.reduce(
-        (s, i) => s + ((i.vatMultiplier || 0) * (i.quantity || 0)),
-        0
-    );
 
     const handleUpdateItem = (updatedItemData) => {
         const editingTempId = editingItem?.tempId ?? editingItem?.id;

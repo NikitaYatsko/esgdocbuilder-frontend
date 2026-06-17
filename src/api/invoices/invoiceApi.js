@@ -1,4 +1,4 @@
-import axiosInstance from "@/shared/api/axiosInstance";
+import axiosInstance from "@axios/axiosInstance";
 
 export const invoiceApi = {
     getAll: (params) => axiosInstance.get("/api/invoices", { params }),

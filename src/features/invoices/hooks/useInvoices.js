@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { invoiceApi } from "@features/invoices/api/invoiceApi";
+import { invoiceApi } from "@api/invoices/invoiceApi";
 import { useCache } from "@features/invoices/hooks/useCache";
 
 export const useInvoices = () => {
@@ -105,6 +105,7 @@ export const useInvoices = () => {
             const payload = {
                 invoiceName: invoiceData.invoiceName,
                 power: invoiceData.power,
+                discountPercent: invoiceData.discountPercent || 0,
                 vat_amount: invoiceData.vat_amount || 0,
                 sumMarginality: invoiceData.sumMarginality || 0,
                 sum: invoiceData.sum || 0,

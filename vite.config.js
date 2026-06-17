@@ -7,12 +7,12 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, 'src'),
-      '@components': path.resolve(__dirname, 'src/shared/ui'),
       '@styles': path.resolve(__dirname, 'src/styles'),
       '@pages': path.resolve(__dirname, 'src/pages'),
       '@features': path.resolve(__dirname, 'src/features'),
+      '@api': path.resolve(__dirname, 'src/api'),
+      '@axios': path.resolve(__dirname, 'src/axios'),
       '@contexts': path.resolve(__dirname, 'src/app/contexts'),
-      '@constants': path.resolve(__dirname, 'src/shared/constants'),
     },
   },
     server: {  

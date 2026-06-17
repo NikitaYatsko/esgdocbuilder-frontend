@@ -38,6 +38,7 @@ const CreateInvoicePage = () => {
         const result = await createInvoice({
             invoiceName: data.invoiceName,
             power: data.power,
+            discountPercent: data.discountPercent || 0,
             vat_amount: 0,
             sumMarginality: 0,
             sum: 0,

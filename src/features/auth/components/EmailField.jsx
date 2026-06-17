@@ -1,6 +1,5 @@
 import { TextField, InputAdornment, Typography, useTheme } from '@mui/material';
 import { PersonOutline } from '@mui/icons-material';
-import { UI_CONSTANTS } from '@constants/ui.constants';
 
 export const EmailField = ({ value, onChange, error }) => {
   const theme = useTheme();
@@ -9,7 +8,7 @@ export const EmailField = ({ value, onChange, error }) => {
     <>
       <Typography
         sx={{
-          width: UI_CONSTANTS.FIELD_WIDTH,
+          width: 337,
           fontSize: 14,
           fontFamily: 'Open Sans, sans-serif',
           mb: 0.5,
@@ -28,11 +27,11 @@ export const EmailField = ({ value, onChange, error }) => {
         helperText={error}
         autoFocus
         sx={{
-          width: UI_CONSTANTS.FIELD_WIDTH,
-          height: UI_CONSTANTS.FIELD_HEIGHT,
+          width: 337,
+          height: 45,
           mb: 4,
           '& .MuiInputBase-root': {
-            height: UI_CONSTANTS.FIELD_HEIGHT,
+            height: 45,
             borderRadius: '8px',
             bgcolor: theme.palette.background.paper,
           },

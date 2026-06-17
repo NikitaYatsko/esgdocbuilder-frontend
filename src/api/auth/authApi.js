@@ -1,4 +1,4 @@
-import axiosInstance from "@/shared/api/axiosInstance";
+import axiosInstance from "@axios/axiosInstance";
 
 export const authApi = {
     login: (credentials) => axiosInstance.post('/auth/login', credentials),
