@@ -11,7 +11,7 @@ import {useState, useEffect, useCallback} from "react";
 import TableComponent from "@features/auth/components/TableComponent";
 import {CenteredContainer} from "@/layouts/CenteredContainer.jsx";
 import AddIcon from '@mui/icons-material/Add';
-import {usersApi} from "@features/users/users.api.js";
+import {usersApi} from "@api/users/users.api.js";
 import {HeaderWrapper, RowStyled, UserPaper} from "@features/users/styled.js";
 import CreateUserModal from "@features/users/CreateUserModal.jsx";
 import {getUserColumns} from "@features/users/UserColumns.jsx";

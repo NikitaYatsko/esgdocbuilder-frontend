@@ -1,4 +1,4 @@
-import axiosInstance from "@/shared/api/axiosInstance";
+import axiosInstance from "@axios/axiosInstance";
 
 export const productApi = {
   getAll: (params) => axiosInstance.get("/products", { params }),

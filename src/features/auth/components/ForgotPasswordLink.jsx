@@ -1,10 +1,9 @@
 import { Typography } from '@mui/material';
-import { UI_CONSTANTS } from '@constants/ui.constants';
 
 export const ForgotPasswordLink = ({ onClick }) => (
   <Typography
     sx={{
-      width: UI_CONSTANTS.FIELD_WIDTH,
+      width: 337,
       fontSize: 14,
       fontFamily: 'Open Sans, sans-serif',
       textAlign: 'center',

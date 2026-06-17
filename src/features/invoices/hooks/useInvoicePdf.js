@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { invoiceApi } from '@features/invoices/api/invoiceApi';
+import { invoiceApi } from '@api/invoices/invoiceApi';
 
 export const useInvoicePdf = () => {
     const [loading, setLoading] = useState(false);

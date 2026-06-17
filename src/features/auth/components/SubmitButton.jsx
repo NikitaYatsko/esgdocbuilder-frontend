@@ -1,5 +1,4 @@
 import { Button, CircularProgress } from '@mui/material';
-import { UI_CONSTANTS } from '@constants/ui.constants';
 
 export const SubmitButton = ({ loading, onClick }) => (
   <Button
@@ -8,8 +7,8 @@ export const SubmitButton = ({ loading, onClick }) => (
     onClick={onClick}
     disabled={loading}
     sx={{
-      width: UI_CONSTANTS.BUTTON_WIDTH,
-      height: UI_CONSTANTS.FIELD_HEIGHT,
+      width: 185,
+      height: 45,
       borderRadius: '8px',
       textTransform: 'none',
       fontSize: '16px',

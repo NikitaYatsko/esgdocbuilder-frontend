@@ -5,7 +5,7 @@ import {useState, useRef} from "react";
 import PhoneIcon from '@mui/icons-material/Phone';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
-import {authApi} from "@features/auth/api/authApi";
+import {authApi} from "@api/auth/authApi";
 import {ProfileAvatar} from '@features/profile/ProfileAvatar';
 import {InfoCard} from '@features/profile/InfoCard';
 import {ProfileActions} from '@features/profile/ProfileActions';

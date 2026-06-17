@@ -27,6 +27,7 @@ const InvoiceModal = ({ open, onClose, onSave, loading = false, mode = 'create',
 
     const [invoiceName, setInvoiceName] = useState("");
     const [power, setPower] = useState("");
+    const [discountPercent, setDiscountPercent] = useState("");
     const [selectedCategory, setSelectedCategory] = useState(null);
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [quantity, setQuantity] = useState(1);
@@ -131,6 +132,7 @@ const InvoiceModal = ({ open, onClose, onSave, loading = false, mode = 'create',
             setSelectedCategory(null);
             setSelectedProduct(null);
             setQuantity(1);
+            setDiscountPercent("");
         }
 
         setErrors({});
@@ -149,6 +151,9 @@ const InvoiceModal = ({ open, onClose, onSave, loading = false, mode = 'create',
             if (!invoiceName.trim()) newErrors.invoiceName = "Введите название сметы";
             if (!power.trim()) newErrors.power = "Введите мощность";
             if (power && isNaN(Number(power))) newErrors.power = "Введите корректное число";
+            if (discountPercent && (isNaN(Number(discountPercent)) || Number(discountPercent) < 0 || Number(discountPercent) > 20)) {
+                newErrors.discountPercent = "Введите число от 0 до 20";
+            }
         } else if (mode === 'editItem') {
             if (!selectedCategory) newErrors.category = "Выберите категорию";
             if (!selectedProduct) newErrors.product = "Выберите товар";
@@ -157,7 +162,7 @@ const InvoiceModal = ({ open, onClose, onSave, loading = false, mode = 'create',
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
-    }, [mode, invoiceName, power, selectedCategory, selectedProduct, quantity]);
+    }, [mode, invoiceName, power, selectedCategory, selectedProduct, quantity, discountPercent]);
 
     const handleSubmit = useCallback(async () => {
         if (!validate()) return;
@@ -166,7 +171,8 @@ const InvoiceModal = ({ open, onClose, onSave, loading = false, mode = 'create',
         if (mode === 'create') {
             submitData = {
                 invoiceName: invoiceName,
-                power: Number(power)
+                power: Number(power),
+                discountPercent: Number(discountPercent) || 0
             };
         } else {
             submitData = {
@@ -233,6 +239,15 @@ const InvoiceModal = ({ open, onClose, onSave, loading = false, mode = 'create',
                                 helperText={errors.power}
                                 required
                                 InputProps={{ inputProps: { step: "0.1" } }}
+                            />
+                            <StyledInput
+                                label="Скидка (%)"
+                                type="number"
+                                value={discountPercent}
+                                onChange={(e) => setDiscountPercent(e.target.value)}
+                                error={!!errors.discountPercent}
+                                helperText={errors.discountPercent || "Введите число от 0 до 20"}
+                                InputProps={{ inputProps: { step: "0.1", min: 0, max: 20 } }}
                             />
                         </Stack>
                     ) : (

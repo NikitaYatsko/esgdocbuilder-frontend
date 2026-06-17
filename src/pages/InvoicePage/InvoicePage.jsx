@@ -5,7 +5,8 @@ import {
     Autocomplete,
     Alert,
     Snackbar,
-    CircularProgress
+    CircularProgress,
+    Chip
 } from "@mui/material";
 
 import TableComponent from "@features/auth/components/TableComponent.jsx";
@@ -75,9 +76,18 @@ const InvoicePage = () => {
             />
 
             <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                <Typography variant="h4">
-                    Смета #{invoice?.id}
-                </Typography>
+                <Box>
+                    <Typography variant="h4">
+                        Смета :{invoice?.invoiceName}
+                    </Typography>
+                    {invoice?.discountPercent > 0 && (
+                        <Chip 
+                            label={`Скидка: ${invoice?.discountPercent}%`} 
+                            color="warning" 
+                            size="small"
+                        />
+                    )}
+                </Box>
 
                 <Box sx={{ display: "flex", gap: 2, mt: 3 }}>
                     <AddInvoiceButton onClick={handleSaveAll} disabled={loading}>

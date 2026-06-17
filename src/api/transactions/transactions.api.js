@@ -1,4 +1,4 @@
-import axiosInstance from "@/shared/api/axiosInstance.js";
+import axiosInstance from "@axios/axiosInstance.js";
 
 export const transactionsApi = {
     getOperations: (params) => axiosInstance.get('/bank/operations', params),

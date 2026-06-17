@@ -1,6 +1,6 @@
 import {useEffect, useState} from "react";
 
-import {transactionsApi} from "@features/transactions/transactions.api.js";
+import {transactionsApi} from "@api/transactions/transactions.api.js";
 
 export const useBank = () => {
     const [accounts, setAccounts] = useState([]);
