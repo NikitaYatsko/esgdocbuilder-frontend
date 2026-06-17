@@ -44,6 +44,8 @@ export const useInvoicePage = () => {
     const baseSum = allItems.reduce((s, i) => s + (i.totalPrice || 0), 0);
     const totalSum = baseSum * discountMultiplier;
 
+    const discountAmount = baseSum - totalSum;
+
     const totalVat = allItems.reduce(
         (s, i) => s + ((i.vatMultiplier || 0) * (i.quantity || 0)),
         0
@@ -395,6 +397,7 @@ export const useInvoicePage = () => {
 
         totalSum,
         totalVat,
+        discountAmount,
 
         selectedCategory,
         selectedProduct,

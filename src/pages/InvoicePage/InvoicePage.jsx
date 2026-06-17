@@ -40,6 +40,7 @@ const InvoicePage = () => {
         handleSaveAll,
         totalSum,
         totalVat,
+        discountAmount,
         handlePrint,
         handlePrintWithMargin,
 
@@ -171,6 +172,15 @@ const InvoicePage = () => {
                             {totalVat.toFixed(2)}
                         </Typography>
                     </Box>
+
+                    {invoice?.discountPercent > 0 && (
+                        <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
+                            <Typography variant="h6">Скидка:</Typography>
+                            <Typography variant="h6" fontWeight="bold">
+                                {discountAmount.toFixed(2)}
+                            </Typography>
+                        </Box>
+                    )}
 
                     <Box sx={{ display: "flex", justifyContent: "space-between" }}>
                         <Typography variant="h6">Общая сумма:</Typography>
