@@ -9,6 +9,7 @@ import { useInvoices } from "@features/invoices/hooks/useInvoices.js";
 import { StyledBox, StyledPaper } from "@features/invoices/components/styled/StyledComponents";
 import { CenteredContainer } from "@/layouts/CenteredContainer.jsx";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@contexts/AuthContext";
 
 const CreateInvoicePage = () => {
 
@@ -23,6 +24,9 @@ const CreateInvoicePage = () => {
         deleteInvoice,
         createInvoice,
     } = useInvoices();
+
+    const { user } = useAuth();
+    const isAdmin = user?.roles?.some(role => role.name === 'ADMIN') || false;
 
     const { categories } = useProducts();
 
@@ -98,11 +102,11 @@ const CreateInvoicePage = () => {
     };
 
     const invoiceColumns = [
-        { id: "id", label: "ID", align: 'center' },
-        { id: "invoiceName", label: "Название", align: 'center' },
-        { id: "power", label: "Мощность", align: 'center' },
-        { id: "sumMarginality", label: "Маржинальность", align: 'center' },
-        { id: "sum", label: "Сумма", align: 'center' },
+        { id: "id", label: "ID", align: 'left' },
+        { id: "invoiceName", label: "Название", align: 'left' },
+        { id: "power", label: "Мощность", align: 'left' },
+        ...(isAdmin ? [{ id: "sumMarginality", label: "Маржинальность", align: 'left' }] : []),
+        { id: "sum", label: "Сумма", align: 'left' },
         { id: "actions", label: "Действия", align: 'right', }
     ];
 
