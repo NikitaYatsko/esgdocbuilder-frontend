@@ -7,14 +7,17 @@ import { useProducts } from "@features/products/hooks/useProducts";
 import { useInvoicePdf } from "@features/invoices/hooks/useInvoicePdf";
 import { invoiceApi } from "@api/invoices/invoiceApi";
 import { useCache } from "@features/invoices/hooks/useCache";
+import { useInvoiceQuery } from "@features/invoices/hooks/useInvoiceQuery";
 
 export const useInvoicePage = () => {
     const { id } = useParams();
     const { fetchWithCache } = useCache();
 
-    const { fetchInvoiceById, updateInvoice } = useInvoices();
+    const { updateInvoice } = useInvoices();
     const { products, allProducts, getAllProductsCached } = useProducts();
     const { downloadPdf, downloadPdfWithMargin, loading: pdfLoading } = useInvoicePdf();
+
+    const { data: invoiceData, isLoading: invoiceLoading, refetch: refetchInvoice } = useInvoiceQuery(id);
 
     const [invoice, setInvoice] = useState(null);
     const [dbItems, setDbItems] = useState([]);
@@ -145,15 +148,10 @@ export const useInvoicePage = () => {
     });
 
     useEffect(() => {
-        const load = async () => {
-            if (!allProducts.length) {
-                await getAllProductsCached();
-            }
+        if (invoiceData) {
+            setInvoice(invoiceData);
 
-            const data = await fetchInvoiceById(id);
-            setInvoice(data);
-
-            const normalized = (data?.items || []).map(i => {
+            const normalized = (invoiceData?.items || []).map(i => {
                 let productId = i.productId || i.product?.id;
 
                 if (!productId && i.nameProduct) {
@@ -172,10 +170,17 @@ export const useInvoicePage = () => {
 
             setDbItems(normalized);
             setDraftItems([]);
-        };
+        }
+    }, [invoiceData, allProducts, products]);
 
-        if (products.length || allProducts.length) load();
-    }, [id, products, allProducts.length, getAllProductsCached]);
+    useEffect(() => {
+        const loadProducts = async () => {
+            if (!allProducts.length) {
+                await getAllProductsCached();
+            }
+        };
+        loadProducts();
+    }, [allProducts.length, getAllProductsCached]);
 
     useEffect(() => {
         fetchCategories();
@@ -266,9 +271,7 @@ export const useInvoicePage = () => {
         setLoading(false);
 
         if (result.success) {
-            const updated = await fetchInvoiceById(invoice.id);
-            setInvoice(updated);
-            setDbItems(updated.items || []);
+            await refetchInvoice();
             setDraftItems([]);
             setSnackbar({ open: true, message: "Смета сохранена", severity: "success" });
         } else {

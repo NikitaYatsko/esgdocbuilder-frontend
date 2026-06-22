@@ -1,104 +1,34 @@
 import { useEffect, useState, useCallback } from "react";
 import { invoiceApi } from "@api/invoices/invoiceApi";
-import { useCache } from "@features/invoices/hooks/useCache";
+import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query";
+import { useInvoicesQuery } from "@features/invoices/hooks/useInvoicesQuery";
+import { useInvoiceItemsQuery } from "@features/invoices/hooks/useInvoiceItemsQuery";
+import { useInvoiceQuery } from "@features/invoices/hooks/useInvoiceQuery";
 
 export const useInvoices = () => {
-    const [invoices, setInvoices] = useState([]);
     const [selectedInvoice, setSelectedInvoice] = useState(null);
-    const [items, setItems] = useState([]);
+    const queryClient = useQueryClient();
 
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const {
+        data: invoices = [],
+        isLoading: loading,
+        error,
+        refetch,
+    } = useInvoicesQuery();
 
-    const { fetchWithCache, clearCacheByTag } = useCache();
+    const { data: items = [], } = useInvoiceItemsQuery(selectedInvoice?.id);
 
-    const fetchInvoiceById = useCallback(async (id) => {
-        return fetchWithCache(
-            `invoice_${id}`,
-            async () => {
-                const response = await invoiceApi.getById(id);
-                return response.data;
-            },
-            5 * 60 * 1000,
-            ["invoices"]
-        );
-    }, [fetchWithCache]);
+    const refetchInvoice = useCallback(async (id) => {
+        await queryClient.invalidateQueries({
+            queryKey: ["invoice", id],
+        });
+    }, [queryClient]);
 
-    const fetchInvoices = useCallback(async () => {
-        try {
-            setLoading(true);
-            setError(null);
-
-            const data = await fetchWithCache(
-                "invoices_list",
-                async () => {
-                    const response = await invoiceApi.getAllInvoices();
-                    return response.data;
-                },
-                2 * 60 * 1000,
-                ["invoices"]
-            );
-
-            if (Array.isArray(data)) {
-                setInvoices(data);
-            } else if (data?.content) {
-                setInvoices(data.content);
-            } else if (data?.items) {
-                setInvoices(data.items);
-            } else {
-                setInvoices([]);
-            }
-
-        } catch (err) {
-            console.error("Ошибка загрузки смет:", err);
-            setError(err);
-        } finally {
-            setLoading(false);
-        }
-    }, [fetchWithCache]);
-
-    const fetchItems = useCallback(async (invoiceId) => {
-        try {
-            setLoading(true);
-            const response = await invoiceApi.getItems(invoiceId);
-
-            console.log('Ответ от API /items:', response.data);
-
-            let itemsData = [];
-            if (Array.isArray(response.data)) {
-                itemsData = response.data;
-            } else if (response.data?.items && Array.isArray(response.data.items)) {
-                itemsData = response.data.items;
-            } else if (response.data?.content && Array.isArray(response.data.content)) {
-                itemsData = response.data.content;
-            }
-
-            console.log('Извлечённые itemsData:', itemsData);
-
-            setItems(itemsData);
-            return itemsData;
-        } catch (err) {
-            console.error(`Ошибка загрузки позиций для сметы ${invoiceId}:`, err);
-            setError(err);
-            return [];
-        } finally {
-            setLoading(false);
-        }
-    }, []);
-
-    const selectInvoice = async (invoice) => {
+    const selectInvoice = (invoice) => {
         setSelectedInvoice(invoice);
-        if (invoice) {
-            const itemsData = await fetchItems(invoice.id);
-            setItems(itemsData);
-        } else {
-            setItems([]);
-        }
     };
 
-    useEffect(() => {
-        fetchInvoices();
-    }, [fetchInvoices]);
+    const { data: selectedInvoiceData, } = useInvoiceQuery(selectedInvoice?.id);
 
     const createInvoice = async (invoiceData) => {
         try {
@@ -112,8 +42,7 @@ export const useInvoices = () => {
                 items: invoiceData.items || []
             };
             const response = await invoiceApi.create(payload);
-            clearCacheByTag("invoices");
-            await fetchInvoices();
+            await refetch();
             return { success: true, data: response.data };
         } catch (err) {
             console.error("Ошибка создания:", err);
@@ -127,8 +56,7 @@ export const useInvoices = () => {
     const updateInvoice = async (id, invoiceData) => {
         try {
             const response = await invoiceApi.update(id, invoiceData);
-            clearCacheByTag("invoices");
-            await fetchInvoices();
+            await refetch();
             if (selectedInvoice?.id === id) {
                 setSelectedInvoice(response.data);
             }
@@ -145,12 +73,10 @@ export const useInvoices = () => {
     const deleteInvoice = async (id) => {
         try {
             await invoiceApi.delete(id);
-            clearCacheByTag("invoices");
             if (selectedInvoice?.id === id) {
                 setSelectedInvoice(null);
-                setItems([]);
             }
-            await fetchInvoices();
+            await refetch();
             return { success: true };
         } catch (err) {
             console.error("Ошибка удаления:", err);
@@ -164,9 +90,11 @@ export const useInvoices = () => {
     const addItem = async (invoiceId, itemData) => {
         try {
             const response = await invoiceApi.addItem(invoiceId, itemData);
-            if (selectedInvoice?.id === invoiceId) {
-                await fetchItems(invoiceId);
-            }
+
+            queryClient.invalidateQueries({
+                queryKey: ["invoice-items", invoiceId],
+            });
+
             return { success: true, data: response.data };
         } catch (err) {
             console.error("Ошибка добавления позиции:", err);
@@ -180,9 +108,11 @@ export const useInvoices = () => {
     const updateItem = async (invoiceId, itemId, itemData) => {
         try {
             const response = await invoiceApi.updateItem(invoiceId, itemId, itemData);
-            if (selectedInvoice?.id === invoiceId) {
-                await fetchItems(invoiceId);
-            }
+
+            queryClient.invalidateQueries({
+                queryKey: ["invoice-items", invoiceId],
+            });
+
             return { success: true, data: response.data };
         } catch (err) {
             console.error("Ошибка обновления позиции:", err);
@@ -196,9 +126,11 @@ export const useInvoices = () => {
     const deleteItem = async (invoiceId, itemId) => {
         try {
             await invoiceApi.deleteItem(invoiceId, itemId);
-            if (selectedInvoice?.id === invoiceId) {
-                await fetchItems(invoiceId);
-            }
+
+            queryClient.invalidateQueries({
+                queryKey: ["invoice-items", invoiceId],
+            });
+
             return { success: true };
         } catch (err) {
             console.error("Ошибка удаления позиции:", err);
@@ -217,13 +149,13 @@ export const useInvoices = () => {
         error,
 
         selectInvoice,
-        fetchInvoices,
         createInvoice,
-        fetchInvoiceById,
+
         updateInvoice,
         deleteInvoice,
         addItem,
         updateItem,
         deleteItem,
+        refetchInvoice,
     };
 };
