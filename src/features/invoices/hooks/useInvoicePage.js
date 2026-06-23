@@ -33,7 +33,6 @@ export const useInvoicePage = () => {
     const [editModalOpen, setEditModalOpen] = useState(false);
     const [editingItem, setEditingItem] = useState(null);
 
-    const [loading, setLoading] = useState(false);
     const [snackbar, setSnackbar] = useState({
         open: false,
         message: "",
@@ -64,7 +63,7 @@ export const useInvoicePage = () => {
                     const res = await invoiceApi.getCategories();
                     return res.data;
                 },
-                10 * 60 * 1000 
+                10 * 60 * 1000
             );
 
             let categoriesData = [];
@@ -197,7 +196,7 @@ export const useInvoicePage = () => {
 
         const item = {
             tempId: Date.now(),
-            productId: selectedProduct.id,  
+            productId: selectedProduct.id,
             productName: selectedProduct.name,
             nameProduct: selectedProduct.name,
             quantity: qty,
@@ -230,23 +229,18 @@ export const useInvoicePage = () => {
     const handleSaveAll = async () => {
         if (!invoice) return;
 
-        setLoading(true);
-
         const items = [...dbItems, ...draftItems];
-        
+
         const invalid = items.find(i => !i.productId);
 
         if (invalid) {
-            console.error("Товар без productId:", invalid);
-            showError(`Ошибка: товар "${invalid.nameProduct || invalid.productName}" без идентификатора`);
-            setLoading(false);
+            showError(`Ошибка: товар без ID`);
             return;
         }
 
         const payloadBaseSum = items.reduce((s, i) => s + (i.totalPrice || 0), 0);
         const payloadBaseMarginality = items.reduce((s, i) => s + (i.marginality || 0), 0);
-        const costSum =  payloadBaseSum - payloadBaseMarginality;
-
+        const costSum = payloadBaseSum - payloadBaseMarginality;
         const sum = payloadBaseSum * discountMultiplier;
         const sumMarginality = sum - costSum;
 
@@ -267,34 +261,34 @@ export const useInvoicePage = () => {
             }))
         };
 
-        const result = await updateInvoice(invoice.id, payload);
-        setLoading(false);
+        await updateInvoice.mutateAsync({
+            id: invoice.id,
+            invoiceData: payload
+        });
 
-        if (result.success) {
-            await refetchInvoice();
-            setDraftItems([]);
-            setSnackbar({ open: true, message: "Смета сохранена", severity: "success" });
-        } else {
-            showError(result.error || "Ошибка сохранения");
-        }
+
+        setDbItems(items);
+        setDraftItems([]);
+        await refetchInvoice();
+        setSnackbar({ open: true, message: "Смета успешно сохранена", severity: "success" });
     };
 
     const normalizeItemsForPrint = (items) => {
         return items.map(item => {
             if (item.productId) return item;
-            
+
             if (item.id && !item.productId) {
                 return { ...item, productId: item.id };
             }
-            
+
             if (item.originalItem?.productId) {
                 return { ...item, productId: item.originalItem.productId };
             }
-            
+
             if (item.product?.id) {
                 return { ...item, productId: item.product.id };
             }
-            
+
             return item;
         });
     };
@@ -303,9 +297,9 @@ export const useInvoicePage = () => {
         if (!invoice?.id) return showError("ID сметы не найден");
 
         const itemsToPrint = normalizeItemsForPrint([...dbItems, ...draftItems]);
-        
+
         const missingProductId = itemsToPrint.find(i => !i.productId);
-        
+
         if (missingProductId) {
             console.error("Товар без productId для печати:", missingProductId);
             return showError(`Товар "${missingProductId.nameProduct || missingProductId.productName || 'без названия'}" не имеет ID товара. Сохраните смету перед печатью.`);
@@ -324,9 +318,9 @@ export const useInvoicePage = () => {
         if (!invoice?.id) return showError("ID сметы не найден");
 
         const itemsToPrint = normalizeItemsForPrint([...dbItems, ...draftItems]);
-        
+
         const missingProductId = itemsToPrint.find(i => !i.productId);
-        
+
         if (missingProductId) {
             console.error("Товар без productId для печати с маржой:", missingProductId);
             return showError(`Товар "${missingProductId.nameProduct || missingProductId.productName || 'без названия'}" не имеет ID товара. Сохраните смету перед печатью.`);
@@ -405,9 +399,9 @@ export const useInvoicePage = () => {
         selectedCategory,
         selectedProduct,
         quantity,
-        loading,
         pdfLoading,
         snackbar,
+        updateInvoice,
 
         setSelectedCategory,
         setSelectedProduct,
@@ -424,6 +418,6 @@ export const useInvoicePage = () => {
         handleDeleteItem,
         handleSaveAll,
         handlePrint,
-        handlePrintWithMargin
+        handlePrintWithMargin,
     };
 };

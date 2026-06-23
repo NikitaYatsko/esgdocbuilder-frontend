@@ -16,7 +16,6 @@ const CreateInvoicePage = () => {
     const [openModal, setOpenModal] = useState(false);
     const [modalMode, setModalMode] = useState('create');
     const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
-    const [modalLoading, setModalLoading] = useState(false);
     const navigate = useNavigate();
 
     const {
@@ -37,49 +36,50 @@ const CreateInvoicePage = () => {
 
 
     const handleSave = async (data) => {
-        setModalLoading(true);
+        try {
+            await createInvoice.mutateAsync({
+                invoiceName: data.invoiceName,
+                power: data.power,
+                discountPercent: data.discountPercent || 0,
+                vat_amount: 0,
+                sumMarginality: 0,
+                sum: 0,
+                items: [],
+            });
 
-        const result = await createInvoice({
-            invoiceName: data.invoiceName,
-            power: data.power,
-            discountPercent: data.discountPercent || 0,
-            vat_amount: 0,
-            sumMarginality: 0,
-            sum: 0,
-            items: []
-        });
-
-        setModalLoading(false);
-
-        if (result.success) {
             setSnackbar({
                 open: true,
                 message: "Смета успешно создана",
-                severity: "success"
+                severity: "success",
             });
+
             setOpenModal(false);
-        } else {
+
+        }
+        catch (err) {
+
             setSnackbar({
                 open: true,
-                message: result.error || "Ошибка при создании",
+                message: err.response?.data?.message ?? "Ошибка создания",
                 severity: "error"
             });
+
         }
     };
 
     const handleDeleteInvoice = async (row) => {
-        const result = await deleteInvoice(row.id);
+        try {
+            await deleteInvoice.mutateAsync(row.id);
 
-        if (result.success) {
             setSnackbar({
                 open: true,
                 message: "Смета успешно удалена",
                 severity: "success"
             });
-        } else {
+        } catch (err) {
             setSnackbar({
                 open: true,
-                message: result.error || "Ошибка при удалении",
+                message: err.response?.data?.message ?? "Ошибка при удалении",
                 severity: "error"
             });
         }
@@ -148,7 +148,7 @@ const CreateInvoicePage = () => {
                 open={openModal}
                 onClose={handleCloseModal}
                 onSave={handleSave}
-                loading={modalLoading}
+                loading={createInvoice.isPending}
                 mode={modalMode}
                 categories={categories}
             />

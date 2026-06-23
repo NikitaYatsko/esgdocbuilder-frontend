@@ -26,9 +26,9 @@ const InvoicePage = () => {
         selectedCategory,
         selectedProduct,
         quantity,
-        loading,
         pdfLoading,
         snackbar,
+        updateInvoice,
 
         setSelectedCategory,
         setSelectedProduct,
@@ -70,7 +70,7 @@ const InvoicePage = () => {
                 open={editModalOpen}
                 onClose={() => setEditModalOpen(false)}
                 onSave={handleUpdateItem}
-                loading={loading}
+                loading={updateInvoice.isPending}
                 mode="editItem"
                 initialData={editingItem}
                 categories={CATEGORIES}
@@ -91,13 +91,13 @@ const InvoicePage = () => {
                 </Box>
 
                 <Box sx={{ display: "flex", gap: 2, mt: 3 }}>
-                    <AddInvoiceButton onClick={handleSaveAll} disabled={loading}>
-                        {loading ? "Сохранение..." : "Сохранить"}
+                    <AddInvoiceButton onClick={handleSaveAll} disabled={updateInvoice.isPending}>
+                        {updateInvoice.isPending ? "Сохранение..." : "Сохранить"}
                     </AddInvoiceButton>
 
                     <AddInvoiceButton
                         onClick={handlePrint}
-                        disabled={loading || pdfLoading}
+                        disabled={ pdfLoading }
                     >
                         {pdfLoading ? <CircularProgress size={24} /> : "Печать"}
                     </AddInvoiceButton>
@@ -105,7 +105,7 @@ const InvoicePage = () => {
                     {isAdmin && (
                         <AddInvoiceButton
                             onClick={handlePrintWithMargin}
-                            disabled={loading || pdfLoading}
+                            disabled={ pdfLoading }
                         >
                             {pdfLoading ? <CircularProgress size={24} /> : "Печать с маржой"}
                         </AddInvoiceButton>
