@@ -5,8 +5,7 @@ import {
     Autocomplete,
     Alert,
     Snackbar,
-    CircularProgress,
-    Chip
+    CircularProgress
 } from "@mui/material";
 
 import TableComponent from "@features/auth/components/TableComponent.jsx";
@@ -26,14 +25,17 @@ const InvoicePage = () => {
         selectedCategory,
         selectedProduct,
         quantity,
-        pdfLoading,
+        loadingPdf,
+        loadingPdfWithMargin,
         snackbar,
         updateInvoice,
+        localDiscount,
 
         setSelectedCategory,
         setSelectedProduct,
         setQuantity,
         setSnackbar,
+        setLocalDiscount,
 
         handleAddItem,
         handleDeleteItem,
@@ -81,33 +83,46 @@ const InvoicePage = () => {
                     <Typography variant="h4">
                         Смета :{invoice?.invoiceName}
                     </Typography>
-                    {invoice?.discountPercent > 0 && (
-                        <Chip 
-                            label={`Скидка: ${invoice?.discountPercent}%`} 
-                            color="warning" 
-                            size="small"
-                        />
-                    )}
                 </Box>
 
                 <Box sx={{ display: "flex", gap: 2, mt: 3 }}>
+
+                    <TextField
+                        label="Скидка %"
+                        type="number"
+                        value={localDiscount}
+                        onChange={(e) => {
+                            const val = parseFloat(e.target.value);
+
+                            if (val === "") {
+                                setLocalDiscount("");
+                                return;
+                            }
+
+                            setLocalDiscount(Math.min(Math.max(val, 0), 20)); 
+                        }}
+                        InputProps={{
+                            inputProps: { min: 0, max: 20 }
+                        }}
+                    />
+
                     <AddInvoiceButton onClick={handleSaveAll} disabled={updateInvoice.isPending}>
                         {updateInvoice.isPending ? "Сохранение..." : "Сохранить"}
                     </AddInvoiceButton>
 
                     <AddInvoiceButton
                         onClick={handlePrint}
-                        disabled={ pdfLoading }
+                        disabled={loadingPdf}
                     >
-                        {pdfLoading ? <CircularProgress size={24} /> : "Печать"}
+                        {loadingPdf ? <CircularProgress size={24} /> : "Печать"}
                     </AddInvoiceButton>
 
                     {isAdmin && (
                         <AddInvoiceButton
                             onClick={handlePrintWithMargin}
-                            disabled={ pdfLoading }
+                            disabled={loadingPdfWithMargin}
                         >
-                            {pdfLoading ? <CircularProgress size={24} /> : "Печать с маржой"}
+                            {loadingPdfWithMargin ? <CircularProgress size={24} /> : "Печать с маржой"}
                         </AddInvoiceButton>
                     )}
                 </Box>
@@ -173,14 +188,12 @@ const InvoicePage = () => {
                         </Typography>
                     </Box>
 
-                    {invoice?.discountPercent > 0 && (
                         <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
                             <Typography variant="h6">Скидка:</Typography>
                             <Typography variant="h6" fontWeight="bold">
                                 {discountAmount.toFixed(2)}
                             </Typography>
                         </Box>
-                    )}
 
                     <Box sx={{ display: "flex", justifyContent: "space-between" }}>
                         <Typography variant="h6">Общая сумма:</Typography>

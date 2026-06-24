@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useParams } from "react-router-dom";
 
 import { useInvoiceTable } from "@features/invoices/hooks/useInvoiceTable";
@@ -6,25 +6,24 @@ import { useInvoices } from "@features/invoices/hooks/useInvoices";
 import { useProducts } from "@features/products/hooks/useProducts";
 import { useInvoicePdf } from "@features/invoices/hooks/useInvoicePdf";
 import { invoiceApi } from "@api/invoices/invoiceApi";
-import { useCache } from "@features/invoices/hooks/useCache";
 import { useInvoiceQuery } from "@features/invoices/hooks/useInvoiceQuery";
+import { useCategoriesQuery } from "@features/invoices/hooks/useCategoriesQuery";
 
 export const useInvoicePage = () => {
     const { id } = useParams();
-    const { fetchWithCache } = useCache();
 
     const { updateInvoice } = useInvoices();
     const { products, allProducts, getAllProductsCached } = useProducts();
-    const { downloadPdf, downloadPdfWithMargin, loading: pdfLoading } = useInvoicePdf();
+    const { downloadPdf, downloadPdfWithMargin, loadingPdf, loadingPdfWithMargin } = useInvoicePdf();
 
     const { data: invoiceData, isLoading: invoiceLoading, refetch: refetchInvoice } = useInvoiceQuery(id);
+
+    const { data: categoriesData, isLoading: categoriesLoading, error: categoriesError } = useCategoriesQuery();
 
     const [invoice, setInvoice] = useState(null);
     const [dbItems, setDbItems] = useState([]);
     const [draftItems, setDraftItems] = useState([]);
-
-    const [categories, setCategories] = useState([]);
-    const [categoriesLoading, setCategoriesLoading] = useState(false);
+    const [localDiscount, setLocalDiscount] = useState(0);
 
     const [selectedCategory, setSelectedCategory] = useState(null);
     const [selectedProduct, setSelectedProduct] = useState(null);
@@ -39,8 +38,15 @@ export const useInvoicePage = () => {
         severity: "success"
     });
 
+    const categories = Array.isArray(categoriesData)
+        ? categoriesData.map(cat => ({
+            id: cat.id || cat._id,
+            name: cat.name || cat.categoryName || "Без названия"
+        }))
+        : [];
+
     const allItems = [...dbItems, ...draftItems];
-    const discountPercent = invoice?.discountPercent || 0;
+    const discountPercent = localDiscount || 0;
     const discountMultiplier = (100 - discountPercent) / 100;
 
     const baseSum = allItems.reduce((s, i) => s + (i.totalPrice || 0), 0);
@@ -53,49 +59,16 @@ export const useInvoicePage = () => {
         0
     );
 
-    const fetchCategories = async () => {
-        try {
-            setCategoriesLoading(true);
-
-            const responseData = await fetchWithCache(
-                "categories",
-                async () => {
-                    const res = await invoiceApi.getCategories();
-                    return res.data;
-                },
-                10 * 60 * 1000
-            );
-
-            let categoriesData = [];
-
-            if (Array.isArray(responseData)) {
-                categoriesData = responseData;
-            } else if (responseData?.content) {
-                categoriesData = responseData.content;
-            } else if (responseData?.data) {
-                categoriesData = responseData.data;
-            }
-
-            const formattedCategories = categoriesData.map((cat, index) => ({
-                id: cat.id || index + 1,
-                name: cat.name || cat.categoryName || cat
-            }));
-
-            setCategories(formattedCategories);
-
-        } catch (error) {
-            console.error("Ошибка загрузки категорий:", error);
-        } finally {
-            setCategoriesLoading(false);
-        }
-    };
-
     const handleEditItem = (item) => {
         setEditingItem(item.originalItem);
         setEditModalOpen(true);
     };
 
-    const { columns, rows } = useInvoiceTable(allItems, handleEditItem);
+    const sortedItems = useMemo(() => {
+        return [...allItems].sort((a, b) => b.totalPrice - a.totalPrice);
+    }, [allItems]);
+
+    const { columns, rows } = useInvoiceTable(sortedItems, handleEditItem);
 
     const getCategoryId = (category) => {
         if (category === null || category === undefined) return null;
@@ -182,8 +155,10 @@ export const useInvoicePage = () => {
     }, [allProducts.length, getAllProductsCached]);
 
     useEffect(() => {
-        fetchCategories();
-    }, []);
+        if (invoiceData) {
+            setLocalDiscount(invoiceData.discountPercent || 0);
+        }
+    }, [invoiceData]);
 
     const showError = (message, severity = "error") =>
         setSnackbar({ open: true, message, severity });
@@ -247,7 +222,7 @@ export const useInvoicePage = () => {
         const payload = {
             invoiceName: invoice.invoiceName,
             power: invoice.power,
-            discountPercent: invoice.discountPercent || 0,
+            discountPercent: localDiscount,
             vat_amount: items.reduce((s, i) => s + ((i.vatMultiplier || 0) * (i.quantity || 0)), 0),
             sumMarginality: sumMarginality,
             sum: sum,
@@ -399,14 +374,17 @@ export const useInvoicePage = () => {
         selectedCategory,
         selectedProduct,
         quantity,
-        pdfLoading,
+        loadingPdf,
+        loadingPdfWithMargin,
         snackbar,
         updateInvoice,
+        localDiscount,
 
         setSelectedCategory,
         setSelectedProduct,
         setQuantity,
         setSnackbar,
+        setLocalDiscount,
 
         editModalOpen,
         editingItem,

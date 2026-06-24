@@ -2,11 +2,12 @@ import { useState, useCallback } from 'react';
 import { invoiceApi } from '@api/invoices/invoiceApi';
 
 export const useInvoicePdf = () => {
-    const [loading, setLoading] = useState(false);
+    const [loadingPdf, setLoadingPdf] = useState(false);
+    const [loadingPdfWithMargin, setLoadingPdfWithMargin] = useState(false);
     const [error, setError] = useState(null);
 
     const downloadPdf = useCallback(async (invoiceId, invoiceName = 'invoice') => {
-        setLoading(true);
+        setLoadingPdf(true);
         setError(null);
         
         try {
@@ -49,12 +50,12 @@ export const useInvoicePdf = () => {
             setError(errorMessage);
             return { success: false, error: errorMessage };
         } finally {
-            setLoading(false);
+            setLoadingPdf(false);
         }
     }, []);
 
     const downloadPdfWithMargin = useCallback(async (invoiceId, invoiceName = 'invoice') => {
-        setLoading(true);
+        setLoadingPdfWithMargin(true);
         setError(null);
         
         try {
@@ -97,9 +98,9 @@ export const useInvoicePdf = () => {
             setError(errorMessage);
             return { success: false, error: errorMessage };
         } finally {
-            setLoading(false);
+            setLoadingPdfWithMargin(false);
         }
     }, []);
 
-    return { downloadPdf, downloadPdfWithMargin, loading, error };
+    return { downloadPdf, downloadPdfWithMargin, loadingPdf, loadingPdfWithMargin, error };
 };
