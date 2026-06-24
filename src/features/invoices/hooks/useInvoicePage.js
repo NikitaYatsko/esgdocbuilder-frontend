@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useParams } from "react-router-dom";
 
 import { useInvoiceTable } from "@features/invoices/hooks/useInvoiceTable";
@@ -6,22 +6,24 @@ import { useInvoices } from "@features/invoices/hooks/useInvoices";
 import { useProducts } from "@features/products/hooks/useProducts";
 import { useInvoicePdf } from "@features/invoices/hooks/useInvoicePdf";
 import { invoiceApi } from "@api/invoices/invoiceApi";
-import { useCache } from "@features/invoices/hooks/useCache";
+import { useInvoiceQuery } from "@features/invoices/hooks/useInvoiceQuery";
+import { useCategoriesQuery } from "@features/invoices/hooks/useCategoriesQuery";
 
 export const useInvoicePage = () => {
     const { id } = useParams();
-    const { fetchWithCache } = useCache();
 
-    const { fetchInvoiceById, updateInvoice } = useInvoices();
+    const { updateInvoice } = useInvoices();
     const { products, allProducts, getAllProductsCached } = useProducts();
-    const { downloadPdf, downloadPdfWithMargin, loading: pdfLoading } = useInvoicePdf();
+    const { downloadPdf, downloadPdfWithMargin, loadingPdf, loadingPdfWithMargin } = useInvoicePdf();
+
+    const { data: invoiceData, isLoading: invoiceLoading, refetch: refetchInvoice } = useInvoiceQuery(id);
+
+    const { data: categoriesData, isLoading: categoriesLoading, error: categoriesError } = useCategoriesQuery();
 
     const [invoice, setInvoice] = useState(null);
     const [dbItems, setDbItems] = useState([]);
     const [draftItems, setDraftItems] = useState([]);
-
-    const [categories, setCategories] = useState([]);
-    const [categoriesLoading, setCategoriesLoading] = useState(false);
+    const [localDiscount, setLocalDiscount] = useState(0);
 
     const [selectedCategory, setSelectedCategory] = useState(null);
     const [selectedProduct, setSelectedProduct] = useState(null);
@@ -30,15 +32,21 @@ export const useInvoicePage = () => {
     const [editModalOpen, setEditModalOpen] = useState(false);
     const [editingItem, setEditingItem] = useState(null);
 
-    const [loading, setLoading] = useState(false);
     const [snackbar, setSnackbar] = useState({
         open: false,
         message: "",
         severity: "success"
     });
 
+    const categories = Array.isArray(categoriesData)
+        ? categoriesData.map(cat => ({
+            id: cat.id || cat._id,
+            name: cat.name || cat.categoryName || "Без названия"
+        }))
+        : [];
+
     const allItems = [...dbItems, ...draftItems];
-    const discountPercent = invoice?.discountPercent || 0;
+    const discountPercent = localDiscount || 0;
     const discountMultiplier = (100 - discountPercent) / 100;
 
     const baseSum = allItems.reduce((s, i) => s + (i.totalPrice || 0), 0);
@@ -51,49 +59,16 @@ export const useInvoicePage = () => {
         0
     );
 
-    const fetchCategories = async () => {
-        try {
-            setCategoriesLoading(true);
-
-            const responseData = await fetchWithCache(
-                "categories",
-                async () => {
-                    const res = await invoiceApi.getCategories();
-                    return res.data;
-                },
-                10 * 60 * 1000 
-            );
-
-            let categoriesData = [];
-
-            if (Array.isArray(responseData)) {
-                categoriesData = responseData;
-            } else if (responseData?.content) {
-                categoriesData = responseData.content;
-            } else if (responseData?.data) {
-                categoriesData = responseData.data;
-            }
-
-            const formattedCategories = categoriesData.map((cat, index) => ({
-                id: cat.id || index + 1,
-                name: cat.name || cat.categoryName || cat
-            }));
-
-            setCategories(formattedCategories);
-
-        } catch (error) {
-            console.error("Ошибка загрузки категорий:", error);
-        } finally {
-            setCategoriesLoading(false);
-        }
-    };
-
     const handleEditItem = (item) => {
         setEditingItem(item.originalItem);
         setEditModalOpen(true);
     };
 
-    const { columns, rows } = useInvoiceTable(allItems, handleEditItem);
+    const sortedItems = useMemo(() => {
+        return [...allItems].sort((a, b) => b.totalPrice - a.totalPrice);
+    }, [allItems]);
+
+    const { columns, rows } = useInvoiceTable(sortedItems, handleEditItem);
 
     const getCategoryId = (category) => {
         if (category === null || category === undefined) return null;
@@ -145,15 +120,10 @@ export const useInvoicePage = () => {
     });
 
     useEffect(() => {
-        const load = async () => {
-            if (!allProducts.length) {
-                await getAllProductsCached();
-            }
+        if (invoiceData) {
+            setInvoice(invoiceData);
 
-            const data = await fetchInvoiceById(id);
-            setInvoice(data);
-
-            const normalized = (data?.items || []).map(i => {
+            const normalized = (invoiceData?.items || []).map(i => {
                 let productId = i.productId || i.product?.id;
 
                 if (!productId && i.nameProduct) {
@@ -172,14 +142,23 @@ export const useInvoicePage = () => {
 
             setDbItems(normalized);
             setDraftItems([]);
-        };
-
-        if (products.length || allProducts.length) load();
-    }, [id, products, allProducts.length, getAllProductsCached]);
+        }
+    }, [invoiceData, allProducts, products]);
 
     useEffect(() => {
-        fetchCategories();
-    }, []);
+        const loadProducts = async () => {
+            if (!allProducts.length) {
+                await getAllProductsCached();
+            }
+        };
+        loadProducts();
+    }, [allProducts.length, getAllProductsCached]);
+
+    useEffect(() => {
+        if (invoiceData) {
+            setLocalDiscount(invoiceData.discountPercent || 0);
+        }
+    }, [invoiceData]);
 
     const showError = (message, severity = "error") =>
         setSnackbar({ open: true, message, severity });
@@ -192,7 +171,7 @@ export const useInvoicePage = () => {
 
         const item = {
             tempId: Date.now(),
-            productId: selectedProduct.id,  
+            productId: selectedProduct.id,
             productName: selectedProduct.name,
             nameProduct: selectedProduct.name,
             quantity: qty,
@@ -225,30 +204,25 @@ export const useInvoicePage = () => {
     const handleSaveAll = async () => {
         if (!invoice) return;
 
-        setLoading(true);
-
         const items = [...dbItems, ...draftItems];
-        
+
         const invalid = items.find(i => !i.productId);
 
         if (invalid) {
-            console.error("Товар без productId:", invalid);
-            showError(`Ошибка: товар "${invalid.nameProduct || invalid.productName}" без идентификатора`);
-            setLoading(false);
+            showError(`Ошибка: товар без ID`);
             return;
         }
 
         const payloadBaseSum = items.reduce((s, i) => s + (i.totalPrice || 0), 0);
         const payloadBaseMarginality = items.reduce((s, i) => s + (i.marginality || 0), 0);
-        const costSum =  payloadBaseSum - payloadBaseMarginality;
-
+        const costSum = payloadBaseSum - payloadBaseMarginality;
         const sum = payloadBaseSum * discountMultiplier;
         const sumMarginality = sum - costSum;
 
         const payload = {
             invoiceName: invoice.invoiceName,
             power: invoice.power,
-            discountPercent: invoice.discountPercent || 0,
+            discountPercent: localDiscount,
             vat_amount: items.reduce((s, i) => s + ((i.vatMultiplier || 0) * (i.quantity || 0)), 0),
             sumMarginality: sumMarginality,
             sum: sum,
@@ -262,36 +236,34 @@ export const useInvoicePage = () => {
             }))
         };
 
-        const result = await updateInvoice(invoice.id, payload);
-        setLoading(false);
+        await updateInvoice.mutateAsync({
+            id: invoice.id,
+            invoiceData: payload
+        });
 
-        if (result.success) {
-            const updated = await fetchInvoiceById(invoice.id);
-            setInvoice(updated);
-            setDbItems(updated.items || []);
-            setDraftItems([]);
-            setSnackbar({ open: true, message: "Смета сохранена", severity: "success" });
-        } else {
-            showError(result.error || "Ошибка сохранения");
-        }
+
+        setDbItems(items);
+        setDraftItems([]);
+        await refetchInvoice();
+        setSnackbar({ open: true, message: "Смета успешно сохранена", severity: "success" });
     };
 
     const normalizeItemsForPrint = (items) => {
         return items.map(item => {
             if (item.productId) return item;
-            
+
             if (item.id && !item.productId) {
                 return { ...item, productId: item.id };
             }
-            
+
             if (item.originalItem?.productId) {
                 return { ...item, productId: item.originalItem.productId };
             }
-            
+
             if (item.product?.id) {
                 return { ...item, productId: item.product.id };
             }
-            
+
             return item;
         });
     };
@@ -300,9 +272,9 @@ export const useInvoicePage = () => {
         if (!invoice?.id) return showError("ID сметы не найден");
 
         const itemsToPrint = normalizeItemsForPrint([...dbItems, ...draftItems]);
-        
+
         const missingProductId = itemsToPrint.find(i => !i.productId);
-        
+
         if (missingProductId) {
             console.error("Товар без productId для печати:", missingProductId);
             return showError(`Товар "${missingProductId.nameProduct || missingProductId.productName || 'без названия'}" не имеет ID товара. Сохраните смету перед печатью.`);
@@ -321,9 +293,9 @@ export const useInvoicePage = () => {
         if (!invoice?.id) return showError("ID сметы не найден");
 
         const itemsToPrint = normalizeItemsForPrint([...dbItems, ...draftItems]);
-        
+
         const missingProductId = itemsToPrint.find(i => !i.productId);
-        
+
         if (missingProductId) {
             console.error("Товар без productId для печати с маржой:", missingProductId);
             return showError(`Товар "${missingProductId.nameProduct || missingProductId.productName || 'без названия'}" не имеет ID товара. Сохраните смету перед печатью.`);
@@ -402,14 +374,17 @@ export const useInvoicePage = () => {
         selectedCategory,
         selectedProduct,
         quantity,
-        loading,
-        pdfLoading,
+        loadingPdf,
+        loadingPdfWithMargin,
         snackbar,
+        updateInvoice,
+        localDiscount,
 
         setSelectedCategory,
         setSelectedProduct,
         setQuantity,
         setSnackbar,
+        setLocalDiscount,
 
         editModalOpen,
         editingItem,
@@ -421,6 +396,6 @@ export const useInvoicePage = () => {
         handleDeleteItem,
         handleSaveAll,
         handlePrint,
-        handlePrintWithMargin
+        handlePrintWithMargin,
     };
 };

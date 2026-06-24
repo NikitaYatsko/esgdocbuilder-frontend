@@ -240,7 +240,7 @@ const InvoiceModal = ({ open, onClose, onSave, loading = false, mode = 'create',
                                 required
                                 InputProps={{ inputProps: { step: "0.1" } }}
                             />
-                            <StyledInput
+                            {/* <StyledInput
                                 label="Скидка (%)"
                                 type="number"
                                 value={discountPercent}
@@ -248,7 +248,7 @@ const InvoiceModal = ({ open, onClose, onSave, loading = false, mode = 'create',
                                 error={!!errors.discountPercent}
                                 helperText={errors.discountPercent || "Введите число от 0 до 20"}
                                 InputProps={{ inputProps: { step: "0.1", min: 0, max: 20 } }}
-                            />
+                            /> */}
                         </Stack>
                     ) : (
                         <Stack spacing={2}>
