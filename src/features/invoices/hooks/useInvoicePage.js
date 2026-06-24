@@ -54,10 +54,15 @@ export const useInvoicePage = () => {
 
     const discountAmount = baseSum - totalSum;
 
-    const totalVat = allItems.reduce(
-        (s, i) => s + ((i.vatMultiplier || 0) * (i.quantity || 0)),
-        0
-    );
+    const getVatSettings = () => {
+        const saved = localStorage.getItem("vat_settings");
+        if (saved) {
+            return JSON.parse(saved);
+        }
+        return { vatPercent: 20, vatDivisor: 120 };
+    };
+
+    const totalVat = totalSum * getVatSettings().vatPercent / getVatSettings().vatDivisor;
 
     const handleEditItem = (item) => {
         setEditingItem(item.originalItem);
@@ -223,7 +228,7 @@ export const useInvoicePage = () => {
             invoiceName: invoice.invoiceName,
             power: invoice.power,
             discountPercent: localDiscount,
-            vat_amount: items.reduce((s, i) => s + ((i.vatMultiplier || 0) * (i.quantity || 0)), 0),
+            vat_amount: totalVat,
             sumMarginality: sumMarginality,
             sum: sum,
             items: items.map(i => ({
