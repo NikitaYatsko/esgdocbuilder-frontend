@@ -59,6 +59,7 @@ const UserList = () => {
     }, []);
 
     useEffect(() => {
+        document.title = 'Пользователи';
         if (isAdmin) {
             fetchUsers();
             fetchRoles();

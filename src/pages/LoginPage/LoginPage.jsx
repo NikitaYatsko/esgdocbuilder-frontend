@@ -1,5 +1,5 @@
 import { Box, useTheme, styled } from '@mui/material';
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 
 const LoginForm = lazy(() => import('@features/auth/components/LoginForm/LoginForm.jsx'));
 
@@ -19,8 +19,14 @@ const FallbackBox = styled(Box)(({ theme }) => ({
   color: theme.palette.text.primary,
 }));
 
+
+
 export const LoginPage = () => {
   const theme = useTheme();
+
+  useEffect(() => {
+    document.title = 'Вход в систему';
+  }, []);
 
   return (
     <LoginWrapper>
@@ -28,4 +34,5 @@ export const LoginPage = () => {
         <LoginForm />
       </Suspense>
     </LoginWrapper>
-)};
+  )
+};

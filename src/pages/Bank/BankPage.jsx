@@ -1,4 +1,4 @@
-import React, {useMemo, useCallback, useState} from "react";
+import React, {useMemo, useCallback, useState, useEffect} from "react";
 import {Box, Typography, styled, Alert, Snackbar} from "@mui/material";
 import {MoneyBlock, BlocksRow} from "@features/transactions/components/MoneyBlock.jsx";
 import {useBank} from "@features/transactions/hooks/useBank";
@@ -58,6 +58,11 @@ const RightContent = styled(Box)({
 });
 
 const BankPage = () => {
+
+    useEffect(() => {
+        document.title = 'Банк';
+    }, []);
+
     const {
         accounts,
         operations,

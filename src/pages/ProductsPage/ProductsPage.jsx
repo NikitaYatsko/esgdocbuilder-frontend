@@ -14,7 +14,7 @@ import {
 import TableComponent from "@features/auth/components/TableComponent.jsx";
 import PageHeader from "@features/auth/components/PageHeader.jsx";
 import SearchBar from "@features/products/components/SearchBar";
-import {useCallback, useState} from "react";
+import {useCallback, useState, useEffect} from "react";
 import ProductModal from "@features/products/components/ProductModal.jsx";
 import styled from "@emotion/styled";
 import {useProducts} from "@features/products/hooks/useProducts.js";
@@ -37,6 +37,10 @@ const UNIT_TYPES = [
 ];
 
 const ProductsPage = () => {
+
+    useEffect(() => {
+        document.title = 'Товары';
+    }, []);
 
     const [openModal, setOpenModal] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState(null);

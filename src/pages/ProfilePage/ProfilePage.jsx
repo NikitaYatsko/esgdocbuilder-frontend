@@ -1,19 +1,19 @@
-import {Typography, Paper, Grid, Divider, useTheme, styled,} from "@mui/material";
-import {useAuth} from "@contexts/AuthContext";
-import {useNavigate} from "react-router-dom";
-import {useState, useRef} from "react";
+import { Typography, Paper, Grid, Divider, useTheme, styled, } from "@mui/material";
+import { useAuth } from "@contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
+import { useState, useRef, useEffect } from "react";
 import PhoneIcon from '@mui/icons-material/Phone';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
-import {authApi} from "@api/auth/authApi";
-import {ProfileAvatar} from '@features/profile/ProfileAvatar';
-import {InfoCard} from '@features/profile/InfoCard';
-import {ProfileActions} from '@features/profile/ProfileActions';
-import {EditProfileModal} from '@features/profile/EditProfileModal';
-import {CenteredContainer} from "@/layouts/CenteredContainer.jsx";
+import { authApi } from "@api/auth/authApi";
+import { ProfileAvatar } from '@features/profile/ProfileAvatar';
+import { InfoCard } from '@features/profile/InfoCard';
+import { ProfileActions } from '@features/profile/ProfileActions';
+import { EditProfileModal } from '@features/profile/EditProfileModal';
+import { CenteredContainer } from "@/layouts/CenteredContainer.jsx";
 
 
-const ProfilePaper = styled(Paper)(({theme}) => ({
+const ProfilePaper = styled(Paper)(({ theme }) => ({
     padding: theme.spacing(4),
     borderRadius: 8,
     border: '1px solid',
@@ -22,17 +22,22 @@ const ProfilePaper = styled(Paper)(({theme}) => ({
     width: '100%'
 }));
 
-const SectionTitle = styled(Typography)(({theme}) => ({
+const SectionTitle = styled(Typography)(({ theme }) => ({
     marginBottom: theme.spacing(3),
 }));
 
-const StyledDivider = styled(Divider)(({theme}) => ({
+const StyledDivider = styled(Divider)(({ theme }) => ({
     marginTop: theme.spacing(4),
     marginBottom: theme.spacing(4),
 }));
 
 export const ProfilePage = () => {
-    const {user, logout, updateUser} = useAuth();
+
+    useEffect(() => {
+        document.title = 'Профиль пользователя';
+    }, []);
+
+    const { user, logout, updateUser } = useAuth();
     const theme = useTheme();
     const navigate = useNavigate();
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -140,9 +145,9 @@ export const ProfilePage = () => {
         <CenteredContainer fullHeight={true} width={1200}>
             <ProfilePaper elevation={0}>
                 <Grid container spacing={4}>
-                    <Grid size={{xs: 12, md: 4}}>
+                    <Grid size={{ xs: 12, md: 4 }}>
                         <ProfileAvatar
-                            user={{...user, fullName: displayName}}
+                            user={{ ...user, fullName: displayName }}
                             getInitials={getInitials}
                             onAvatarChange={handleAvatarChange}
                         />
@@ -150,28 +155,28 @@ export const ProfilePage = () => {
                             type="file"
                             accept="image/*"
                             ref={fileInputRef}
-                            style={{display: 'none'}}
+                            style={{ display: 'none' }}
                             onChange={handleFileSelect}
                         />
                     </Grid>
-                    <Grid size={{xs: 12, md: 8}}>
+                    <Grid size={{ xs: 12, md: 8 }}>
                         <SectionTitle variant="h6" gutterBottom>
                             Дополнительная информация
                         </SectionTitle>
-                            <Grid container spacing={3}>
-                                <Grid size={{xs: 12, md: 6}}>
-                                    {infoItems.map((item, index) => (
-                                        <InfoCard
-                                            key={index}
-                                            icon={item.icon}
-                                            label={item.label}
-                                            value={item.value}
-                                        />
-                                    ))}
-                                </Grid>
+                        <Grid container spacing={3}>
+                            <Grid size={{ xs: 12, md: 6 }}>
+                                {infoItems.map((item, index) => (
+                                    <InfoCard
+                                        key={index}
+                                        icon={item.icon}
+                                        label={item.label}
+                                        value={item.value}
+                                    />
+                                ))}
                             </Grid>
+                        </Grid>
 
-                        <StyledDivider/>
+                        <StyledDivider />
 
                         <ProfileActions
                             onEdit={handleEditProfile}

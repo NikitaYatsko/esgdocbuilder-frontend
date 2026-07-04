@@ -7,7 +7,7 @@ import {
     Snackbar,
     CircularProgress
 } from "@mui/material";
-
+import { useEffect } from "react";
 import TableComponent from "@features/auth/components/TableComponent.jsx";
 import AddInvoiceButton from "@features/invoices/components/AddInvoiceButton";
 import InvoiceModal from "@features/invoices/components/InvoiceModal.jsx";
@@ -52,6 +52,12 @@ const InvoicePage = () => {
         handleUpdateItem,
         setEditModalOpen
     } = useInvoicePage();
+
+    useEffect(() => {
+        if (invoice?.invoiceName) {
+            document.title = invoice.invoiceName;
+        }
+    }, [invoice]);
 
     const { user } = useAuth();
     const isAdmin = user?.roles?.some(role => role.name === 'ADMIN') || false;
@@ -99,7 +105,7 @@ const InvoicePage = () => {
                                 return;
                             }
 
-                            setLocalDiscount(Math.min(Math.max(val, 0), 20)); 
+                            setLocalDiscount(Math.min(Math.max(val, 0), 20));
                         }}
                         InputProps={{
                             inputProps: { min: 0, max: 20 }
@@ -188,12 +194,12 @@ const InvoicePage = () => {
                         </Typography>
                     </Box>
 
-                        <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
-                            <Typography variant="h6">Скидка:</Typography>
-                            <Typography variant="h6" fontWeight="bold">
-                                {discountAmount.toFixed(2)}
-                            </Typography>
-                        </Box>
+                    <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
+                        <Typography variant="h6">Скидка:</Typography>
+                        <Typography variant="h6" fontWeight="bold">
+                            {discountAmount.toFixed(2)}
+                        </Typography>
+                    </Box>
 
                     <Box sx={{ display: "flex", justifyContent: "space-between" }}>
                         <Typography variant="h6">Общая сумма:</Typography>

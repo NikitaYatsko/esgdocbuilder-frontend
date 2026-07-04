@@ -10,6 +10,7 @@ const SettingsPage = () => {
   const [vatDivisor, setVatDivisor] = useState(120);
 
   useEffect(() => {
+    document.title = 'Настройки НДС';
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       const data = JSON.parse(saved);
@@ -29,6 +30,7 @@ const SettingsPage = () => {
     setVatDivisor(value);
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ vatPercent, vatDivisor: value }));
   };
+
 
   return (
     <Container maxWidth="sm" sx={{ py: 4 }}>
