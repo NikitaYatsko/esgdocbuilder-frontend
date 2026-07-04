@@ -1,4 +1,4 @@
-import {useState} from 'react';
+import { useState } from 'react';
 import {
     Typography,
     TextField,
@@ -13,7 +13,7 @@ import {
 } from "@mui/material";
 import AddButton from '../../products/components/AddButton.jsx';
 
-const TransactionCard = styled(Paper)(({theme}) => ({
+const TransactionCard = styled(Paper)(({ theme }) => ({
     padding: 24,
     borderRadius: 12,
     backgroundColor: theme.palette.background.paper,
@@ -24,7 +24,7 @@ const TransactionCard = styled(Paper)(({theme}) => ({
     gap: 20,
 }));
 
-const CardTitle = styled(Typography)(({theme}) => ({
+const CardTitle = styled(Typography)(({ theme }) => ({
     fontSize: '1.25rem',
     fontWeight: 600,
     color: theme.palette.text.primary,
@@ -49,56 +49,57 @@ const AmountTextField = styled(TextField)({
     },
 });
 
-const CreateTransaction = ({accounts = [], onCreate}) => {
+const CreateTransaction = ({ accounts = [], categories = [], onCreate }) => {
     const [formData, setFormData] = useState({
         type: '',
         account: '',
         amount: '',
-        comment: ''
+        comment: '',
+        category: ''
     });
     const [error, setError] = useState('');
 
     const handleChange = (e) => {
-        const {name, value} = e.target;
+        const { name, value } = e.target;
 
         if (name === 'type') {
             setError('');
         }
 
-        setFormData(prev => ({...prev, [name]: value}));
+        setFormData(prev => ({ ...prev, [name]: value }));
     };
 
     const handleAmountChange = (e) => {
-        const {value} = e.target;
+        const { value } = e.target;
         let cleanedValue = value.replace(/[^0-9.]/g, '');
 
-        
+
         const parts = cleanedValue.split('.');
         if (parts.length > 2) {
             cleanedValue = parts[0] + '.' + parts.slice(1).join('');
         }
 
-        
+
         if (parts.length === 2 && parts[1].length > 2) {
             cleanedValue = parts[0] + '.' + parts[1].substring(0, 2);
         }
 
-        
+
         if (cleanedValue.startsWith('.')) {
             cleanedValue = '0' + cleanedValue;
         }
 
-       
+
         if (cleanedValue === '.') {
             cleanedValue = '0.';
         }
 
         setError('');
-        setFormData(prev => ({...prev, amount: cleanedValue}));
+        setFormData(prev => ({ ...prev, amount: cleanedValue }));
     };
 
     const handleSubmit = async () => {
-        if (!formData.type || !formData.account || !formData.amount || !formData.comment) return;
+        if (!formData.type || !formData.account || !formData.amount || !formData.comment || !formData.category) return;
 
         const amountValue = parseFloat(formData.amount);
         if (!(amountValue > 0)) {
@@ -108,7 +109,8 @@ const CreateTransaction = ({accounts = [], onCreate}) => {
 
         try {
             await onCreate(formData);
-            setFormData({type: '', account: '', amount: '', comment: ''});
+            console.log("Операция успешно создана:", formData);
+            setFormData({ type: '', account: '', amount: '', comment: '', category: '' });
             setError('');
         } catch (e) {
             console.error("Ошибка при добавлении:", e);
@@ -122,6 +124,7 @@ const CreateTransaction = ({accounts = [], onCreate}) => {
             formData.account &&
             formData.amount &&
             formData.comment &&
+            formData.category &&
             parseFloat(formData.amount) > 0
         );
     };
@@ -135,6 +138,26 @@ const CreateTransaction = ({accounts = [], onCreate}) => {
                 <Select name="type" value={formData.type} onChange={handleChange} label="Тип операции">
                     <MenuItem value="Доход">Доход</MenuItem>
                     <MenuItem value="Расход">Расход</MenuItem>
+                </Select>
+            </StyledFormControl>
+
+            <StyledFormControl fullWidth>
+                <InputLabel>Категория</InputLabel>
+
+                <Select
+                    name="category"
+                    value={formData.category}
+                    onChange={handleChange}
+                    label="Категория"
+                >
+                    {categories.map(category => (
+                        <MenuItem
+                            key={category.id}
+                            value={category.id}
+                        >
+                            {category.name}
+                        </MenuItem>
+                    ))}
                 </Select>
             </StyledFormControl>
 
@@ -182,7 +205,7 @@ const CreateTransaction = ({accounts = [], onCreate}) => {
             />
 
             {error && (
-                <Alert severity="error" sx={{mt: 1}}>
+                <Alert severity="error" sx={{ mt: 1 }}>
                     {error}
                 </Alert>
             )}

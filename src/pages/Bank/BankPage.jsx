@@ -1,5 +1,5 @@
 import React, {useMemo, useCallback, useState} from "react";
-import {Box, Typography, styled, Alert, Snackbar} from "@mui/material";
+import {Box, Typography, styled, Alert, Snackbar, Button} from "@mui/material";
 import {MoneyBlock, BlocksRow} from "@features/transactions/components/MoneyBlock.jsx";
 import {useBank} from "@features/transactions/hooks/useBank";
 import TableComponent from "@features/auth/components/TableComponent.jsx";
@@ -7,28 +7,28 @@ import CreateTransaction from "@features/transactions/components/CreateTransacti
 import HistoryIcon from "@mui/icons-material/History";
 import PaginationBox from "@features/main/PaginationBox";
 import {CenteredContainer} from "@/layouts/CenteredContainer.jsx";
+import { PieChart } from '@mui/x-charts/PieChart';
+import Diagram from "@features/transactions/components/Diagram.jsx";
+import { DateRangePicker } from 'react-date-range';
+import 'react-date-range/dist/styles.css';
+import 'react-date-range/dist/theme/default.css';
+import { ru } from 'date-fns/locale'; 
 
 const transactionColumns = [
-    {id: 'type', label: 'Тип', align: 'right'},
-    {id: 'amount', label: 'Сумма', align: 'right'},
+    {id: 'type', label: 'Тип', align: 'left'},
+    {id: 'category', label: 'Категория', align: 'left'},
+    {id: 'amount', label: 'Сумма', align: 'left'},
     {
         id: 'account',
         label: 'Счет',
-        align: 'right',
+        align: 'left',
         render: (value) => {
             if (value === "Bank") return "Банк";
             if (value === "Cashbox") return "Касса";
             return value;
         }
     },
-    {id: 'comment', label: 'Комментарий', align: 'right'},
-    {
-        id: 'date',
-        label: 'Дата',
-        align: 'right',
-        render: (value) =>
-            value ? new Date(value).toLocaleString() : ''
-    },
+    {id: 'comment', label: 'Комментарий', align: 'left'},
 ];
 
 const SectionTitle = styled(Typography)(({theme}) => ({
@@ -67,8 +67,31 @@ const BankPage = () => {
         page,
         pagination,
         nextPage,
-        prevPage
+        prevPage,
+        categories
     } = useBank();
+
+    // ---- date
+
+    const [state, setState] = useState({
+  selection: {
+    startDate: new Date(),
+    endDate: new Date(),
+    key: 'selection',
+  },
+});
+
+const handleSelect = (ranges) => {
+  setState({
+    selection: ranges.selection,
+  });
+  console.log('Выбранный период:', {
+    start: ranges.selection.startDate,
+    end: ranges.selection.endDate,
+  });
+};
+
+ // --------
 
     const {cashbox, bank} = useMemo(() => {
         let cashbox = null;
@@ -130,6 +153,21 @@ const BankPage = () => {
     return (
         <CenteredContainer width={1400}>
             <MainContainer>
+                <Box>
+                    <Button>
+                        Печать
+                    </Button>
+                                <DateRangePicker
+  ranges={[state.selection]}
+  onChange={handleSelect}
+  showSelectionPreview={true}
+  moveRangeOnFirstSelection={false}
+  months={1}
+  direction="vertical"
+  locale={ru} // Локализация на русский
+/>
+    <Diagram />
+                </Box>
                 <LeftContent>
                     <Box>
                         <SectionTitle variant="h5">
@@ -173,6 +211,7 @@ const BankPage = () => {
                 <RightContent>
                     <CreateTransaction
                         accounts={accounts}
+                        categories={categories}
                         onCreate={handleCreate}
                     />
                 </RightContent>
@@ -187,6 +226,7 @@ const BankPage = () => {
                     </Alert>
                 </Snackbar>
             </MainContainer>
+
         </CenteredContainer>
     );
 };

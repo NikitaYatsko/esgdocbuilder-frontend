@@ -1,6 +1,7 @@
-import {useEffect, useState} from "react";
+import { useEffect, useState } from "react";
 
-import {transactionsApi} from "@api/transactions/transactions.api.js";
+import { transactionsApi } from "@api/transactions/transactions.api.js";
+import { useCategoriesQuery } from "@features/transactions/hooks/useCategoriesQuery.js";
 
 export const useBank = () => {
     const [accounts, setAccounts] = useState([]);
@@ -12,6 +13,8 @@ export const useBank = () => {
 
     const [loading, setLoading] = useState(true);
 
+    const { data: categoriesData, isLoading: categoriesLoading, error: categoriesError } = useCategoriesQuery();
+
     const fetchBankData = async (currentPage = page) => {
         try {
             setLoading(true);
@@ -21,7 +24,7 @@ export const useBank = () => {
                 transactionsApi.getOperations({
                     params: {
                         page: currentPage - 1,
-                        limit: limit
+                        size: limit,
                     }
                 })
             ]);
@@ -41,8 +44,8 @@ export const useBank = () => {
                     comment: op.comment,
                     account: op.accountName,
                     date: op.createdAt,
+                    category: op.category || '',
                 }))
-
             setOperations(formattedOperations);
 
         } catch (e) {
@@ -51,6 +54,11 @@ export const useBank = () => {
             setLoading(false);
         }
     };
+
+    const categories = categoriesData?.map(cat => ({
+        id: cat.id,
+        name: cat.name
+    })) ?? [];
 
     useEffect(() => {
         fetchBankData(page);
@@ -63,6 +71,7 @@ export const useBank = () => {
                 amount: parseFloat(newOp.amount),
                 accountName: newOp.account,
                 comment: newOp.comment,
+                categoryId: Number(newOp.category),
             };
 
             await transactionsApi.postOperation(payload);
@@ -118,6 +127,7 @@ export const useBank = () => {
         nextPage,
         prevPage,
         goToPage,
-        createOperation
+        createOperation,
+        categories
     };
 };
