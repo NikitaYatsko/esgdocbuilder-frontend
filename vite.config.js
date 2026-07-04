@@ -4,6 +4,13 @@ import path from 'path'
 
 export default defineConfig({
   plugins: [react()],
+  preview: {
+    host: "0.0.0.0",
+    port: Number(process.env.PORT) || 8080,
+    allowedHosts: [
+      "esgdocbuilder-frontend-production.up.railway.app"
+    ]
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, 'src'),
