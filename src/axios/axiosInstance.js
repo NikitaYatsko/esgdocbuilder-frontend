@@ -15,7 +15,7 @@ export const getAccessToken = () => {
 
 const baseURL = import.meta.env.DEV
   ? '/api'
-  : 'https://docbuilder-application.up.railway.app';
+  : import.meta.env.VITE_API_URL;
 
 
 const axiosInstance = axios.create({
