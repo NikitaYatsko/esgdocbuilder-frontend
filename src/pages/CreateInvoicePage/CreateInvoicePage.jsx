@@ -20,6 +20,7 @@ const CreateInvoicePage = () => {
     const [openModal, setOpenModal] = useState(false);
     const [modalMode, setModalMode] = useState('create');
     const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
+    const [searchTerm, setSearchTerm] = useState('');
     const navigate = useNavigate();
 
     const {
@@ -32,6 +33,10 @@ const CreateInvoicePage = () => {
     const isAdmin = user?.roles?.some(role => role.name === 'ADMIN') || false;
 
     const { categories } = useProducts();
+
+    const filteredInvoices = invoices.filter(invoice => 
+        invoice.invoiceName.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
     const handleAddInvoice = () => {
         setModalMode('create');
@@ -90,7 +95,7 @@ const CreateInvoicePage = () => {
     };
 
     const handleSearch = (searchTerm) => {
-        // Логика поиска смет (если нужна)
+         setSearchTerm(searchTerm);
     };
 
     const handleFilter = () => {
@@ -114,7 +119,7 @@ const CreateInvoicePage = () => {
         { id: "actions", label: "Действия", align: 'right', }
     ];
 
-    const invoiceRows = invoices.map((inv) => ({
+    const invoiceRows = filteredInvoices.map((inv) => ({
         ...inv,
         actions: ""
     }));
