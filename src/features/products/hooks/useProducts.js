@@ -1,10 +1,24 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { productApi } from "@api/products/productApi";
 import { useCache } from "@features/invoices/hooks/useCache";
+import { useCategoriesQuery } from "@features/products/hooks/useCategoriesQuery";
+import { useCreateProductMutation } from "@features/products/hooks/useCreateProductMutation";
+import { useUpdateProductMutation } from "@features/products/hooks/useUpdateProductMutation";
+import { useDeleteProductMutation } from "@features/products/hooks/useDeleteProductMutation";
 
 export const useProducts = () => {
     const [products, setProducts] = useState([]);
     const [pagination, setPagination] = useState(null);
+
+    const createProductMutation = useCreateProductMutation();
+    const updateProductMutation = useUpdateProductMutation();
+    const deleteProductMutation = useDeleteProductMutation();
+
+    const {
+        data: categories = [],
+        isLoading: categoriesLoading,
+        error: categoriesError,
+    } = useCategoriesQuery();
 
     const [page, setPage] = useState(1);
     const [limit] = useState(20);
@@ -14,7 +28,6 @@ export const useProducts = () => {
     const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
     const [categoryFilter, setCategoryFilter] = useState(null);
     const [unitFilter, setUnitFilter] = useState('');
-    const [categories, setCategories] = useState([]);
     const [allProducts, setAllProducts] = useState([]);
     const [rangeFilters, setRangeFilters] = useState({
         sellPriceMin: '',
@@ -97,21 +110,6 @@ export const useProducts = () => {
         setRangeFilters((prev) => ({ ...prev, [field]: value }));
         setPage(1);
     }, []);
-
-    const fetchCategories = async () => {
-        try {
-            const response = await productApi.getCategories();
-            const categoriesData = response.data;
-            setCategories(
-                Array.isArray(categoriesData)
-                    ? categoriesData
-                    : categoriesData?.content || categoriesData?.items || []
-            );
-        } catch (err) {
-            console.error('Failed to fetch categories:', err);
-            setCategories([]);
-        }
-    };
 
     const fetchSearchProducts = async (term) => {
         try {
@@ -241,10 +239,6 @@ export const useProducts = () => {
         fetchProducts(page, debouncedSearchTerm);
     }, [page, debouncedSearchTerm, categoryFilter, unitFilter, limit, rangeFilters]);
 
-    useEffect(() => {
-        fetchCategories();
-    }, []);
-
     const nextPage = () => {
         if (pagination && page < pagination.pages) {
             setPage(prev => prev + 1);
@@ -304,49 +298,62 @@ export const useProducts = () => {
         }
     };
 
-    const deleteProduct = async (id) => {
-        try {
-            await productApi.delete(id);
-            allProductsCache.current = null;
-            if (products.length === 1 && page > 1) {
-                setPage(prev => prev - 1);
-            } else {
-                await fetchProducts(page, debouncedSearchTerm);
-            }
-            return { success: true };
-        } catch (err) {
-            return { 
-                success: false, 
-                error: err.response?.data?.message || "Ошибка удаления товара" 
-            };
-        }
-    };
-
     const createProduct = async (productData) => {
         try {
-            const response = await productApi.create(productData);
-            allProductsCache.current = null;
+            const response = await createProductMutation.mutateAsync(productData);
+
             setPage(1);
             await fetchProducts(1, debouncedSearchTerm);
-            return { success: true, data: response.data };
+
+            return {
+                success: true,
+                data: response.data
+            };
         } catch (err) {
-            return { 
-                success: false, 
-                error: err.response?.data?.message || "Ошибка создания товара" 
+            return {
+                success: false,
+                error: err?.response?.data?.message || "Ошибка создания товара"
             };
         }
     };
 
     const updateProduct = async (id, productData) => {
         try {
-            const response = await productApi.update(id, productData);
-            allProductsCache.current = null;
+            const response = await updateProductMutation.mutateAsync({
+                id,
+                data: productData
+            });
+
             await fetchProducts(page, debouncedSearchTerm);
-            return { success: true, data: response.data };
+
+            return {
+                success: true,
+                data: response.data
+            };
         } catch (err) {
-            return { 
-                success: false, 
-                error: err.response?.data?.message || "Ошибка обновления товара" 
+            return {
+                success: false,
+                error: err?.response?.data?.message || "Ошибка обновления товара"
+            };
+        }
+    };
+
+
+    const deleteProduct = async (id) => {
+        try {
+            await deleteProductMutation.mutateAsync(id);
+
+            if (products.length === 1 && page > 1) {
+                setPage(prev => prev - 1);
+            } else {
+                await fetchProducts(page, debouncedSearchTerm);
+            }
+
+            return { success: true };
+        } catch (err) {
+            return {
+                success: false,
+                error: err?.response?.data?.message || "Ошибка удаления товара"
             };
         }
     };
@@ -361,6 +368,8 @@ export const useProducts = () => {
         unitFilter,
         rangeFilters,
         categories,
+        categoriesLoading,
+        categoriesError,
 
         page,
         nextPage,
