@@ -3,22 +3,29 @@ import { useParams } from "react-router-dom";
 
 import { useInvoiceTable } from "@features/invoices/hooks/useInvoiceTable";
 import { useInvoices } from "@features/invoices/hooks/useInvoices";
-import { useProducts } from "@features/products/hooks/useProducts";
 import { useInvoicePdf } from "@features/invoices/hooks/useInvoicePdf";
 import { invoiceApi } from "@api/invoices/invoiceApi";
 import { useInvoiceQuery } from "@features/invoices/hooks/useInvoiceQuery";
 import { useCategoriesQuery } from "@features/invoices/hooks/useCategoriesQuery";
+import { useAllProductsQuery } from "@features/products/hooks/useAllProductsQuery";
 
 export const useInvoicePage = () => {
     const { id } = useParams();
 
     const { updateInvoice } = useInvoices();
-    const { products, allProducts, getAllProductsCached } = useProducts();
+    const { data: allProductsData, isLoading: productsLoading } = useAllProductsQuery();
+
     const { downloadPdf, downloadPdfWithMargin, loadingPdf, loadingPdfWithMargin } = useInvoicePdf();
 
     const { data: invoiceData, isLoading: invoiceLoading, refetch: refetchInvoice } = useInvoiceQuery(id);
 
     const { data: categoriesData, isLoading: categoriesLoading, error: categoriesError } = useCategoriesQuery();
+
+    const allProducts = useMemo(() => {
+        if (!allProductsData) return [];
+        const products = allProductsData?.content || allProductsData?.items || allProductsData?.products || (Array.isArray(allProductsData) ? allProductsData : []);
+        return Array.isArray(products) ? products : [];
+    }, [allProductsData]);
 
     const [invoice, setInvoice] = useState(null);
     const [dbItems, setDbItems] = useState([]);
@@ -103,7 +110,7 @@ export const useInvoicePage = () => {
         return String(product.category?.name ?? product.category?.categoryName ?? "").trim();
     };
 
-    const productSource = allProducts.length ? allProducts : products || [];
+    const productSource = allProducts.length ? allProducts : [];
 
     const filteredProducts = productSource.filter((product) => {
         if (!selectedCategory) return false;
@@ -132,11 +139,11 @@ export const useInvoicePage = () => {
                 let productId = i.productId || i.product?.id;
 
                 if (!productId && i.nameProduct) {
-                    const found = allProducts.find(p => p.name === i.nameProduct) || products.find(p => p.name === i.nameProduct);
+                    const found = allProducts.find(p => p.name === i.nameProduct);
                     productId = found?.id || null;
                 }
 
-                const product = allProducts.find(p => p.id === productId) || products.find(p => p.id === productId);
+                const product = allProducts.find(p => p.id === productId);
 
                 return {
                     ...i,
@@ -148,16 +155,7 @@ export const useInvoicePage = () => {
             setDbItems(normalized);
             setDraftItems([]);
         }
-    }, [invoiceData, allProducts, products]);
-
-    useEffect(() => {
-        const loadProducts = async () => {
-            if (!allProducts.length) {
-                await getAllProductsCached();
-            }
-        };
-        loadProducts();
-    }, [allProducts.length, getAllProductsCached]);
+    }, [invoiceData, allProducts]);
 
     useEffect(() => {
         if (invoiceData) {

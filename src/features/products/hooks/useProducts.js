@@ -1,391 +1,127 @@
-import { useEffect, useState, useCallback, useRef } from "react";
-import { productApi } from "@api/products/productApi";
-import { useCache } from "@features/invoices/hooks/useCache";
-import { useCategoriesQuery } from "@features/products/hooks/useCategoriesQuery";
-import { useCreateProductMutation } from "@features/products/hooks/useCreateProductMutation";
-import { useUpdateProductMutation } from "@features/products/hooks/useUpdateProductMutation";
-import { useDeleteProductMutation } from "@features/products/hooks/useDeleteProductMutation";
+import { useState, useCallback, useEffect } from 'react';
+import { useProductFilters } from './useProductFilters';
+import { useProductData } from './useProductData';
+import { useProductMutations } from './useProductMutations';
+import { useCategoriesQuery } from './useCategoriesQuery';
 
 export const useProducts = () => {
-    const [products, setProducts] = useState([]);
-    const [pagination, setPagination] = useState(null);
+  // Фильтры
+  const filters = useProductFilters();
+  const {
+    searchTerm,
+    categoryFilter,
+    unitFilter,
+    rangeFilters,
+    searchProducts,
+    filterByCategory,
+    filterByTypeOfUnit,
+    setFilterRange,
+    clearFilters,
+    clearSearch,
+  } = filters;
 
-    const createProductMutation = useCreateProductMutation();
-    const updateProductMutation = useUpdateProductMutation();
-    const deleteProductMutation = useDeleteProductMutation();
+  // Пагинация
+  const [page, setPage] = useState(1);
 
-    const {
-        data: categories = [],
-        isLoading: categoriesLoading,
-        error: categoriesError,
-    } = useCategoriesQuery();
+  // Данные
+  const {
+    products,
+    allProducts,
+    pagination,
+    loading,
+    error,
+    refetch,
+    hasFilters,
+  } = useProductData({
+    page,
+    limit: 20,
+    searchTerm,
+    categoryFilter,
+    unitFilter,
+    rangeFilters,
+  });
 
-    const [page, setPage] = useState(1);
-    const [limit] = useState(20);
+  useEffect(() => {
+    if (pagination && page > pagination.pages) {
+      setPage(1);
+    }
+  }, [pagination, page]);
 
-    const [loading, setLoading] = useState(true);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
-    const [categoryFilter, setCategoryFilter] = useState(null);
-    const [unitFilter, setUnitFilter] = useState('');
-    const [allProducts, setAllProducts] = useState([]);
-    const [rangeFilters, setRangeFilters] = useState({
-        sellPriceMin: '',
-        sellPriceMax: '',
-        costPriceMin: '',
-        costPriceMax: '',
-        marginalityMin: '',
-        marginalityMax: '',
-        vatMin: '',
-        vatMax: '',
-    });
+  // Мутации
+  const { createProduct, updateProduct, deleteProduct } = useProductMutations();
 
-    const allProductsCache = useRef(null);
-    const debounceTimeout = useRef(null);
+  // Категории
+  const {
+    data: categories = [],
+    isLoading: categoriesLoading,
+    error: categoriesError,
+  } = useCategoriesQuery();
 
-    const normalizeResponse = (data) => {
-        if (!data) return { products: [], pagination: null };
+  // Обработчики пагинации
+  const nextPage = useCallback(() => {
+    if (pagination && page < pagination.pages) setPage(p => p + 1);
+  }, [pagination, page]);
+  const prevPage = useCallback(() => {
+    if (page > 1) setPage(p => p - 1);
+  }, [page]);
+  const goToPage = useCallback((p) => {
+    if (p >= 1 && pagination && p <= pagination.pages) setPage(p);
+  }, [pagination]);
 
-        const products = data?.content || data?.items || data?.products || (Array.isArray(data) ? data : []);
-        const pagination = data?.pagination || data?.data?.pagination || (Array.isArray(products) ? { pages: 1, total: products.length } : null);
+  // Обёртки мутаций с коррекцией страницы
+  const createProductWithReset = useCallback(async (data) => {
+    const result = await createProduct(data);
+    if (result.success) setPage(1);
+    return result;
+  }, [createProduct]);
 
-        return {
-            products: Array.isArray(products) ? products : [],
-            pagination
-        };
-    };
+  const deleteProductWithReset = useCallback(async (id) => {
+    const result = await deleteProduct(id);
+    if (result.success && products.length === 1 && page > 1) {
+      setPage(p => p - 1);
+    }
+    return result;
+  }, [deleteProduct, products.length, page]);
 
-    const parseNumber = (value) => {
-        if (value === '' || value === null || value === undefined) return null;
-        const number = Number(value);
-        return Number.isFinite(number) ? number : null;
-    };
+  return {
+    // Данные
+    products,
+    allProducts,
+    pagination,
+    loading,
+    error,
+    categories,
+    categoriesLoading,
+    categoriesError,
 
-    const applyNumericFilters = (items) => {
-        const {
-            sellPriceMin,
-            sellPriceMax,
-            costPriceMin,
-            costPriceMax,
-            marginalityMin,
-            marginalityMax,
-            vatMin,
-            vatMax,
-        } = rangeFilters;
+    // Состояния фильтров (для UI)
+    searchTerm,
+    categoryFilter,
+    unitFilter,
+    rangeFilters,
 
-        const minMax = {
-            sellPriceMin: parseNumber(sellPriceMin),
-            sellPriceMax: parseNumber(sellPriceMax),
-            costPriceMin: parseNumber(costPriceMin),
-            costPriceMax: parseNumber(costPriceMax),
-            marginalityMin: parseNumber(marginalityMin),
-            marginalityMax: parseNumber(marginalityMax),
-            vatMin: parseNumber(vatMin),
-            vatMax: parseNumber(vatMax),
-        };
+    // Пагинация
+    page,
+    nextPage,
+    prevPage,
+    goToPage,
 
-        return items.filter((product) => {
-            const sellPrice = parseNumber(product.sellPrice);
-            const costPrice = parseNumber(product.costPrice);
-            const marginality = parseNumber(product.marginality);
-            const vat = parseNumber(product.vat);
+    // Действия
+    refetch,
+    searchProducts,
+    filterByCategory,
+    filterByTypeOfUnit,
+    setFilterRange,
+    clearFilters,
+    clearSearch,
 
-            if (minMax.sellPriceMin !== null && (sellPrice === null || sellPrice < minMax.sellPriceMin)) return false;
-            if (minMax.sellPriceMax !== null && (sellPrice === null || sellPrice > minMax.sellPriceMax)) return false;
+    // Мутации
+    createProduct: createProductWithReset,
+    updateProduct,
+    deleteProduct: deleteProductWithReset,
 
-            if (minMax.costPriceMin !== null && (costPrice === null || costPrice < minMax.costPriceMin)) return false;
-            if (minMax.costPriceMax !== null && (costPrice === null || costPrice > minMax.costPriceMax)) return false;
-
-            if (minMax.marginalityMin !== null && (marginality === null || marginality < minMax.marginalityMin)) return false;
-            if (minMax.marginalityMax !== null && (marginality === null || marginality > minMax.marginalityMax)) return false;
-
-            if (minMax.vatMin !== null && (vat === null || vat < minMax.vatMin)) return false;
-            if (minMax.vatMax !== null && (vat === null || vat > minMax.vatMax)) return false;
-
-            return true;
-        });
-    };
-
-    const setFilterRange = useCallback((field, value) => {
-        setRangeFilters((prev) => ({ ...prev, [field]: value }));
-        setPage(1);
-    }, []);
-
-    const fetchSearchProducts = async (term) => {
-        try {
-            return await productApi.search(term);
-        } catch (err) {
-            const status = err.response?.status;
-            if (status === 500 || status === 404) {
-                const fallback = await getAllProductsCached();
-                const filtered = normalizeResponse(fallback).products.filter((product) => {
-                    return !product.deleted && (product.name || product.title || "").toLowerCase().includes(term.toLowerCase());
-                });
-                return { data: filtered };
-            }
-            throw err;
-        }
-    };
-
-    const getAllProductsCached = useCallback(async () => {
-        if (allProductsCache.current) {
-            return allProductsCache.current;
-        }
-
-        const response = await productApi.getAllProducts();
-        allProductsCache.current = response.data;
-        const { products: normalizedProducts } = normalizeResponse(response.data);
-        const activeProducts = normalizedProducts.filter(p => !p.deleted);
-        setAllProducts(activeProducts);
-        return response.data;
-    }, []);
-
-    const fetchProducts = async (currentPage = 1, term = debouncedSearchTerm) => {
-        const trimmedTerm = term?.trim();
-        const isSearchActive = trimmedTerm && trimmedTerm.length >= 3;
-        const activeCategory = categoryFilter === '' || categoryFilter === null || categoryFilter === undefined
-            ? null
-            : Number(categoryFilter);
-        const activeUnit = unitFilter ? String(unitFilter).toUpperCase().trim() : '';
-        const numericFilterActive = Object.values(rangeFilters).some((value) => value !== '');
-
-        const hasAnyFilter = isSearchActive || activeCategory !== null || activeUnit || numericFilterActive;
-
-        try {
-            setLoading(true);
-
-            if (hasAnyFilter) {
-                // Используем кэш для локальной фильтрации
-                let filteredProducts;
-
-                if (isSearchActive) {
-                    // Использовать API search
-                    const searchResponse = await fetchSearchProducts(trimmedTerm);
-                    const searchData = normalizeResponse(searchResponse.data);
-                    filteredProducts = searchData.products.filter(p => !p.deleted);
-                } else {
-                    // Получить все из кэша
-                    const allData = await getAllProductsCached();
-                    filteredProducts = normalizeResponse(allData).products.filter(p => !p.deleted);
-                }
-
-                // Применяем фильтры в порядке: категория -> единица -> диапазоны
-
-                if (activeCategory !== null) {
-                    filteredProducts = filteredProducts.filter((product) => {
-                        const productCategoryId = product.categoryId ?? product.category?.id ?? null;
-                        return Number(productCategoryId) === activeCategory;
-                    });
-                }
-
-                if (activeUnit) {
-                    filteredProducts = filteredProducts.filter((product) => {
-                        const unit = String(product.typeOfUnit?.name || product.typeOfUnit || "").toUpperCase();
-                        return unit === activeUnit;
-                    });
-                }
-
-                if (numericFilterActive) {
-                    filteredProducts = applyNumericFilters(filteredProducts);
-                }
-
-                // Для фильтрованных данных - локальная пагинация
-                const totalItems = filteredProducts.length;
-                const totalPages = Math.ceil(totalItems / limit);
-                const startIndex = (currentPage - 1) * limit;
-                const endIndex = startIndex + limit;
-                const paginatedProducts = filteredProducts.slice(startIndex, endIndex);
-
-                setProducts(paginatedProducts);
-                setPagination({ pages: totalPages, total: totalItems });
-
-            } else {
-                // Нет фильтров - используем API пагинацию
-                const response = await productApi.getAll({ page: currentPage - 1, limit });
-                const { products: normalizedProducts, pagination: normalizedPagination } = normalizeResponse(response.data);
-                const activeProducts = normalizedProducts.filter(p => !p.deleted);
-                setProducts(activeProducts);
-                setPagination(normalizedPagination);
-            }
-
-        } catch (err) {
-            console.error('Error fetching products:', err);
-            setProducts([]);
-            setPagination(null);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        if (searchTerm === '') {
-            setDebouncedSearchTerm('');
-            return;
-        }
-        if (debounceTimeout.current) {
-            clearTimeout(debounceTimeout.current);
-        }
-        debounceTimeout.current = setTimeout(() => {
-            setDebouncedSearchTerm(searchTerm);
-        }, 300);
-        return () => {
-            if (debounceTimeout.current) {
-                clearTimeout(debounceTimeout.current);
-            }
-        };
-    }, [searchTerm]);
-
-    useEffect(() => {
-        fetchProducts(page, debouncedSearchTerm);
-    }, [page, debouncedSearchTerm, categoryFilter, unitFilter, limit, rangeFilters]);
-
-    const nextPage = () => {
-        if (pagination && page < pagination.pages) {
-            setPage(prev => prev + 1);
-        }
-    };
-
-    const prevPage = () => {
-        if (page > 1) {
-            setPage(prev => prev - 1);
-        }
-    };
-
-    const searchProducts = useCallback((term) => {
-        setSearchTerm(term);
-        setPage(1);
-    }, []);
-
-    const filterByCategory = useCallback((categoryId) => {
-        const normalizedCategoryId = categoryId === '' || categoryId === null || categoryId === undefined
-            ? null
-            : Number(categoryId);
-        setCategoryFilter(Number.isFinite(normalizedCategoryId) ? normalizedCategoryId : null);
-        setPage(1);
-    }, []);
-
-    const filterByTypeOfUnit = useCallback((type) => {
-        const normalizedType = type ? String(type).toUpperCase().trim() : '';
-        setUnitFilter(normalizedType);
-        setPage(1);
-    }, []);
-
-    const clearFilters = useCallback(() => {
-        setSearchTerm('');
-        setCategoryFilter(null);
-        setUnitFilter('');
-        setRangeFilters({
-            sellPriceMin: '',
-            sellPriceMax: '',
-            costPriceMin: '',
-            costPriceMax: '',
-            marginalityMin: '',
-            marginalityMax: '',
-            vatMin: '',
-            vatMax: '',
-        });
-        setPage(1);
-    }, []);
-
-    const clearSearch = useCallback(() => {
-        setSearchTerm('');
-        setPage(1);
-    }, []);
-
-    const goToPage = (p) => {
-        if (p >= 1 && pagination && p <= pagination.pages) {
-            setPage(p);
-        }
-    };
-
-    const createProduct = async (productData) => {
-        try {
-            const response = await createProductMutation.mutateAsync(productData);
-
-            setPage(1);
-            await fetchProducts(1, debouncedSearchTerm);
-
-            return {
-                success: true,
-                data: response.data
-            };
-        } catch (err) {
-            return {
-                success: false,
-                error: err?.response?.data?.message || "Ошибка создания товара"
-            };
-        }
-    };
-
-    const updateProduct = async (id, productData) => {
-        try {
-            const response = await updateProductMutation.mutateAsync({
-                id,
-                data: productData
-            });
-
-            await fetchProducts(page, debouncedSearchTerm);
-
-            return {
-                success: true,
-                data: response.data
-            };
-        } catch (err) {
-            return {
-                success: false,
-                error: err?.response?.data?.message || "Ошибка обновления товара"
-            };
-        }
-    };
-
-
-    const deleteProduct = async (id) => {
-        try {
-            await deleteProductMutation.mutateAsync(id);
-
-            if (products.length === 1 && page > 1) {
-                setPage(prev => prev - 1);
-            } else {
-                await fetchProducts(page, debouncedSearchTerm);
-            }
-
-            return { success: true };
-        } catch (err) {
-            return {
-                success: false,
-                error: err?.response?.data?.message || "Ошибка удаления товара"
-            };
-        }
-    };
-
-    return {
-        products,
-        allProducts,
-        pagination,
-        loading,
-        searchTerm,
-        categoryFilter,
-        unitFilter,
-        rangeFilters,
-        categories,
-        categoriesLoading,
-        categoriesError,
-
-        page,
-        nextPage,
-        prevPage,
-        goToPage,
-
-        refetch: fetchProducts,
-        getAllProductsCached,
-        searchProducts,
-        filterByCategory,
-        filterByTypeOfUnit,
-        setFilterRange,
-        clearFilters,
-        clearSearch,
-        deleteProduct,
-        createProduct,
-        updateProduct,
-    };
+    // Дополнительно
+    hasFilters,
+    getAllProductsCached: useCallback(() => allProducts || [], [allProducts]),
+  };
 };
