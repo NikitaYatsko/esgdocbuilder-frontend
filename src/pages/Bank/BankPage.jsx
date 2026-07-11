@@ -1,23 +1,23 @@
-import React, {useMemo, useCallback, useState} from "react";
-import {Box, Typography, styled, Alert, Snackbar, Button} from "@mui/material";
-import {MoneyBlock, BlocksRow} from "@features/transactions/components/MoneyBlock.jsx";
-import {useBank} from "@features/transactions/hooks/useBank";
+import { Box, Typography, styled, Alert, Snackbar, Button, Tabs, Tab } from "@mui/material";
+import React, { useMemo, useCallback, useState, useEffect } from "react";
+import { MoneyBlock, BlocksRow } from "@features/transactions/components/MoneyBlock.jsx";
+import { useBank } from "@features/transactions/hooks/useBank";
 import TableComponent from "@features/auth/components/TableComponent.jsx";
 import CreateTransaction from "@features/transactions/components/CreateTransaction.jsx";
 import HistoryIcon from "@mui/icons-material/History";
 import PaginationBox from "@features/main/PaginationBox";
-import {CenteredContainer} from "@/layouts/CenteredContainer.jsx";
+import { CenteredContainer } from "@/layouts/CenteredContainer.jsx";
 import { PieChart } from '@mui/x-charts/PieChart';
 import Diagram from "@features/transactions/components/Diagram.jsx";
 import { DateRangePicker } from 'react-date-range';
 import 'react-date-range/dist/styles.css';
 import 'react-date-range/dist/theme/default.css';
-import { ru } from 'date-fns/locale'; 
+import { ru } from 'date-fns/locale';
 
 const transactionColumns = [
-    {id: 'type', label: 'Тип', align: 'left'},
-    {id: 'category', label: 'Категория', align: 'left'},
-    {id: 'amount', label: 'Сумма', align: 'left'},
+    { id: 'type', label: 'Тип', align: 'left' },
+    { id: 'category', label: 'Категория', align: 'left' },
+    { id: 'amount', label: 'Сумма', align: 'left' },
     {
         id: 'account',
         label: 'Счет',
@@ -28,10 +28,19 @@ const transactionColumns = [
             return value;
         }
     },
-    {id: 'comment', label: 'Комментарий', align: 'left'},
+    { id: 'comment', label: 'Комментарий', align: 'left' },
+    {
+    id: "date",
+    label: "Дата",
+    align: "left",
+    render: (value) =>
+        value
+            ? new Date(value).toLocaleDateString("ru-RU")
+            : "",
+},
 ];
 
-const SectionTitle = styled(Typography)(({theme}) => ({
+const SectionTitle = styled(Typography)(({ theme }) => ({
     fontSize: '1.25rem',
     fontWeight: 600,
     color: theme.palette.text.primary,
@@ -58,6 +67,11 @@ const RightContent = styled(Box)({
 });
 
 const BankPage = () => {
+
+    useEffect(() => {
+        document.title = 'Банк';
+    }, []);
+
     const {
         accounts,
         operations,
@@ -74,26 +88,32 @@ const BankPage = () => {
     // ---- date
 
     const [state, setState] = useState({
-  selection: {
-    startDate: new Date(),
-    endDate: new Date(),
-    key: 'selection',
-  },
-});
+        selection: {
+            startDate: new Date(),
+            endDate: new Date(),
+            key: 'selection',
+        },
+    });
 
-const handleSelect = (ranges) => {
-  setState({
-    selection: ranges.selection,
-  });
-  console.log('Выбранный период:', {
-    start: ranges.selection.startDate,
-    end: ranges.selection.endDate,
-  });
-};
+    const handleSelect = (ranges) => {
+        setState({
+            selection: ranges.selection,
+        });
+        console.log('Выбранный период:', {
+            start: ranges.selection.startDate,
+            end: ranges.selection.endDate,
+        });
+    };
 
- // --------
+    const [activeTab, setActiveTab] = useState(0); // 0 - создание, 1 - диаграмма, 2 - календарь
 
-    const {cashbox, bank} = useMemo(() => {
+    const handleTabChange = (event, newValue) => {
+        setActiveTab(newValue);
+    };
+
+    // --------
+
+    const { cashbox, bank } = useMemo(() => {
         let cashbox = null;
         let bank = null;
 
@@ -101,7 +121,7 @@ const handleSelect = (ranges) => {
             if (acc.name === "Cashbox") cashbox = acc;
             if (acc.name === "Bank") bank = acc;
         }
-        return {cashbox, bank};
+        return { cashbox, bank };
     }, [accounts]);
 
     const columns = useMemo(() => transactionColumns, []);
@@ -126,9 +146,9 @@ const handleSelect = (ranges) => {
         },
     ];
     const handleCloseSnackbar = () => {
-        setSnackbar(prev => ({...prev, open: false}));
+        setSnackbar(prev => ({ ...prev, open: false }));
     };
-    const [snackbar, setSnackbar] = useState({open: false, message: "", severity: "success"});
+    const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
 
     const handleRowDelete = async (row) => {
         if (window.confirm("Удалить операцию?")) {
@@ -153,21 +173,6 @@ const handleSelect = (ranges) => {
     return (
         <CenteredContainer width={1400}>
             <MainContainer>
-                <Box>
-                    <Button>
-                        Печать
-                    </Button>
-                                <DateRangePicker
-  ranges={[state.selection]}
-  onChange={handleSelect}
-  showSelectionPreview={true}
-  moveRangeOnFirstSelection={false}
-  months={1}
-  direction="vertical"
-  locale={ru} // Локализация на русский
-/>
-    <Diagram />
-                </Box>
                 <LeftContent>
                     <Box>
                         <SectionTitle variant="h5">
@@ -186,7 +191,7 @@ const handleSelect = (ranges) => {
                     </Box>
                     <Box>
                         <SectionTitle variant="h5">
-                            <HistoryIcon color="primary" sx={{fontSize: 28}}/>
+                            <HistoryIcon color="primary" sx={{ fontSize: 28 }} />
                             История операций
                         </SectionTitle>
                         <TableComponent
@@ -209,17 +214,45 @@ const handleSelect = (ranges) => {
                 </LeftContent>
 
                 <RightContent>
-                    <CreateTransaction
-                        accounts={accounts}
-                        categories={categories}
-                        onCreate={handleCreate}
-                    />
+                    {/* Вкладки */}
+                    <Tabs value={activeTab} onChange={handleTabChange} sx={{ mb: 2 }}>
+                        <Tab label="Создать" />
+                        <Tab label="Диаграмма" />
+                        <Tab label="Календарь" />
+                    </Tabs>
+
+                    {/* Контент в зависимости от активной вкладки */}
+                    {activeTab === 0 && (
+                        <CreateTransaction
+                            accounts={accounts}
+                            categories={categories}
+                            onCreate={handleCreate}
+                        />
+                    )}
+                    {activeTab === 1 && (
+                        <Box sx={{ height: 400, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                             <Diagram operations={operations} categories={categories} />
+                        </Box>
+                    )}
+                    {activeTab === 2 && (
+                        <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                            <DateRangePicker
+                                ranges={[state.selection]}
+                                onChange={handleSelect}
+                                showSelectionPreview={true}
+                                moveRangeOnFirstSelection={false}
+                                months={1}
+                                direction="vertical"
+                                locale={ru}
+                            />
+                        </Box>
+                    )}
                 </RightContent>
                 <Snackbar
                     open={snackbar.open}
                     autoHideDuration={6000}
                     onClose={handleCloseSnackbar}
-                    anchorOrigin={{vertical: "bottom", horizontal: "right"}}
+                    anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
                 >
                     <Alert onClose={handleCloseSnackbar} severity={snackbar.severity}>
                         {snackbar.message}
