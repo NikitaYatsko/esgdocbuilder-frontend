@@ -214,14 +214,12 @@ const BankPage = () => {
                 </LeftContent>
 
                 <RightContent>
-                    {/* Вкладки */}
                     <Tabs value={activeTab} onChange={handleTabChange} sx={{ mb: 2 }}>
                         <Tab label="Создать" />
                         <Tab label="Диаграмма" />
                         <Tab label="Календарь" />
                     </Tabs>
 
-                    {/* Контент в зависимости от активной вкладки */}
                     {activeTab === 0 && (
                         <CreateTransaction
                             accounts={accounts}
