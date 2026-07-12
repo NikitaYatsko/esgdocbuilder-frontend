@@ -83,7 +83,7 @@ const InvoicePage = () => {
                 mode="editItem"
                 initialData={editingItem}
                 categories={CATEGORIES}
-                // products={allProducts}
+                products={allProducts}
             />
 
             <Box sx={{ display: "flex", justifyContent: "space-between" }}>

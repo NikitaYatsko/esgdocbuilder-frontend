@@ -121,6 +121,8 @@ const CreateInvoicePage = () => {
         actions: ""
     }));
 
+    
+
     return (
 
         <CenteredContainer width={1200}><StyledBox>

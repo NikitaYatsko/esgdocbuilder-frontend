@@ -20,10 +20,8 @@ import {
 
 import { StyledInput } from "@features/modal/StyledInput";
 import { StyledButton } from "@features/modal/StyledButton";
-import { useProducts } from "@features/products/hooks/useProducts";
 
-const InvoiceModal = ({ open, onClose, onSave, loading = false, mode = 'create', initialData = null, categories = [] }) => {
-    const { products, allProducts, getAllProductsCached, loading: productsLoading } = useProducts();
+const InvoiceModal = ({ open, onClose, onSave, loading = false, mode = 'create', initialData = null, categories = [], products = [] }) => {
 
     const [invoiceName, setInvoiceName] = useState("");
     const [power, setPower] = useState("");
@@ -35,12 +33,11 @@ const InvoiceModal = ({ open, onClose, onSave, loading = false, mode = 'create',
 
     const filteredProducts = useMemo(() => {
         if (!selectedCategory?.id) return [];
-        const productSource = allProducts.length ? allProducts : products;
-        return productSource.filter(p => {
+        return products.filter(p => {
             const productCategoryId = p.categoryId ?? p.category?.id ?? null;
             return String(productCategoryId) === String(selectedCategory.id);
         });
-    }, [products, allProducts, selectedCategory]);
+    }, [products, selectedCategory]);
 
     const calculateValues = useCallback((product, qty) => {
         if (!product) {
@@ -111,38 +108,39 @@ const InvoiceModal = ({ open, onClose, onSave, loading = false, mode = 'create',
         }
     }, [errors.quantity]);
 
-    useEffect(() => {
-        if (!open) return;
+useEffect(() => {
+    if (!open || mode !== "editItem" || !initialData) return;
 
-        if (mode === 'editItem' && initialData) {
-            const productSource = allProducts.length ? allProducts : products;
-            const product = productSource.find(p => String(p.id) === String(initialData.productId));
-            if (product) {
-                const productCategoryId = product.categoryId ?? product.category?.id ?? product.category?._id ?? null;
-                const category = categories.find(c => String(c.id) === String(productCategoryId));
-                setSelectedCategory(category || null);
-                setSelectedProduct(product);
-            }
-            setQuantity(initialData.quantity || 1);
-        }
+    const product = products.find(
+        p => String(p.id) === String(initialData.productId)
+    );
 
-        if (mode === 'create') {
-            setInvoiceName("");
-            setPower("");
-            setSelectedCategory(null);
-            setSelectedProduct(null);
-            setQuantity(1);
-            setDiscountPercent("");
-        }
+    if (!product) return;
 
-        setErrors({});
-    }, [open, allProducts, products, categories, mode, initialData]);
+    const productCategoryId =
+        product.categoryId ??
+        product.category?.id ??
+        null;
 
-    useEffect(() => {
-        if (open && mode === 'editItem' && !allProducts.length) {
-            getAllProductsCached().catch(() => {});
-        }
-    }, [open, mode, allProducts.length, getAllProductsCached]);
+    const category = categories.find(
+        c => String(c.id) === String(productCategoryId)
+    );
+
+    setSelectedCategory(prev =>
+        prev?.id === category?.id ? prev : category || null
+    );
+
+    setSelectedProduct(prev =>
+        prev?.id === product.id ? prev : product
+    );
+
+    setQuantity(prev =>
+        prev === initialData.quantity ? prev : initialData.quantity || 1
+    );
+
+    setErrors({});
+
+}, [open, mode, initialData?.productId, products, categories]);
 
     const validate = useCallback(() => {
         const newErrors = {};
@@ -269,7 +267,6 @@ const InvoiceModal = ({ open, onClose, onSave, loading = false, mode = 'create',
 
                             <Autocomplete
                                 options={filteredProducts}
-                                loading={productsLoading}
                                 getOptionLabel={(option) => option?.name || ""}
                                 value={selectedProduct}
                                 onChange={handleProductChange}

@@ -45,12 +45,15 @@ export const useInvoicePage = () => {
         severity: "success"
     });
 
-    const categories = Array.isArray(categoriesData)
-        ? categoriesData.map(cat => ({
-            id: cat.id || cat._id,
-            name: cat.name || cat.categoryName || "Без названия"
-        }))
-        : [];
+    const categories = useMemo(() => {
+    if (!Array.isArray(categoriesData)) return [];
+
+    return categoriesData.map(cat => ({
+        id: cat.id || cat._id,
+        name: cat.name || cat.categoryName || "Без названия"
+    }));
+}, [categoriesData]);
+
 
     const allItems = [...dbItems, ...draftItems];
     const discountPercent = localDiscount || 0;
