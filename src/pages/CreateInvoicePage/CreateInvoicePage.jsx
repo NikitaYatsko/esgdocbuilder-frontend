@@ -4,7 +4,6 @@ import InvoiceSearchBar from "@features/invoices/components/InvoiceSearchBar";
 import InvoiceModal from "@features/invoices/components/InvoiceModal.jsx";
 import AddInvoiceButton from "@features/invoices/components/AddInvoiceButton";
 import { useState, useEffect } from "react";
-import { useProducts } from "@features/products/hooks/useProducts";
 import { useInvoices } from "@features/invoices/hooks/useInvoices.js";
 import { StyledBox, StyledPaper } from "@features/invoices/components/styled/StyledComponents";
 import { CenteredContainer } from "@/layouts/CenteredContainer.jsx";
@@ -31,8 +30,6 @@ const CreateInvoicePage = () => {
 
     const { user } = useAuth();
     const isAdmin = user?.roles?.some(role => role.name === 'ADMIN') || false;
-
-    const { categories } = useProducts();
 
     const filteredInvoices = invoices.filter(invoice => 
         invoice.invoiceName.toLowerCase().includes(searchTerm.toLowerCase())
@@ -159,7 +156,6 @@ const CreateInvoicePage = () => {
                 onSave={handleSave}
                 loading={createInvoice.isPending}
                 mode={modalMode}
-                categories={categories}
             />
 
             <Snackbar

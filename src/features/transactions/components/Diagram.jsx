@@ -81,7 +81,7 @@ export default function Diagram({ operations = [], categories = [] }) {
   const centerLabel = view === 'expense' ? 'Расходы' : 'Доходы';
 
   return (
-    <Box sx={{ width: '100%', textAlign: 'center', mt: 4 }}>
+    <Box sx={{ width: '100%', textAlign: 'center', mt: 6 }}>
       <ToggleButtonGroup
         color="primary"
         size="small"

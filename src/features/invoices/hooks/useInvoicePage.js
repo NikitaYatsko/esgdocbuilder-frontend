@@ -369,6 +369,7 @@ export const useInvoicePage = () => {
         CATEGORIES: categories,
         categoriesLoading,
         filteredProducts,
+        allProducts,
 
         totalSum,
         totalVat,

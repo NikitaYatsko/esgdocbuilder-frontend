@@ -13,6 +13,8 @@ import { DateRangePicker } from 'react-date-range';
 import 'react-date-range/dist/styles.css';
 import 'react-date-range/dist/theme/default.css';
 import { ru } from 'date-fns/locale';
+import { CircularProgress } from '@mui/material';
+import { transactionsApi } from "@api/transactions/transactions.api.js";
 
 const transactionColumns = [
     { id: 'type', label: 'Тип', align: 'left' },
@@ -30,14 +32,14 @@ const transactionColumns = [
     },
     { id: 'comment', label: 'Комментарий', align: 'left' },
     {
-    id: "date",
-    label: "Дата",
-    align: "left",
-    render: (value) =>
-        value
-            ? new Date(value).toLocaleDateString("ru-RU")
-            : "",
-},
+        id: "date",
+        label: "Дата",
+        align: "left",
+        render: (value) =>
+            value
+                ? new Date(value).toLocaleDateString("ru-RU")
+                : "",
+    },
 ];
 
 const SectionTitle = styled(Typography)(({ theme }) => ({
@@ -106,6 +108,7 @@ const BankPage = () => {
     };
 
     const [activeTab, setActiveTab] = useState(0); // 0 - создание, 1 - диаграмма, 2 - календарь
+    const [downloading, setDownloading] = useState(false);
 
     const handleTabChange = (event, newValue) => {
         setActiveTab(newValue);
@@ -170,6 +173,76 @@ const BankPage = () => {
         }
     };
 
+    // ------ bank pdf download
+    const handleDownloadReport = async () => {
+        const { startDate, endDate } = state.selection;
+
+        // Проверка наличия дат
+        if (!startDate || !endDate) {
+            setSnackbar({
+                open: true,
+                message: 'Выберите диапазон дат',
+                severity: 'warning'
+            });
+            return;
+        }
+
+        // Вспомогательная функция форматирования даты в YYYY-MM-DD
+        const formatDate = (date) => {
+            const d = new Date(date);
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        };
+
+        const start = formatDate(startDate);
+        const end = formatDate(endDate);
+
+        // Дополнительная проверка: начальная дата не должна быть позже конечной
+        if (start > end) {
+            setSnackbar({
+                open: true,
+                message: 'Начальная дата не может быть позже конечной',
+                severity: 'error'
+            });
+            return;
+        }
+
+        try {
+            setDownloading(true);
+            const response = await transactionsApi.getBankPdf(start, end);
+
+            // Создаём ссылку для скачивания
+            const blob = new Blob([response.data], { type: 'application/pdf' });
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `bank_report_${start}_${end}.pdf`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(url);
+
+            setSnackbar({
+                open: true,
+                message: 'Отчёт успешно скачан',
+                severity: 'success'
+            });
+        } catch (error) {
+            console.error('Ошибка при скачивании отчёта:', error);
+            setSnackbar({
+                open: true,
+                message: 'Не удалось скачать отчёт. Попробуйте позже.',
+                severity: 'error'
+            });
+        } finally {
+            setDownloading(false);
+        }
+    };
+
+    // ------
+
     return (
         <CenteredContainer width={1400}>
             <MainContainer>
@@ -229,11 +302,11 @@ const BankPage = () => {
                     )}
                     {activeTab === 1 && (
                         <Box sx={{ height: 400, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                             <Diagram operations={operations} categories={categories} />
+                            <Diagram operations={operations} categories={categories} />
                         </Box>
                     )}
                     {activeTab === 2 && (
-                        <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                             <DateRangePicker
                                 ranges={[state.selection]}
                                 onChange={handleSelect}
@@ -243,6 +316,16 @@ const BankPage = () => {
                                 direction="vertical"
                                 locale={ru}
                             />
+                            <Button
+                                variant="contained"
+                                color="primary"
+                                onClick={handleDownloadReport}
+                                disabled={downloading}
+                                startIcon={downloading ? <CircularProgress size={20} /> : null}
+                                sx={{ mt: 2 }}
+                            >
+                                {downloading ? 'Загрузка...' : 'Скачать отчёт PDF'}
+                            </Button>
                         </Box>
                     )}
                 </RightContent>
