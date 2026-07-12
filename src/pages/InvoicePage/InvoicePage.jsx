@@ -21,6 +21,7 @@ const InvoicePage = () => {
         rows,
         CATEGORIES,
         filteredProducts,
+        allProducts,
 
         selectedCategory,
         selectedProduct,
@@ -82,6 +83,7 @@ const InvoicePage = () => {
                 mode="editItem"
                 initialData={editingItem}
                 categories={CATEGORIES}
+                products={allProducts}
             />
 
             <Box sx={{ display: "flex", justifyContent: "space-between" }}>
