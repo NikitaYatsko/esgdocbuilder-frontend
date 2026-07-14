@@ -15,6 +15,8 @@ import 'react-date-range/dist/theme/default.css';
 import { ru } from 'date-fns/locale';
 import { CircularProgress } from '@mui/material';
 import { transactionsApi } from "@api/transactions/transactions.api.js";
+import DeleteIcon from '@mui/icons-material/Delete';
+import IconButton from '@mui/material/IconButton';
 
 const transactionColumns = [
     { id: 'type', label: 'Тип', align: 'left' },
@@ -127,7 +129,32 @@ const BankPage = () => {
         return { cashbox, bank };
     }, [accounts]);
 
-    const columns = useMemo(() => transactionColumns, []);
+    const columns = useMemo(() => {
+        if (transactionColumns.some(col => col.id === 'actions')) {
+            return transactionColumns;
+        }
+        return [
+            ...transactionColumns,
+            { 
+                id: 'actions', 
+                label: 'Действия', 
+                align: 'center',
+                // Рендерим иконку удаления
+                render: (value, row) => (
+                    <IconButton 
+                        size="small" 
+                        color="error"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            handleRowDelete(row);
+                        }}
+                    >
+                        <DeleteIcon fontSize="small" />
+                    </IconButton>
+                )
+            }
+        ];
+    }, []);
 
     const handleCreate = useCallback((data) => {
         return createOperation(data);
@@ -273,8 +300,7 @@ const BankPage = () => {
                             showActions={true}
                             tableMinWidth="600px"
                             tableHeight={500}
-                            isRowClickable={true}
-                            onRowClick={handleRowDelete}
+                            isRowClickable={false}
                         />
 
                         <PaginationBox

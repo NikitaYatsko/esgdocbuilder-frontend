@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
     Typography,
     TextField,
@@ -57,16 +57,39 @@ const CreateTransaction = ({ accounts = [], categories = [], onCreate }) => {
         comment: '',
         category: ''
     });
+
     const [error, setError] = useState('');
+
+    const filteredCategories = useMemo(() => {
+        if (!formData.type) return [];
+
+        const categoryType =
+            formData.type === "Доход" ? "INCOME" : "EXPENSE";
+
+        return categories.filter(
+            (category) => category.type === categoryType
+        );
+    }, [categories, formData.type]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
 
-        if (name === 'type') {
-            setError('');
+        if (name === "type") {
+            setError("");
+
+            setFormData(prev => ({
+                ...prev,
+                type: value,
+                category: "",
+            }));
+
+            return;
         }
 
-        setFormData(prev => ({ ...prev, [name]: value }));
+        setFormData(prev => ({
+            ...prev,
+            [name]: value,
+        }));
     };
 
     const handleAmountChange = (e) => {
@@ -149,8 +172,9 @@ const CreateTransaction = ({ accounts = [], categories = [], onCreate }) => {
                     value={formData.category}
                     onChange={handleChange}
                     label="Категория"
+                    disabled={!formData.type}
                 >
-                    {categories.map(category => (
+                    {filteredCategories.map(category => (
                         <MenuItem
                             key={category.id}
                             value={category.id}

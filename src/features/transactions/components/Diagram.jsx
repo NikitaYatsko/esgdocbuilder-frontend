@@ -2,8 +2,6 @@ import * as React from 'react';
 import { PieChart } from '@mui/x-charts/PieChart';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import ToggleButton from '@mui/material/ToggleButton';
-import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import { useDrawingArea } from '@mui/x-charts/hooks';
 import { styled } from '@mui/material/styles';
 
@@ -23,7 +21,7 @@ function PieCenterLabel({ children }) {
   );
 }
 
-// Генерация цветов для категорий (можно расширить)
+// Генерация цветов для категорий
 const COLORS = [
   '#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF',
   '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
@@ -31,24 +29,12 @@ const COLORS = [
 ];
 
 export default function Diagram({ operations = [], categories = [] }) {
-  const [view, setView] = React.useState('expense'); // 'expense' или 'income'
-
-  const handleViewChange = (event, newView) => {
-    if (newView !== null) {
-      setView(newView);
-    }
-  };
-
-  // Фильтруем операции по типу
-  const filteredOps = operations.filter(op => {
-    if (view === 'expense') return op.type === 'Расход';
-    if (view === 'income') return op.type === 'Доход';
-    return true;
-  });
+  // Фильтруем только расходы
+  const expenseOps = operations.filter(op => op.type === 'Расход');
 
   // Группировка по категориям
   const categoryMap = new Map();
-  filteredOps.forEach(op => {
+  expenseOps.forEach(op => {
     const catName = op.category || 'Без категории';
     const amount = parseFloat(op.amount) || 0;
     categoryMap.set(catName, (categoryMap.get(catName) || 0) + amount);
@@ -67,33 +53,19 @@ export default function Diagram({ operations = [], categories = [] }) {
   // Общая сумма
   const total = chartData.reduce((sum, item) => sum + item.value, 0);
 
-  // Если нет данных – показываем сообщение
+
   if (chartData.length === 0) {
     return (
       <Box sx={{ height: 400, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <Typography variant="body1" color="text.secondary">
-          Нет операций за выбранный период
+          Нет расходов за выбранный период
         </Typography>
       </Box>
     );
   }
 
-  const centerLabel = view === 'expense' ? 'Расходы' : 'Доходы';
-
   return (
     <Box sx={{ width: '100%', textAlign: 'center', mt: 6 }}>
-      <ToggleButtonGroup
-        color="primary"
-        size="small"
-        value={view}
-        exclusive
-        onChange={handleViewChange}
-        sx={{ mb: 2 }}
-      >
-        <ToggleButton value="expense">Расходы</ToggleButton>
-        <ToggleButton value="income">Доходы</ToggleButton>
-      </ToggleButtonGroup>
-
       <Box sx={{ display: 'flex', justifyContent: 'center', height: 400 }}>
         <PieChart
           series={[
@@ -106,19 +78,24 @@ export default function Diagram({ operations = [], categories = [] }) {
               highlighted: { additionalRadius: 2 },
               cornerRadius: 3,
               innerRadius: 40,
-              outerRadius: 160,
+              outerRadius: 140,
               paddingAngle: 1,
             },
           ]}
           slotProps={{
             legend: {
-              direction: 'column',
-              position: { vertical: 'middle', horizontal: 'right' },
+              direction: 'row', 
+              position: { vertical: 'bottom', horizontal: 'middle' }, 
               labelStyle: { fontSize: 12 },
+              itemMarkWidth: 15,
+              itemMarkHeight: 15,
+              markGap: 5,
+              itemGap: 10,
             },
           }}
+          margin={{ bottom: 80 }} 
         >
-          <PieCenterLabel>{centerLabel}</PieCenterLabel>
+          <PieCenterLabel>Расходы</PieCenterLabel>
         </PieChart>
       </Box>
     </Box>

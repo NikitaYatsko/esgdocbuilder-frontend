@@ -57,7 +57,8 @@ export const useBank = () => {
 
     const categories = categoriesData?.map(cat => ({
         id: cat.id,
-        name: cat.name
+        name: cat.name,
+        type: cat.type,
     })) ?? [];
 
     useEffect(() => {
