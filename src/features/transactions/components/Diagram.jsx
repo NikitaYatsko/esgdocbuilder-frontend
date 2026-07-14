@@ -53,6 +53,11 @@ export default function Diagram({ operations = [], categories = [] }) {
   // Общая сумма
   const total = chartData.reduce((sum, item) => sum + item.value, 0);
 
+  const getArcLabel = (item) => {
+    const percentage = (item.value / total) * 100;
+    return percentage > 3 ? `${percentage.toFixed(1)}%` : '';
+  };
+
 
   if (chartData.length === 0) {
     return (
@@ -65,14 +70,14 @@ export default function Diagram({ operations = [], categories = [] }) {
   }
 
   return (
-    <Box sx={{ width: '100%', textAlign: 'center', mt: 6 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'center', height: 400 }}>
+    <Box sx={{ width: '100%', textAlign: 'center' }}>
+      <Box sx={{ display: 'flex', justifyContent: 'center', height: 410, width: '100%' }}>
         <PieChart
           series={[
             {
               data: chartData,
-              arcLabel: (item) => `${((item.value / total) * 100).toFixed(1)}%`,
-              arcLabelRadius: '70%',
+              arcLabel: getArcLabel,
+              arcLabelRadius: '45%',
               valueFormatter: ({ value }) => `${value.toLocaleString()} MDL`,
               highlightScope: { fade: 'global', highlight: 'item' },
               highlighted: { additionalRadius: 2 },
@@ -84,16 +89,20 @@ export default function Diagram({ operations = [], categories = [] }) {
           ]}
           slotProps={{
             legend: {
-              direction: 'row', 
-              position: { vertical: 'bottom', horizontal: 'middle' }, 
-              labelStyle: { fontSize: 12 },
-              itemMarkWidth: 15,
-              itemMarkHeight: 15,
-              markGap: 5,
-              itemGap: 10,
+              direction: 'row',
+              position: {
+                vertical: 'bottom',
+                horizontal: 'middle',
+              },
+              sx: {
+                display: 'flex',
+                flexWrap: 'wrap',
+                justifyContent: 'center',
+                gap: 1,
+                maxWidth: 500,
+              },
             },
           }}
-          margin={{ bottom: 80 }} 
         >
           <PieCenterLabel>Расходы</PieCenterLabel>
         </PieChart>
